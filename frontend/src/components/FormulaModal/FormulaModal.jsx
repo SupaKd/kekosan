@@ -35,6 +35,7 @@ function FormulaModal({ formula, catalog, onClose, onAdd }) {
       formula_id: formula.id,
       name: formula.name,
       price: parseFloat(formula.price),
+      image_url: formula.image_url || null,
       slots: formula.slots.map(s => ({
         slot_name: s.slot_name,
         product_id: slotChoices[s.slot_name].id,
