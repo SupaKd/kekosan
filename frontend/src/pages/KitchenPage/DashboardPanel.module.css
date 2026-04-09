@@ -1,0 +1,192 @@
+.panel {
+  padding: 24px;
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.loader,
+.errorMsg {
+  text-align: center;
+  padding: 48px;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+.errorMsg { color: var(--danger) }
+
+/* ── Grille stats ── */
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.statCard {
+  border-radius: var(--radius-lg);
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+  position: relative;
+  overflow: hidden;
+}
+
+.statCard::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+}
+
+.accentToday::before  { background: var(--neon-cyan) }
+.accentWeek::before   { background: var(--neon-yellow) }
+.accentMonth::before  { background: var(--neon-pink, #ff2d78) }
+
+.statLabel {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+.statRevenue {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--text-heading);
+  line-height: 1;
+}
+
+.statCount {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* ── Section ── */
+.section {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-card);
+}
+
+.sectionTitle {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-heading);
+}
+
+.refreshBtn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  border-radius: var(--radius-sm);
+  padding: 4px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  transition: all 0.15s;
+}
+.refreshBtn:hover { border-color: var(--neon-cyan); color: var(--neon-cyan) }
+
+/* ── Liste commandes récentes ── */
+.orderList {
+  display: flex;
+  flex-direction: column;
+}
+
+.orderRow {
+  display: grid;
+  grid-template-columns: 48px 1fr auto auto auto;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 20px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  transition: background 0.1s;
+}
+.orderRow:last-child { border-bottom: none }
+.orderRow:hover { background: rgba(255,255,255,0.02) }
+
+.orderRowClickable {
+  cursor: pointer;
+}
+.orderRowClickable:hover {
+  background: rgba(0, 212, 255, 0.04);
+}
+
+.orderId {
+  font-weight: 700;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.orderName {
+  font-weight: 600;
+  color: var(--text-heading);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.orderTotal {
+  font-weight: 700;
+  color: var(--neon-cyan);
+  white-space: nowrap;
+}
+
+.orderDate {
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+/* Badges statut */
+.statusBadge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 10px;
+  white-space: nowrap;
+}
+
+.pending    { background: rgba(255,200,0,0.12);  color: #ffc800; border: 1px solid rgba(255,200,0,0.2) }
+.confirmed  { background: rgba(0,212,255,0.1);   color: var(--neon-cyan); border: 1px solid rgba(0,212,255,0.2) }
+.preparing  { background: rgba(255,159,10,0.12); color: #ff9f0a; border: 1px solid rgba(255,159,10,0.2) }
+.delivering { background: rgba(94,92,230,0.12);  color: #5e5ce6; border: 1px solid rgba(94,92,230,0.2) }
+.delivered  { background: rgba(48,209,88,0.12);  color: var(--success); border: 1px solid rgba(48,209,88,0.2) }
+.cancelled  { background: rgba(255,69,58,0.1);   color: var(--danger); border: 1px solid rgba(255,69,58,0.2) }
+
+.empty {
+  padding: 32px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+/* ── Responsive ── */
+@media (max-width: 600px) {
+  .statsGrid {
+    grid-template-columns: 1fr;
+  }
+  .orderRow {
+    grid-template-columns: 40px 1fr auto;
+    grid-template-rows: auto auto;
+  }
+  .orderDate { display: none }
+  .orderTotal { grid-column: 3 }
+  .statusBadge { grid-column: 2; justify-self: start }
+}

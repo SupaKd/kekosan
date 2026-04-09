@@ -1,0 +1,582 @@
+.page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Hero ── */
+.hero {
+  position: relative;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #080808;
+}
+
+/* Vidéo background */
+.heroVideo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(0.35);
+  z-index: 0;
+}
+
+/* Grain statique par-dessus la vidéo — PNG précalculé, pas de SVG feTurbulence */
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("/grain.png");
+  background-size: 256px 256px;
+  opacity: 0.045;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Dégradé bas pour transition vers le contenu */
+.hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, transparent 60%, #000 100%);
+  z-index: 2;
+  pointer-events: none;
+}
+
+.heroContent {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 0 24px;
+  gap: 20px;
+}
+
+.heroLogo {
+  width: clamp(200px, 40vw, 420px);
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 0 40px rgba(255, 214, 10, 0.35));
+}
+
+.heroCtaGroup {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.heroCta {
+  padding: 14px 36px;
+  border: none;
+  border-radius: 40px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.heroCtaYellow {
+  background: var(--neon-cyan);
+  color: #000;
+  box-shadow: 0 0 28px rgba(255, 214, 10, 0.4);
+}
+
+.heroCtaYellow:hover {
+  transform: scale(1.04);
+  box-shadow: 0 0 44px rgba(255, 214, 10, 0.6);
+}
+
+.heroCtaRed {
+  background: var(--neon-red);
+  color: #fff;
+  box-shadow: 0 0 28px rgba(220, 38, 38, 0.4);
+}
+
+.heroCtaRed:hover {
+  transform: scale(1.04);
+  box-shadow: 0 0 44px rgba(220, 38, 38, 0.6);
+}
+
+/* Scroll indicator */
+.heroScroll {
+  position: absolute;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  color: rgba(255, 255, 255, 0.25);
+  font-size: 10px;
+  letter-spacing: 2px;
+  animation: bounce 2s infinite;
+}
+
+.heroScroll::before {
+  content: "↓";
+  font-size: 16px;
+}
+
+@keyframes bounce {
+  0%,
+  100% {
+    transform: translateX(-50%) translateY(0);
+  }
+  50% {
+    transform: translateX(-50%) translateY(6px);
+  }
+}
+
+/* ── Barre de filtres sticky ── */
+.filterBar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background: rgba(0, 0, 0, 0.9);
+  backdrop-filter: blur(12px);
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 20px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.filterBar::-webkit-scrollbar {
+  display: none;
+}
+
+.filterBtn {
+  flex-shrink: 0;
+  padding: 6px 16px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.07);
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+  font-family: var(--font-sans);
+}
+.filterBtn:hover {
+  border-color: var(--border-bright);
+  color: var(--text-heading);
+}
+
+.filterActive {
+  background: var(--neon-cyan) !important;
+  border-color: transparent !important;
+  color: #000 !important;
+  font-weight: 600 !important;
+}
+
+/* Formule: doré quand active */
+.filterFormula.filterActive {
+  background: var(--neon-cyan) !important;
+  color: #000 !important;
+}
+
+/* ── Sections ── */
+.section {
+  width: 100%;
+  padding: 64px 0;
+}
+
+.sectionInner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* Formules */
+.sectionFormulas {
+  background: #000;
+}
+
+/* Catégories alternées */
+.section_entree {
+  background: #000;
+}
+
+.section_banhmi {
+  background: #000 url("/banh.jpeg") center / cover no-repeat;
+  position: relative;
+}
+
+.section_banhmi::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  z-index: 0;
+}
+
+.section_banhmi > * {
+  position: relative;
+  z-index: 1;
+}
+
+.section_dessert {
+  background: #000;
+  position: relative;
+  z-index: 1;
+}
+
+.section_boisson {
+  background: #000;
+}
+
+.sectionAlt {
+  background: #000;
+}
+
+/* ── Section header ── */
+.sectionHeader {
+  text-align: center;
+  margin-bottom: 36px;
+}
+
+.sectionTitle {
+  font-family: "Black Han Sans", "Bebas Neue", sans-serif;
+  font-size: clamp(42px, 7vw, 80px);
+  font-weight: 400;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--text-heading);
+  line-height: 1;
+  display: inline-block;
+  position: relative;
+  padding-bottom: 12px;
+}
+
+.sectionTitle::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 60px;
+  height: 2px;
+  background: var(--neon-cyan);
+  box-shadow: 0 0 10px rgba(255, 214, 10, 0.6);
+  border-radius: 2px;
+}
+
+/* ── Grille formules ── */
+.formulasGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+/* ── Ticket-style formula card ── */
+.formulaCard {
+  position: relative;
+  background: #f5f0e8;
+  border-radius: 4px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  /* Bords dentelés haut/bas simulés via mask */
+}
+
+.formulaCard:hover {
+  transform: translateY(-4px) rotate(0.3deg);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+}
+
+/* Wrapper photo — intégré dans le style ticket */
+.formulaImageWrap {
+  position: relative;
+  width: 100%;
+  height: 180px;
+  overflow: hidden;
+  background: #2a2420;
+}
+
+.formulaImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  /* Sépia léger pour coller au papier crème */
+  filter: sepia(0.35) saturate(0.85) contrast(1.05) brightness(0.92);
+  transition: filter 0.3s, transform 0.3s;
+}
+
+.formulaCard:hover .formulaImage {
+  filter: sepia(0.15) saturate(1) contrast(1.05) brightness(0.97);
+  transform: scale(1.03);
+}
+
+/* Gradient bas : fondu photo → header noir */
+.formulaImageWrap::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    transparent 45%,
+    rgba(0, 0, 0, 0.55) 100%
+  );
+  pointer-events: none;
+}
+
+/* Numéro tamponné en surimpression sur la photo */
+.formulaImageWrap .formulaTicketNum {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  z-index: 2;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  background: rgba(220, 38, 38, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 3px;
+  padding: 2px 8px;
+  letter-spacing: 1px;
+  backdrop-filter: blur(2px);
+}
+
+/* En-tête du ticket */
+.formulaTicketHeader {
+  background: #1a1a1a;
+  padding: 10px 16px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.formulaTicketBrand {
+  font-family: "Black Han Sans", "Bebas Neue", sans-serif;
+  font-size: 11px;
+  letter-spacing: 3px;
+  color: #f5f0e8;
+  opacity: 0.6;
+  text-transform: uppercase;
+}
+
+.formulaTicketNum {
+  font-family: "Courier New", Courier, monospace;
+  font-size: 13px;
+  font-weight: 700;
+  color: #dc2626;
+  background: rgba(220, 38, 38, 0.12);
+  border: 1px solid rgba(220, 38, 38, 0.3);
+  border-radius: 3px;
+  padding: 2px 8px;
+  letter-spacing: 1px;
+}
+
+/* Corps du ticket */
+.formulaBody {
+  padding: 16px 18px 12px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border-left: 1px dashed rgba(0, 0, 0, 0.15);
+  border-right: 1px dashed rgba(0, 0, 0, 0.15);
+}
+
+.formulaTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.formulaName {
+  font-family: "Black Han Sans", "Bebas Neue", sans-serif;
+  font-size: 22px;
+  font-weight: 400;
+  color: #1a1a1a;
+  line-height: 1.1;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.formulaPrice {
+  font-family: "Courier New", Courier, monospace;
+  font-size: 22px;
+  font-weight: 700;
+  color: #1a1a1a;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.formulaDesc {
+  font-size: 12px;
+  color: #555;
+  line-height: 1.5;
+  margin: 0 0 12px;
+  font-style: italic;
+}
+
+/* Pied du ticket */
+.formulaCta {
+  background: #1a1a1a;
+  padding: 11px 18px;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 12px;
+  font-weight: 700;
+  color: #f5f0e8;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-align: center;
+  transition: background 0.2s, letter-spacing 0.2s;
+}
+
+.formulaCard:hover .formulaCta {
+  background: #dc2626;
+  letter-spacing: 3px;
+}
+
+/* ── Grille produits ── */
+.productsGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+@media (min-width: 600px) {
+  .productsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .productsGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* ── Loading / erreur ── */
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  flex-direction: column;
+  gap: 16px;
+  color: var(--text-muted);
+}
+
+.spinner {
+  width: 36px;
+  height: 36px;
+  border: 2px solid var(--border);
+  border-top-color: var(--neon-cyan);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.error {
+  text-align: center;
+  padding: 60px 24px;
+  color: var(--danger);
+}
+
+/* ── Divider décoratif ── */
+.divider {
+  background: #000;
+  padding: 48px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.dividerLine {
+  width: 100%;
+  max-width: 320px;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(255, 214, 10, 0.3),
+    transparent
+  );
+}
+
+.dividerContent {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.dividerIcon {
+  font-size: 20px;
+  opacity: 0.6;
+}
+
+.dividerText {
+  font-family: "Black Han Sans", "Bebas Neue", sans-serif;
+  font-size: clamp(22px, 5vw, 40px);
+  letter-spacing: 6px;
+  text-transform: uppercase;
+  color: var(--neon-cyan);
+  text-shadow: 0 0 20px rgba(255, 214, 10, 0.4);
+}
+
+/* ── Mobile ── */
+@media (max-width: 600px) {
+  .section {
+    padding: 48px 0;
+  }
+
+  .sectionTitle {
+    font-size: clamp(36px, 10vw, 56px);
+  }
+
+  .filterBar {
+    padding: 8px 12px;
+    gap: 8px;
+    justify-content: flex-start;
+  }
+
+  .filterBtn {
+    padding: 8px 14px;
+    font-size: 13px;
+    min-height: 36px;
+  }
+
+  .heroCtaGroup {
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+  }
+
+  .heroCta {
+    padding: 13px 28px;
+    font-size: 14px;
+    width: 100%;
+    max-width: 280px;
+    text-align: center;
+  }
+}
