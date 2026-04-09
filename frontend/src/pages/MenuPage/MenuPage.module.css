@@ -4,7 +4,7 @@
   flex-direction: column;
 }
 
-/* ── Hero ── */
+/* ── Hero slider ── */
 .hero {
   position: relative;
   height: 100vh;
@@ -12,98 +12,171 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #080808;
+  background: #111;
 }
 
-/* Vidéo background */
-.heroVideo {
+/* Bande de slides */
+.heroSlider {
   position: absolute;
   inset: 0;
+  display: flex;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.8s cubic-bezier(0.77, 0, 0.18, 1);
+  will-change: transform;
+}
+
+.heroSlide {
+  position: relative;
+  flex: 0 0 100%;
+  width: 100%;
+  height: 100%;
+}
+
+.heroSlideImg {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  filter: brightness(0.35);
-  z-index: 0;
+  display: block;
 }
 
-/* Grain statique par-dessus la vidéo — PNG précalculé, pas de SVG feTurbulence */
-.hero::before {
-  content: "";
+.heroSlideOverlay {
   position: absolute;
   inset: 0;
-  background-image: url("/grain.png");
-  background-size: 256px 256px;
-  opacity: 0.045;
-  z-index: 1;
-  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    rgba(0,0,0,0.35) 0%,
+    rgba(0,0,0,0.55) 60%,
+    rgba(0,0,0,0.75) 100%
+  );
 }
 
-/* Dégradé bas pour transition vers le contenu */
-.hero::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to bottom, transparent 60%, #000 100%);
-  z-index: 2;
-  pointer-events: none;
-}
-
+/* Contenu centré par-dessus */
 .heroContent {
   position: relative;
-  z-index: 3;
+  z-index: 2;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
   padding: 0 24px;
-  gap: 20px;
+  animation: heroFadeIn 0.6s ease;
 }
 
-.heroLogo {
-  width: clamp(200px, 40vw, 420px);
-  height: auto;
-  object-fit: contain;
-  filter: drop-shadow(0 0 40px rgba(255, 214, 10, 0.35));
+@keyframes heroFadeIn {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-.heroCtaGroup {
-  display: flex;
-  gap: 16px;
-  flex-wrap: wrap;
-  justify-content: center;
+.heroEyebrow {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.6);
+  margin-bottom: 16px;
+}
+
+.heroLabel {
+  font-family: "Black Han Sans", "Bebas Neue", sans-serif;
+  font-size: clamp(56px, 12vw, 120px);
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 4px;
+  color: #fff;
+  line-height: 0.9;
+  margin-bottom: 20px;
+}
+
+.heroDivider {
+  width: 40px;
+  height: 3px;
+  background: #ffd60a;
+  margin-bottom: 16px;
+}
+
+.heroSub {
+  font-size: 14px;
+  color: rgba(255,255,255,0.75);
+  line-height: 1.6;
+  margin-bottom: 32px;
+  max-width: 340px;
 }
 
 .heroCta {
-  padding: 14px 36px;
+  padding: 13px 32px;
+  background: #ffd60a;
+  color: #000;
   border: none;
-  border-radius: 40px;
-  font-size: 15px;
+  border-radius: 2px;
+  font-size: 11px;
   font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
   cursor: pointer;
   font-family: var(--font-sans);
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: background 0.2s, color 0.2s;
 }
 
-.heroCtaYellow {
-  background: var(--neon-cyan);
+.heroCta:hover {
+  background: #fff;
   color: #000;
-  box-shadow: 0 0 28px rgba(255, 214, 10, 0.4);
 }
 
-.heroCtaYellow:hover {
-  transform: scale(1.04);
-  box-shadow: 0 0 44px rgba(255, 214, 10, 0.6);
+/* Indicateurs dots */
+.heroDots {
+  position: absolute;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 3;
+  display: flex;
+  gap: 8px;
 }
 
-.heroCtaRed {
-  background: var(--neon-red);
+.heroDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.35);
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.3s, transform 0.3s;
+}
+
+.heroDotActive {
+  background: #ffd60a;
+  transform: scale(1.4);
+}
+
+/* Compteur slide */
+.heroCounter {
+  position: absolute;
+  bottom: 28px;
+  right: 32px;
+  z-index: 3;
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  font-family: "Black Han Sans", "Bebas Neue", sans-serif;
+  letter-spacing: 1px;
+}
+
+.heroCounterCurrent {
+  font-size: 28px;
   color: #fff;
-  box-shadow: 0 0 28px rgba(220, 38, 38, 0.4);
+  line-height: 1;
 }
 
-.heroCtaRed:hover {
-  transform: scale(1.04);
-  box-shadow: 0 0 44px rgba(220, 38, 38, 0.6);
+.heroCounterSep {
+  font-size: 14px;
+  color: rgba(255,255,255,0.4);
+}
+
+.heroCounterTotal {
+  font-size: 14px;
+  color: rgba(255,255,255,0.4);
 }
 
 /* Scroll indicator */
@@ -565,18 +638,16 @@
     min-height: 36px;
   }
 
-  .heroCtaGroup {
-    flex-direction: column;
-    align-items: center;
-    gap: 12px;
-    width: 100%;
+  .heroLabel {
+    font-size: clamp(48px, 16vw, 80px);
   }
 
-  .heroCta {
-    padding: 13px 28px;
-    font-size: 14px;
-    width: 100%;
-    max-width: 280px;
-    text-align: center;
+  .heroCounter {
+    right: 16px;
+    bottom: 20px;
+  }
+
+  .heroDots {
+    bottom: 24px;
   }
 }

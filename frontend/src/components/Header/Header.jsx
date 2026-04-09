@@ -7,6 +7,7 @@ function Header() {
         <span className={styles.dot} />
         Saint-Genis-Pouilly
       </div>
+      <img src="/kekosanlogo.png" alt="Kekosan" className={styles.logo} />
       <div className={styles.hoursBadge}>
         Lun–Ven · 11h–15h
       </div>

@@ -10,6 +10,7 @@ const CATEGORY_LABELS = {
   boisson: 'Boisson',
 }
 
+
 function FormulaModal({ formula, catalog, onClose, onAdd }) {
   const [slotChoices, setSlotChoices] = useState({})
   const [quantity, setQuantity] = useState(1)
@@ -94,11 +95,12 @@ function FormulaModal({ formula, catalog, onClose, onAdd }) {
                 </div>
 
                 {groups.map((group, gi) => (
-                  <div key={group.cat}>
-                    {multiGroup && (
+                  <div key={group.cat} className={styles.categoryGroup}>
+                    {multiGroup && gi > 0 && (
                       <div className={styles.categoryDivider}>
-                        {gi > 0 && <span className={styles.orBadge}>ou</span>}
-                        <span className={styles.categoryLabel}>{group.label}</span>
+                        <div className={styles.categoryDividerLine} />
+                        <span className={styles.orBadge}>ou</span>
+                        <div className={styles.categoryDividerLine} />
                       </div>
                     )}
                     <div className={styles.productOptions}>
@@ -118,6 +120,9 @@ function FormulaModal({ formula, catalog, onClose, onAdd }) {
                             )}
                           </div>
                           <div className={styles.productCardName}>{product.name}</div>
+                          <div className={styles.productCardRadio}>
+                            {chosen?.id === product.id && <div className={styles.productCardRadioDot} />}
+                          </div>
                         </button>
                       ))}
                     </div>

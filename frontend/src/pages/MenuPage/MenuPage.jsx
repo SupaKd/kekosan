@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useCatalog } from "../../hooks/useCatalog";
 import ProductCard from "../../components/ProductCard/ProductCard";
 import ProductModal from "../../components/ProductModal/ProductModal";
@@ -12,8 +12,8 @@ import PromoBanner from "../../components/PromoBanner/PromoBanner";
 import IngredientsStrip from "../../components/IngredientsStrip/IngredientsStrip";
 import styles from "./MenuPage.module.css";
 
-import { API_BASE } from '../../config/api'
-import { formatPrice } from '../../utils/formatting'
+import { API_BASE } from "../../config/api";
+import { formatPrice } from "../../utils/formatting";
 
 const CATEGORY_LABELS = {
   entree: "Entrées",
@@ -22,12 +22,67 @@ const CATEGORY_LABELS = {
   boisson: "Boissons",
 };
 
+const HERO_SLIDES = [
+  {
+    id: 'formules',
+    label: 'Formules',
+    accroche: 'Entrée, Bánh Mì & Boisson.',
+    cta: 'Voir les formules',
+    image: '/banh.jpeg',
+  },
+  {
+    id: 'banhmi',
+    label: 'Bánh Mì',
+    accroche: 'Fait maison, livré chaud.',
+    cta: 'Commander',
+    image: '/hero.jpeg',
+  },
+  {
+    id: 'boisson',
+    label: 'Boissons',
+    accroche: 'Pour accompagner le festin.',
+    cta: 'Voir les boissons',
+    image: '/banh.jpeg',
+  },
+]
+
 function MenuPage({ cart, onCheckout }) {
   const { catalog, formulas, loading, error } = useCatalog();
 
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [selectedFormula, setSelectedFormula] = useState(null);
   const [activeFilter, setActiveFilter] = useState(null);
+  const [heroIndex, setHeroIndex] = useState(0);
+  const timerRef = useRef(null);
+  const touchStartX = useRef(null);
+
+  const goTo = (index) => {
+    setHeroIndex((index + HERO_SLIDES.length) % HERO_SLIDES.length);
+  };
+
+  useEffect(() => {
+    timerRef.current = setInterval(() => {
+      setHeroIndex(i => (i + 1) % HERO_SLIDES.length);
+    }, 4500);
+    return () => clearInterval(timerRef.current);
+  }, []);
+
+  const handleTouchStart = (e) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = (e) => {
+    if (touchStartX.current === null) return;
+    const diff = touchStartX.current - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 40) {
+      clearInterval(timerRef.current);
+      goTo(heroIndex + (diff > 0 ? 1 : -1));
+      timerRef.current = setInterval(() => {
+        setHeroIndex(i => (i + 1) % HERO_SLIDES.length);
+      }, 4500);
+    }
+    touchStartX.current = null;
+  };
 
   const scrollToSection = (id) => {
     setActiveFilter(id);
@@ -59,42 +114,56 @@ function MenuPage({ cart, onCheckout }) {
 
   return (
     <div className={styles.page}>
-      {/* Hero */}
+      {/* Hero slider */}
       <PromoBanner />
-      <div className={styles.hero}>
+      <div
+        className={styles.hero}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
         <Header />
-        <video
-          className={styles.heroVideo}
-          src="/hero.mp4"
-          autoPlay
-          muted
-          loop
-          playsInline
-        />
-        <div className={styles.heroContent}>
-          <img src="/kekosanlogo.png" alt="Kekosan" className={styles.heroLogo} />
-          <div className={styles.heroCtaGroup}>
+
+        {/* Panneaux */}
+        <div className={styles.heroSlider} style={{ transform: `translateX(-${heroIndex * 100}%)` }}>
+          {HERO_SLIDES.map((slide) => (
+            <div key={slide.id} className={styles.heroSlide}>
+              <img src={slide.image} alt={slide.label} className={styles.heroSlideImg} />
+              <div className={styles.heroSlideOverlay} />
+            </div>
+          ))}
+        </div>
+
+        {/* Contenu du slide actif */}
+        <div className={styles.heroContent} key={heroIndex}>
+          <div className={styles.heroEyebrow}>Dark Kitchen · Saint-Genis-Pouilly</div>
+          <div className={styles.heroLabel}>{HERO_SLIDES[heroIndex].label}</div>
+          <div className={styles.heroDivider} />
+          <p className={styles.heroSub}>{HERO_SLIDES[heroIndex].accroche}</p>
+          <button
+            className={styles.heroCta}
+            onClick={() => scrollToSection(HERO_SLIDES[heroIndex].id)}
+          >
+            {HERO_SLIDES[heroIndex].cta}
+          </button>
+        </div>
+
+        {/* Indicateurs */}
+        <div className={styles.heroDots}>
+          {HERO_SLIDES.map((_, i) => (
             <button
-              className={`${styles.heroCta} ${styles.heroCtaYellow}`}
-              onClick={() =>
-                scrollToSection(
-                  formulas.length > 0 ? "formules" : Object.keys(catalog)[0]
-                )
-              }
-            >
-              Commander
-            </button>
-            <button
-              className={`${styles.heroCta} ${styles.heroCtaRed}`}
-              onClick={() =>
-                scrollToSection(
-                  formulas.length > 0 ? "formules" : Object.keys(catalog)[0]
-                )
-              }
-            >
-              Voir le menu
-            </button>
-          </div>
+              key={i}
+              className={`${styles.heroDot} ${i === heroIndex ? styles.heroDotActive : ''}`}
+              onClick={() => { clearInterval(timerRef.current); goTo(i); }}
+              aria-label={`Slide ${i + 1}`}
+            />
+          ))}
+        </div>
+
+        {/* Numéro du slide */}
+        <div className={styles.heroCounter}>
+          <span className={styles.heroCounterCurrent}>{String(heroIndex + 1).padStart(2, '0')}</span>
+          <span className={styles.heroCounterSep}>/</span>
+          <span className={styles.heroCounterTotal}>{String(HERO_SLIDES.length).padStart(2, '0')}</span>
         </div>
       </div>
 
@@ -139,7 +208,9 @@ function MenuPage({ cart, onCheckout }) {
                     )}
                     <div className={styles.formulaBody}>
                       <div className={styles.formulaTop}>
-                        <span className={styles.formulaName}>{formula.name}</span>
+                        <span className={styles.formulaName}>
+                          {formula.name}
+                        </span>
                         <span className={styles.formulaPrice}>
                           {formatPrice(formula.price)}
                         </span>

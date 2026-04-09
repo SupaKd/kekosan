@@ -1,67 +1,108 @@
 .section {
   width: 100%;
-  background: #0a0a0a;
-  padding: 80px 24px;
-  border-top: 1px solid var(--border);
+  background: #f5f0e8;
+  padding: 72px 40px;
+  border-top: 2px solid #ffd60a;
 }
 
 .inner {
-  max-width: 640px;
+  max-width: 720px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: 20px;
+  align-items: flex-start;
+  gap: 0;
 }
 
 .eyebrow {
-  font-size: 11px;
+  font-size: 10px;
+  font-weight: 700;
   letter-spacing: 4px;
   text-transform: uppercase;
-  color: var(--text-muted);
+  color: #c0392b;
+  margin-bottom: 16px;
 }
 
 .title {
-  font-size: clamp(40px, 8vw, 72px);
-  font-style: italic;
-  font-weight: 800;
-  color: var(--text-heading);
-  line-height: 1;
-  letter-spacing: -1px;
+  font-family: "Black Han Sans", "Bebas Neue", sans-serif;
+  font-size: clamp(52px, 10vw, 96px);
+  font-weight: 400;
+  font-style: normal;
+  color: #1a1a1a;
+  line-height: 0.92;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 24px;
 }
 
 .handle {
-  color: var(--text-muted);
-  font-weight: 400;
-  font-style: italic;
+  color: #c0392b;
+}
+
+.divider {
+  width: 48px;
+  height: 3px;
+  background: #ffd60a;
+  margin-bottom: 20px;
 }
 
 .subtitle {
   font-size: 14px;
-  color: var(--text-muted);
+  color: #555;
   line-height: 1.7;
-  max-width: 380px;
+  max-width: 420px;
+  margin-bottom: 32px;
 }
 
 .btn {
-  display: inline-block;
-  margin-top: 8px;
-  padding: 11px 32px;
-  background: transparent;
-  border: 1px solid var(--border-bright);
-  color: var(--text-primary);
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 2px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 28px;
+  background: #1a1a1a;
+  border: none;
+  color: #f5f0e8;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2.5px;
   text-transform: uppercase;
   text-decoration: none;
-  border-radius: 100px;
-  transition: background 0.2s, color 0.2s, border-color 0.2s;
+  border-radius: 2px;
+  transition: background 0.2s, color 0.2s;
 }
 
 .btn:hover {
-  background: #fff;
-  color: #000;
-  border-color: #fff;
+  background: #c0392b;
+  color: #fff;
+}
+
+.btnIcon {
+  flex-shrink: 0;
+}
+
+@media (max-width: 600px) {
+  .section {
+    padding: 48px 20px;
+  }
+
+  .inner {
+    align-items: stretch;
+  }
+
+  .title {
+    font-size: clamp(36px, 11vw, 52px);
+    margin-bottom: 20px;
+  }
+
+  .subtitle {
+    max-width: 100%;
+    font-size: 13px;
+    margin-bottom: 28px;
+  }
+
+  .btn {
+    width: 100%;
+    justify-content: center;
+    padding: 14px 20px;
+  }
 }
