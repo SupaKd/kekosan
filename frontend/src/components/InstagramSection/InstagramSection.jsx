@@ -14,12 +14,12 @@ function InstagramSection() {
           Suivez-nous pour ne rien manquer.
         </p>
         <a
-          href="https://instagram.com/kekosan"
+          href="https://instagram.com/kekosan01630"
           target="_blank"
           rel="noopener noreferrer"
           className={styles.btn}
         >
-          @kekosan sur Instagram
+          @kekosan01630 sur Instagram
         </a>
       </div>
     </section>

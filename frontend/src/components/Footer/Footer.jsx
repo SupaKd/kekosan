@@ -30,7 +30,7 @@ function Footer() {
           <div className={styles.socialLabel}>Suivez-nous</div>
           <div className={styles.socialLinks}>
             <a
-              href="https://instagram.com/kekosan"
+              href="https://instagram.com/kekosan01630"
               target="_blank"
               rel="noopener noreferrer"
               className={styles.socialLink}
@@ -44,7 +44,7 @@ function Footer() {
               Instagram
             </a>
             <a
-              href="https://facebook.com/kekosan"
+              href="https://facebook.com/kekosan01630"
               target="_blank"
               rel="noopener noreferrer"
               className={styles.socialLink}
