@@ -24,27 +24,28 @@ const CATEGORY_LABELS = {
 
 const HERO_SLIDES = [
   {
-    id: 'formules',
-    label: 'Formules',
-    accroche: 'Entrée, Bánh Mì & Boisson.',
-    cta: 'Voir les formules',
-    image: '/banh.jpeg',
+    id: "formules",
+    label: "Formules",
+    accroche: "Entrée, Bánh Mì & Boisson.",
+    cta: "Voir les formules",
+    image: "/formule.png",
   },
   {
-    id: 'banhmi',
-    label: 'Bánh Mì',
-    accroche: 'Fait maison, livré chaud.',
-    cta: 'Commander',
-    image: '/hero.jpeg',
+    id: "banhmi",
+    label: "Bánh Mì",
+    accroche: "Fait maison, livré chaud.",
+    cta: "Commander",
+    image: "/banhh.png",
   },
   {
-    id: 'boisson',
-    label: 'Boissons',
-    accroche: 'Pour accompagner le festin.',
-    cta: 'Voir les boissons',
-    image: '/banh.jpeg',
+    id: null,
+    label: "Notre histoire",
+    accroche:
+      "Une dark kitchen née à Saint-Genis-Pouilly, avec du caractère et du piment.",
+    cta: "En savoir plus",
+    image: "/about.png",
   },
-]
+];
 
 function MenuPage({ cart, onCheckout }) {
   const { catalog, formulas, loading, error } = useCatalog();
@@ -62,7 +63,7 @@ function MenuPage({ cart, onCheckout }) {
 
   useEffect(() => {
     timerRef.current = setInterval(() => {
-      setHeroIndex(i => (i + 1) % HERO_SLIDES.length);
+      setHeroIndex((i) => (i + 1) % HERO_SLIDES.length);
     }, 4500);
     return () => clearInterval(timerRef.current);
   }, []);
@@ -78,7 +79,7 @@ function MenuPage({ cart, onCheckout }) {
       clearInterval(timerRef.current);
       goTo(heroIndex + (diff > 0 ? 1 : -1));
       timerRef.current = setInterval(() => {
-        setHeroIndex(i => (i + 1) % HERO_SLIDES.length);
+        setHeroIndex((i) => (i + 1) % HERO_SLIDES.length);
       }, 4500);
     }
     touchStartX.current = null;
@@ -124,10 +125,17 @@ function MenuPage({ cart, onCheckout }) {
         <Header />
 
         {/* Panneaux */}
-        <div className={styles.heroSlider} style={{ transform: `translateX(-${heroIndex * 100}%)` }}>
+        <div
+          className={styles.heroSlider}
+          style={{ transform: `translateX(-${heroIndex * 100}%)` }}
+        >
           {HERO_SLIDES.map((slide) => (
             <div key={slide.id} className={styles.heroSlide}>
-              <img src={slide.image} alt={slide.label} className={styles.heroSlideImg} />
+              <img
+                src={slide.image}
+                alt={slide.label}
+                className={styles.heroSlideImg}
+              />
               <div className={styles.heroSlideOverlay} />
             </div>
           ))}
@@ -135,39 +143,57 @@ function MenuPage({ cart, onCheckout }) {
 
         {/* Contenu du slide actif */}
         <div className={styles.heroContent} key={heroIndex}>
-          <div className={styles.heroEyebrow}>Dark Kitchen · Saint-Genis-Pouilly</div>
+          <div className={styles.heroEyebrow}>
+            Dark Kitchen · Saint-Genis-Pouilly
+          </div>
           <div className={styles.heroLabel}>{HERO_SLIDES[heroIndex].label}</div>
           <div className={styles.heroDivider} />
           <p className={styles.heroSub}>{HERO_SLIDES[heroIndex].accroche}</p>
           <button
             className={styles.heroCta}
-            onClick={() => scrollToSection(HERO_SLIDES[heroIndex].id)}
+            onClick={() => {
+              const slide = HERO_SLIDES[heroIndex];
+              if (slide.id) scrollToSection(slide.id);
+              else
+                window.scrollTo({
+                  top: document.body.scrollHeight,
+                  behavior: "smooth",
+                });
+            }}
           >
             {HERO_SLIDES[heroIndex].cta}
           </button>
         </div>
 
-        {/* Indicateurs */}
-        <div className={styles.heroDots}>
-          {HERO_SLIDES.map((_, i) => (
-            <button
-              key={i}
-              className={`${styles.heroDot} ${i === heroIndex ? styles.heroDotActive : ''}`}
-              onClick={() => { clearInterval(timerRef.current); goTo(i); }}
-              aria-label={`Slide ${i + 1}`}
+        {/* Vague de transition */}
+        <div className={styles.heroWave}>
+          <svg
+            viewBox="0 0 1440 80"
+            preserveAspectRatio="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M0,40 C360,80 1080,0 1440,40 L1440,80 L0,80 Z"
+              fill="#000"
             />
-          ))}
+          </svg>
         </div>
 
         {/* Numéro du slide */}
         <div className={styles.heroCounter}>
-          <span className={styles.heroCounterCurrent}>{String(heroIndex + 1).padStart(2, '0')}</span>
+          <span className={styles.heroCounterCurrent}>
+            {String(heroIndex + 1).padStart(2, "0")}
+          </span>
           <span className={styles.heroCounterSep}>/</span>
-          <span className={styles.heroCounterTotal}>{String(HERO_SLIDES.length).padStart(2, '0')}</span>
+          <span className={styles.heroCounterTotal}>
+            {String(HERO_SLIDES.length).padStart(2, "0")}
+          </span>
         </div>
       </div>
 
       <main id="menu">
+        {/* Bandeau défilant */}
+        <Marquee />
         {/* Section formules */}
         {formulas.length > 0 && (
           <section
@@ -228,9 +254,6 @@ function MenuPage({ cart, onCheckout }) {
             </div>
           </section>
         )}
-
-        {/* Bandeau défilant */}
-        <Marquee />
 
         {/* Barre de filtres sticky */}
         <nav className={styles.filterBar}>

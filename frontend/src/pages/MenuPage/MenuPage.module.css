@@ -45,9 +45,9 @@
   inset: 0;
   background: linear-gradient(
     to bottom,
-    rgba(0,0,0,0.35) 0%,
-    rgba(0,0,0,0.55) 60%,
-    rgba(0,0,0,0.75) 100%
+    rgba(0, 0, 0, 0.35) 0%,
+    rgba(0, 0, 0, 0.55) 60%,
+    rgba(0, 0, 0, 0.75) 100%
   );
 }
 
@@ -64,8 +64,14 @@
 }
 
 @keyframes heroFadeIn {
-  from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .heroEyebrow {
@@ -73,7 +79,7 @@
   font-weight: 700;
   letter-spacing: 4px;
   text-transform: uppercase;
-  color: rgba(255,255,255,0.6);
+  color: rgba(255, 255, 255, 0.6);
   margin-bottom: 16px;
 }
 
@@ -97,7 +103,7 @@
 
 .heroSub {
   font-size: 14px;
-  color: rgba(255,255,255,0.75);
+  color: rgba(255, 255, 255, 0.75);
   line-height: 1.6;
   margin-bottom: 32px;
   max-width: 340px;
@@ -126,10 +132,10 @@
 /* Indicateurs dots */
 .heroDots {
   position: absolute;
-  bottom: 32px;
+  bottom: 100px;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 3;
+  z-index: 4;
   display: flex;
   gap: 8px;
 }
@@ -138,7 +144,7 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: rgba(255,255,255,0.35);
+  background: rgba(255, 255, 255, 0.35);
   border: none;
   cursor: pointer;
   padding: 0;
@@ -153,9 +159,9 @@
 /* Compteur slide */
 .heroCounter {
   position: absolute;
-  bottom: 28px;
+  bottom: 92px;
   right: 32px;
-  z-index: 3;
+  z-index: 4;
   display: flex;
   align-items: baseline;
   gap: 4px;
@@ -171,12 +177,29 @@
 
 .heroCounterSep {
   font-size: 14px;
-  color: rgba(255,255,255,0.4);
+  color: rgba(255, 255, 255, 0.4);
 }
 
 .heroCounterTotal {
   font-size: 14px;
-  color: rgba(255,255,255,0.4);
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* Vague de transition hero → section */
+.heroWave {
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  line-height: 0;
+  pointer-events: none;
+}
+
+.heroWave svg {
+  width: 100%;
+  height: 80px;
+  display: block;
 }
 
 /* Scroll indicator */
@@ -216,7 +239,7 @@
   position: sticky;
   top: 0;
   z-index: 30;
-  background: rgba(0, 0, 0, 0.9);
+  background: #c0392b;
   backdrop-filter: blur(12px);
   display: flex;
   justify-content: center;
@@ -233,10 +256,9 @@
 .filterBtn {
   flex-shrink: 0;
   padding: 6px 16px;
-  border-radius: 20px;
   border: 1px solid rgba(255, 255, 255, 0.18);
-  background: rgba(255, 255, 255, 0.07);
-  color: rgba(255, 255, 255, 0.75);
+  background: transparent;
+  color: #ffd60a;
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
@@ -281,7 +303,15 @@
 
 /* Catégories alternées */
 .section_entree {
-  background: #000;
+  background: #f5f0e8;
+}
+
+.section_entree .sectionTitle {
+  color: #c0392b;
+}
+
+.section_entree .sectionTitle::after {
+  background: #ffd60a;
 }
 
 .section_banhmi {
