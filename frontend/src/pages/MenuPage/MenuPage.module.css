@@ -239,7 +239,7 @@
   position: sticky;
   top: 0;
   z-index: 30;
-  background: #c0392b;
+  background: #ffd60a;
   backdrop-filter: blur(12px);
   display: flex;
   justify-content: center;
@@ -256,9 +256,9 @@
 .filterBtn {
   flex-shrink: 0;
   padding: 6px 16px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  border: none;
   background: transparent;
-  color: #ffd60a;
+  color: #111;
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
@@ -268,7 +268,7 @@
 }
 .filterBtn:hover {
   border-color: var(--border-bright);
-  color: var(--text-heading);
+  color: var(--neon-red);
 }
 
 .filterActive {
@@ -307,7 +307,7 @@
 }
 
 .section_entree .sectionTitle {
-  color: #c0392b;
+  color: #2a2420;
 }
 
 .section_entree .sectionTitle::after {

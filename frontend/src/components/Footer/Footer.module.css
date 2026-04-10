@@ -144,6 +144,22 @@
   color: #888;
 }
 
+.madeBy {
+  font-size: 11px;
+  color: #888;
+}
+
+.madeByLink {
+  color: #888;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 0.15s;
+}
+
+.madeByLink:hover {
+  color: #c0392b;
+}
+
 @media (max-width: 600px) {
   .footer {
     padding: 40px 20px 28px;

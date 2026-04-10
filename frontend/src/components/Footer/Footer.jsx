@@ -1,3 +1,4 @@
+import { MapPin, Clock, Mail } from "lucide-react";
 import styles from "./Footer.module.css";
 
 function Footer() {
@@ -13,15 +14,15 @@ function Footer() {
         <div className={styles.infos}>
           <div className={styles.infosTitle}>Informations</div>
           <div className={styles.infoItem}>
-            <span className={styles.infoIcon}>📍</span>
+            <MapPin size={15} className={styles.infoIcon} />
             Livraison uniquement à Saint-Genis-Pouilly (01630)
           </div>
           <div className={styles.infoItem}>
-            <span className={styles.infoIcon}>🕐</span>
+            <Clock size={15} className={styles.infoIcon} />
             Lun – Ven : 11h00 – 15h00
           </div>
           <div className={styles.infoItem}>
-            <span className={styles.infoIcon}>✉️</span>
+            <Mail size={15} className={styles.infoIcon} />
             contact@kekosan.com
           </div>
         </div>
@@ -63,6 +64,12 @@ function Footer() {
       <div className={styles.bottom}>
         <span className={styles.legal}>© {new Date().getFullYear()} Kekosan — Tous droits réservés</span>
         <span className={styles.madeWith}>Fait avec ❤️ à Saint-Genis-Pouilly</span>
+        <span className={styles.madeBy}>
+          Site réalisé par{" "}
+          <a href="https://supaco-digital.com/" target="_blank" rel="noopener noreferrer" className={styles.madeByLink}>
+            SupacoDigital
+          </a>
+        </span>
       </div>
     </footer>
   );

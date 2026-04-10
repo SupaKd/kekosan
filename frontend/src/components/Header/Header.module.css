@@ -5,40 +5,38 @@
   right: 0;
   z-index: 10;
   height: 64px;
-  padding: 0 32px;
-  display: flex;
+  padding: 0 24px;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: space-between;
-  background: #1a1a1a;
+  background: #000;
   border-bottom: 2px solid #ffd60a;
 }
 
-.logo {
-  height: 48px;
-  width: auto;
-  object-fit: contain;
+/* ── Gauche ── */
+.left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
-.zoneBadge {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  color: #f5f0e8;
+.infoBadge,
+.hoursBadge {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 5px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+}
+
+.infoBadge {
+  color: #f5f0e8;
 }
 
 .hoursBadge {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
   color: #888;
-  display: flex;
-  align-items: center;
-  gap: 7px;
 }
 
 .dot {
@@ -51,24 +49,73 @@
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
 }
 
+/* ── Centre : logo ── */
+.logoWrap {
+  background: #000;
+  border-radius: 6px;
+  padding: 4px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logo {
+  height: 42px;
+  width: auto;
+  object-fit: contain;
+}
+
+/* ── Droite : réseaux ── */
+.right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 14px;
+}
+
+.socialLink {
+  color: #888;
+  display: flex;
+  align-items: center;
+  transition: color 0.2s;
+}
+
+.socialLink:hover {
+  color: #ffd60a;
+}
+
+/* ── Mobile ── */
 @media (max-width: 480px) {
   .header {
-    height: 52px;
-    padding: 0 16px;
+    height: 56px;
+    padding: 0 14px;
   }
 
   .logo {
-    height: 36px;
+    height: 32px;
   }
 
-  .zoneBadge,
+  .logoWrap {
+    padding: 3px 8px;
+  }
+
+  .infoBadge,
   .hoursBadge {
-    font-size: 9px;
-    letter-spacing: 1px;
-    gap: 6px;
+    font-size: 8.5px;
+    letter-spacing: 0.8px;
+    gap: 4px;
+  }
+
+  .right {
+    gap: 10px;
   }
 }
