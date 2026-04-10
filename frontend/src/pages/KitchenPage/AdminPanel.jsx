@@ -116,6 +116,7 @@ function ProductModal({ product, categories, onClose, onSaved }) {
     description: product?.description || '',
     price: product?.price != null ? String(product.price) : '',
     sort_order: product?.sort_order != null ? String(product.sort_order) : '0',
+    formula_quantity: product?.formula_quantity != null ? String(product.formula_quantity) : '',
   })
   const [imageUrl, setImageUrl] = useState(product?.image_url || null)
   const [imageUploading, setImageUploading] = useState(false)
@@ -161,6 +162,7 @@ function ProductModal({ product, categories, onClose, onSaved }) {
         price: parseFloat(form.price),
         sort_order: parseInt(form.sort_order) || 0,
         available: true,
+        formula_quantity: form.formula_quantity ? parseInt(form.formula_quantity) : null,
       }
       if (isEdit) await updateProduct(product.id, body)
       else await createProduct(body)
@@ -204,6 +206,20 @@ function ProductModal({ product, categories, onClose, onSaved }) {
             <label className={styles.label}>Ordre d'affichage</label>
             <input className={styles.input} type="number" min="0" value={form.sort_order} onChange={e => setForm(f => ({ ...f, sort_order: e.target.value }))} />
           </div>
+        </div>
+
+        <div className={styles.field}>
+          <label className={styles.label}>
+            Quantité en formule <span style={{ color: 'var(--text-muted)' }}>(optionnel — ex: 2 pour les nems)</span>
+          </label>
+          <input
+            className={styles.input}
+            type="number"
+            min="1"
+            value={form.formula_quantity}
+            onChange={e => setForm(f => ({ ...f, formula_quantity: e.target.value }))}
+            placeholder="Vide = pas de quantité affichée"
+          />
         </div>
 
         <div className={styles.field}>

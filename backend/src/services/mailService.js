@@ -63,7 +63,7 @@ const sendOrderConfirmation = async (order) => {
           <tr>
             <td align="center" style="padding:40px 0 32px">
               <div style="font-size:32px;font-weight:900;letter-spacing:4px;color:#ffffff;text-transform:uppercase;line-height:1">KEKOSAN</div>
-              <div style="font-size:11px;letter-spacing:6px;color:#555;margin-top:6px;text-transform:uppercase">Dark Kitchen · Saint-Genis-Pouilly</div>
+              <div style="font-size:11px;letter-spacing:6px;color:#555;margin-top:6px;text-transform:uppercase">Saint-Genis-Pouilly</div>
             </td>
           </tr>
 

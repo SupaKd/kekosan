@@ -25,6 +25,13 @@ function FormulaModal({ formula, catalog, onClose, onAdd }) {
 
   const allSlotsFilled = formula.slots.every(s => slotChoices[s.slot_name])
 
+  // Supplément total basé sur les choix actuels
+  const supplementTotal = Object.values(slotChoices).reduce(
+    (sum, p) => sum + (parseFloat(p.price_supplement) || 0),
+    0
+  )
+  const totalPrice = (parseFloat(formula.price) + supplementTotal) * quantity
+
   const selectSlotProduct = (slotName, product) => {
     setSlotChoices(prev => ({ ...prev, [slotName]: product }))
   }
@@ -35,7 +42,7 @@ function FormulaModal({ formula, catalog, onClose, onAdd }) {
       type: 'formula',
       formula_id: formula.id,
       name: formula.name,
-      price: parseFloat(formula.price),
+      price: parseFloat(formula.price) + supplementTotal,
       image_url: formula.image_url || null,
       slots: formula.slots.map(s => ({
         slot_name: s.slot_name,
@@ -54,7 +61,7 @@ function FormulaModal({ formula, catalog, onClose, onAdd }) {
           <div className={styles.headerTop}>
             <div className={styles.name}>{formula.name}</div>
             <div className={styles.headerRight}>
-              <div className={styles.price}>{formatPrice(formula.price * quantity)}</div>
+              <div className={styles.price}>{formatPrice(totalPrice)}</div>
               <button className={styles.closeBtn} onClick={onClose} aria-label="Fermer">✕</button>
             </div>
           </div>
@@ -89,7 +96,11 @@ function FormulaModal({ formula, catalog, onClose, onAdd }) {
                   <span className={styles.slotNumber}>{String(slotIndex + 1).padStart(2, '0')}</span>
                   <span className={styles.slotName}>{slot.slot_name}</span>
                   {chosen
-                    ? <span className={styles.slotChosen}>{chosen.name} ✓</span>
+                    ? <span className={styles.slotChosen}>
+                        {chosen.name}
+                        {chosen.formula_quantity > 1 && ` ×${chosen.formula_quantity}`}
+                        {' '}✓
+                      </span>
                     : <span className={styles.slotHint}>{groups.map(g => g.label).join(' ou ')}</span>
                   }
                 </div>
@@ -119,7 +130,15 @@ function FormulaModal({ formula, catalog, onClose, onAdd }) {
                               <div className={styles.productCardCheck}>✓</div>
                             )}
                           </div>
-                          <div className={styles.productCardName}>{product.name}</div>
+                          <div className={styles.productCardName}>
+                            {product.name}
+                            {product.formula_quantity > 1 && (
+                              <span className={styles.productCardQty}>×{product.formula_quantity}</span>
+                            )}
+                            {product.price_supplement > 0 && (
+                              <span className={styles.productCardSupplement}>+{formatPrice(product.price_supplement)}</span>
+                            )}
+                          </div>
                           <div className={styles.productCardRadio}>
                             {chosen?.id === product.id && <div className={styles.productCardRadioDot} />}
                           </div>
@@ -141,7 +160,7 @@ function FormulaModal({ formula, catalog, onClose, onAdd }) {
           </div>
           <button className={styles.addBtn} onClick={handleAdd} disabled={!allSlotsFilled}>
             {allSlotsFilled
-              ? `Ajouter · ${formatPrice(formula.price * quantity)}`
+              ? `Ajouter · ${formatPrice(totalPrice)}`
               : 'Complétez la formule'}
           </button>
         </div>

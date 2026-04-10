@@ -108,13 +108,17 @@ const resolveFormulaItems = async (rawFormulaItems) => {
         slot_name: rawSlot.slot_name,
         product_id: product.id,
         product_name_snapshot: product.name,
+        price_supplement_snapshot: parseFloat(product.price_supplement) || 0,
       });
     }
+
+    // Supplément total = somme des suppléments de chaque slot
+    const supplementTotal = resolvedSlots.reduce((sum, s) => sum + s.price_supplement_snapshot, 0);
 
     resolved.push({
       formula_id: formula.id,
       formula_name_snapshot: formula.name,
-      formula_price_snapshot: parseFloat(formula.price),
+      formula_price_snapshot: parseFloat(formula.price) + supplementTotal,
       quantity: raw.quantity,
       slots: resolvedSlots,
     });

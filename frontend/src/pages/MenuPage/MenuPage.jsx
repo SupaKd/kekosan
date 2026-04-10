@@ -41,7 +41,7 @@ const HERO_SLIDES = [
     id: null,
     label: "Notre histoire",
     accroche:
-      "Une dark kitchen née à Saint-Genis-Pouilly, avec du caractère et du piment.",
+      "Née à Saint-Genis-Pouilly, avec du caractère et du piment.",
     cta: "En savoir plus",
     image: "/about.png",
   },
@@ -144,7 +144,7 @@ function MenuPage({ cart, onCheckout }) {
         {/* Contenu du slide actif */}
         <div className={styles.heroContent} key={heroIndex}>
           <div className={styles.heroEyebrow}>
-            Dark Kitchen · Saint-Genis-Pouilly
+            Saint-Genis-Pouilly
           </div>
           <div className={styles.heroLabel}>{HERO_SLIDES[heroIndex].label}</div>
           <div className={styles.heroDivider} />

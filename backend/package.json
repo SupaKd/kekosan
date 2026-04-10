@@ -1,7 +1,7 @@
 {
   "name": "kekosan-backend",
   "version": "1.0.0",
-  "description": "Backend API - Kekosan Banh Mi Dark Kitchen",
+  "description": "Backend API - Kekosan Banh Mi",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

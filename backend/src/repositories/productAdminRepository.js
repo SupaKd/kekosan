@@ -4,7 +4,7 @@ const pool = require('../config/db');
 
 const findAll = async () => {
   const [products] = await pool.query(
-    `SELECT id, category, name, description, image_url, price, available, sort_order
+    `SELECT id, category, name, description, image_url, price, available, sort_order, formula_quantity
      FROM products ORDER BY category, sort_order, name`
   );
   if (products.length === 0) return [];
@@ -27,20 +27,20 @@ const findAll = async () => {
   }));
 };
 
-const create = async ({ category, name, description, price, available = 1, sort_order = 0 }) => {
+const create = async ({ category, name, description, price, available = 1, sort_order = 0, formula_quantity = null }) => {
   const [result] = await pool.query(
-    `INSERT INTO products (category, name, description, price, available, sort_order)
-     VALUES (?, ?, ?, ?, ?, ?)`,
-    [category, name, description || null, price, available, sort_order]
+    `INSERT INTO products (category, name, description, price, available, sort_order, formula_quantity)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    [category, name, description || null, price, available, sort_order, formula_quantity || null]
   );
   return result.insertId;
 };
 
-const update = async (id, { category, name, description, price, available, sort_order }) => {
+const update = async (id, { category, name, description, price, available, sort_order, formula_quantity }) => {
   await pool.query(
     `UPDATE products SET category = ?, name = ?, description = ?, price = ?,
-     available = ?, sort_order = ? WHERE id = ?`,
-    [category, name, description || null, price, available, sort_order, id]
+     available = ?, sort_order = ?, formula_quantity = ? WHERE id = ?`,
+    [category, name, description || null, price, available, sort_order, formula_quantity || null, id]
   );
 };
 

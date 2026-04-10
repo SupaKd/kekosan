@@ -1,40 +1,32 @@
-import styles from './Marquee.module.css'
+import styles from "./Marquee.module.css";
 
 const ROW1 = [
-  { text: 'Bánh Mì Artisanal', icon: '🥖' },
-  { text: 'Dark Kitchen', icon: '🍳' },
-  { text: 'Fait Maison', icon: '👨‍🍳' },
-  { text: 'Commande en Ligne', icon: '📱' },
-  { text: 'Frais du Jour', icon: '🌿' },
-  { text: 'Livraison Rapide', icon: '⚡' },
-  { text: 'Saveurs Authentiques', icon: '🌶️' },
-]
+  { text: "Bánh Mì Artisanal", icon: "🥖" },
+  { text: "Cuisine Artisanale", icon: "🍳" },
+  { text: "Fait Maison", icon: "👨‍🍳" },
+  { text: "Commande en Ligne", icon: "📱" },
+  { text: "Frais du Jour", icon: "🌿" },
+  { text: "Livraison Rapide", icon: "⚡" },
+  { text: "Saveurs Authentiques", icon: "🌶️" },
+];
 
 const ROW2 = [
-  { text: 'Bánh Mì Kekosan', icon: '✦' },
-  { text: 'Saint-Genis-Pouilly', icon: '📍' },
-  { text: 'Fait avec Amour', icon: '❤️' },
-  { text: 'Qualité Artisanale', icon: '✨' },
-  { text: 'Recette Maison', icon: '📜' },
-  { text: 'Toujours Frais', icon: '🥬' },
-  { text: 'Commandez Maintenant', icon: '🛒' },
-]
-
-const ROW3 = [
-  { text: 'Livré chez Vous', icon: '🛵' },
-  { text: 'Baguette Croustillante', icon: '🥖' },
-  { text: 'Coriandre & Piment', icon: '🌶️' },
-  { text: 'Daikon Mariné', icon: '🥕' },
-  { text: 'Sauce Maison', icon: '🫙' },
-  { text: 'Zero Additif', icon: '🌿' },
-  { text: 'Préparé le Matin', icon: '🌅' },
-]
+  { text: "Bánh Mì Kekosan", icon: "✦" },
+  { text: "Saint-Genis-Pouilly", icon: "📍" },
+  { text: "Fait avec Amour", icon: "❤️" },
+  { text: "Qualité Artisanale", icon: "✨" },
+  { text: "Recette Maison", icon: "📜" },
+  { text: "Toujours Frais", icon: "🥬" },
+  { text: "Commandez Maintenant", icon: "🛒" },
+];
 
 function MarqueeRow({ items, variant, reverse, speed }) {
-  const doubled = [...items, ...items]
+  const doubled = [...items, ...items];
   return (
     <div
-      className={`${styles.track} ${styles[variant]} ${reverse ? styles.reverse : ''}`}
+      className={`${styles.track} ${styles[variant]} ${
+        reverse ? styles.reverse : ""
+      }`}
       style={{ animationDuration: `${speed}s` }}
     >
       {doubled.map((item, i) => (
@@ -44,7 +36,7 @@ function MarqueeRow({ items, variant, reverse, speed }) {
         </span>
       ))}
     </div>
-  )
+  );
 }
 
 function Marquee() {
@@ -53,10 +45,9 @@ function Marquee() {
       <div className={styles.scene}>
         <MarqueeRow items={ROW1} variant="top" speed={55} />
         <MarqueeRow items={ROW2} variant="center" reverse speed={80} />
-        <MarqueeRow items={ROW3} variant="bottom" speed={45} reverse />
       </div>
     </div>
-  )
+  );
 }
 
-export default Marquee
+export default Marquee;

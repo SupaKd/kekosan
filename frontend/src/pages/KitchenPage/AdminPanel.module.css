@@ -418,6 +418,26 @@
   margin-right: 2px;
 }
 
+.slotQtyRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.slotQtyInput {
+  width: 56px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-size: 13px;
+  padding: 4px 8px;
+  text-align: center;
+  outline: none;
+}
+.slotQtyInput:focus { border-color: var(--neon-cyan) }
+
 .slotMultiHint {
   font-size: 11px;
   color: var(--neon-cyan);

@@ -69,7 +69,7 @@ function TrackingPage() {
       <div className={styles.card}>
         <div className={styles.header}>
           <div className={styles.logo}>Kekosan</div>
-          <div className={styles.logoJp}>DARK KITCHEN · SUIVI DE COMMANDE</div>
+          <div className={styles.logoJp}>SUIVI DE COMMANDE</div>
         </div>
 
         {/* Stepper */}

@@ -149,6 +149,15 @@
   color: var(--text-heading);
 }
 
+.slotQty {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--neon-cyan);
+  background: rgba(0, 255, 213, 0.1);
+  border-radius: 4px;
+  padding: 1px 5px;
+}
+
 .slotChosen {
   font-size: 12px;
   color: var(--neon-cyan);
@@ -272,6 +281,28 @@
 
 .productCard.selected .productCardName {
   color: var(--neon-cyan);
+}
+
+.productCardQty {
+  display: inline-block;
+  margin-left: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--neon-cyan);
+  background: rgba(0, 255, 213, 0.1);
+  border-radius: 4px;
+  padding: 1px 4px;
+}
+
+.productCardSupplement {
+  display: inline-block;
+  margin-left: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--neon-pink, #ff2d55);
+  background: rgba(255, 45, 85, 0.12);
+  border-radius: 4px;
+  padding: 1px 4px;
 }
 
 .productCardRadio {

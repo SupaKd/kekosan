@@ -8,7 +8,7 @@ function Footer() {
 
         <div className={styles.brand}>
           <div className={styles.brandName}>Keko<span>san</span></div>
-          <div className={styles.brandTagline}>Dark Kitchen · Saint-Genis-Pouilly</div>
+          <div className={styles.brandTagline}>Saint-Genis-Pouilly</div>
         </div>
 
         <div className={styles.infos}>

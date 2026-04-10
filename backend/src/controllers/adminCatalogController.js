@@ -91,24 +91,24 @@ const getProducts = async (req, res, next) => {
 
 const createProduct = async (req, res, next) => {
   try {
-    const { category, name, description, price, available, sort_order } = req.body;
+    const { category, name, description, price, available, sort_order, formula_quantity } = req.body;
     if (!name?.trim()) return res.status(400).json({ error: 'Nom requis' });
     if (isNaN(parseFloat(price))) return res.status(400).json({ error: 'Prix invalide' });
     const categories = await categoryRepository.findAll();
     if (!categories.find(c => c.slug === category)) return res.status(400).json({ error: 'Catégorie invalide' });
-    const id = await productAdminRepository.create({ category, name: name.trim(), description, price: parseFloat(price), available: available !== false ? 1 : 0, sort_order: sort_order || 0 });
+    const id = await productAdminRepository.create({ category, name: name.trim(), description, price: parseFloat(price), available: available !== false ? 1 : 0, sort_order: sort_order || 0, formula_quantity: formula_quantity || null });
     res.status(201).json({ id });
   } catch (err) { next(err); }
 };
 
 const updateProduct = async (req, res, next) => {
   try {
-    const { category, name, description, price, available, sort_order } = req.body;
+    const { category, name, description, price, available, sort_order, formula_quantity } = req.body;
     if (!name?.trim()) return res.status(400).json({ error: 'Nom requis' });
     if (isNaN(parseFloat(price))) return res.status(400).json({ error: 'Prix invalide' });
     const categories = await categoryRepository.findAll();
     if (!categories.find(c => c.slug === category)) return res.status(400).json({ error: 'Catégorie invalide' });
-    await productAdminRepository.update(parseInt(req.params.id), { category, name: name.trim(), description, price: parseFloat(price), available: available ? 1 : 0, sort_order: sort_order || 0 });
+    await productAdminRepository.update(parseInt(req.params.id), { category, name: name.trim(), description, price: parseFloat(price), available: available ? 1 : 0, sort_order: sort_order || 0, formula_quantity: formula_quantity || null });
     res.json({ success: true });
   } catch (err) { next(err); }
 };

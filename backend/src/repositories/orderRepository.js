@@ -85,9 +85,9 @@ const createOrder = async (orderData) => {
       for (const slot of fi.slots) {
         await conn.query(
           `INSERT INTO order_formula_slots
-            (order_formula_item_id, slot_name, product_id, product_name_snapshot)
-           VALUES (?, ?, ?, ?)`,
-          [orderFormulaItemId, slot.slot_name, slot.product_id, slot.product_name_snapshot]
+            (order_formula_item_id, slot_name, product_id, product_name_snapshot, price_supplement_snapshot)
+           VALUES (?, ?, ?, ?, ?)`,
+          [orderFormulaItemId, slot.slot_name, slot.product_id, slot.product_name_snapshot, slot.price_supplement_snapshot || 0]
         );
       }
     }
