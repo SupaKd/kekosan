@@ -11,7 +11,7 @@
 .errorMsg {
   text-align: center;
   padding: 48px;
-  color: var(--text-muted);
+  color: #c8c8d8;
   font-size: 14px;
 }
 .errorMsg { color: var(--danger) }
@@ -29,8 +29,8 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  border: 1px solid var(--border);
-  background: var(--bg-elevated);
+  border: 1px solid rgba(255,255,255,0.15);
+  background: #1a1a24;
   position: relative;
   overflow: hidden;
 }
@@ -51,25 +51,25 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--text-muted);
+  color: #c0c0d8;
 }
 
 .statRevenue {
   font-size: 28px;
   font-weight: 800;
-  color: var(--text-heading);
+  color: #ffffff;
   line-height: 1;
 }
 
 .statCount {
   font-size: 13px;
-  color: var(--text-muted);
+  color: #c0c0d8;
 }
 
 /* ── Section ── */
 .section {
-  background: var(--bg-elevated);
-  border: 1px solid var(--border);
+  background: #13131a;
+  border: 1px solid rgba(255,255,255,0.15);
   border-radius: var(--radius-lg);
   overflow: hidden;
 }
@@ -79,20 +79,20 @@
   align-items: center;
   justify-content: space-between;
   padding: 14px 20px;
-  border-bottom: 1px solid var(--border);
-  background: var(--bg-card);
+  border-bottom: 1px solid rgba(255,255,255,0.12);
+  background: #0d0d14;
 }
 
 .sectionTitle {
   font-size: 14px;
   font-weight: 700;
-  color: var(--text-heading);
+  color: #ffffff;
 }
 
 .refreshBtn {
-  background: transparent;
-  border: 1px solid var(--border);
-  color: var(--text-muted);
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: #d0d0e0;
   border-radius: var(--radius-sm);
   padding: 4px 10px;
   font-size: 12px;
@@ -113,30 +113,31 @@
   grid-template-columns: 48px 1fr auto auto auto;
   align-items: center;
   gap: 12px;
-  padding: 11px 20px;
-  border-bottom: 1px solid var(--border);
+  padding: 12px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
   font-size: 13px;
   transition: background 0.1s;
 }
+.orderRow:nth-child(even) { background: rgba(255,255,255,0.025) }
 .orderRow:last-child { border-bottom: none }
-.orderRow:hover { background: rgba(255,255,255,0.02) }
+.orderRow:hover { background: rgba(255,255,255,0.06) }
 
 .orderRowClickable {
   cursor: pointer;
 }
 .orderRowClickable:hover {
-  background: rgba(0, 212, 255, 0.04);
+  background: rgba(255,214,10,0.05);
 }
 
 .orderId {
   font-weight: 700;
-  color: var(--text-muted);
+  color: #ffd60a;
   font-size: 12px;
 }
 
 .orderName {
   font-weight: 600;
-  color: var(--text-heading);
+  color: #f0f0f8;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -150,43 +151,65 @@
 
 .orderDate {
   font-size: 11px;
-  color: var(--text-muted);
+  color: #c0c0d8;
   white-space: nowrap;
 }
 
-/* Badges statut */
+/* ── Badges statut ── */
 .statusBadge {
-  font-size: 11px;
-  font-weight: 600;
-  padding: 2px 8px;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 3px 9px;
   border-radius: 10px;
   white-space: nowrap;
 }
 
-.pending    { background: rgba(255,200,0,0.12);  color: #ffc800; border: 1px solid rgba(255,200,0,0.2) }
-.confirmed  { background: rgba(0,212,255,0.1);   color: var(--neon-cyan); border: 1px solid rgba(0,212,255,0.2) }
-.preparing  { background: rgba(255,159,10,0.12); color: #ff9f0a; border: 1px solid rgba(255,159,10,0.2) }
-.delivering { background: rgba(94,92,230,0.12);  color: #5e5ce6; border: 1px solid rgba(94,92,230,0.2) }
-.delivered  { background: rgba(48,209,88,0.12);  color: var(--success); border: 1px solid rgba(48,209,88,0.2) }
-.cancelled  { background: rgba(255,69,58,0.1);   color: var(--danger); border: 1px solid rgba(255,69,58,0.2) }
+.pending    { background: rgba(255,200,0,0.18);  color: #ffd60a;  border: 1px solid rgba(255,200,0,0.35) }
+.confirmed  { background: rgba(255,214,10,0.12); color: #ffd60a;  border: 1px solid rgba(255,214,10,0.3) }
+.preparing  { background: rgba(255,159,10,0.18); color: #ff9f0a;  border: 1px solid rgba(255,159,10,0.35) }
+.delivering { background: rgba(130,120,255,0.18);color: #a89fff;  border: 1px solid rgba(130,120,255,0.35) }
+.delivered  { background: rgba(48,209,88,0.18);  color: #30d158;  border: 1px solid rgba(48,209,88,0.35) }
+.cancelled  { background: rgba(255,69,58,0.15);  color: #ff6b61;  border: 1px solid rgba(255,69,58,0.3) }
 
 .empty {
   padding: 32px;
   text-align: center;
-  color: var(--text-muted);
+  color: #c0c0d8;
   font-size: 13px;
 }
 
-/* ── Responsive ── */
-@media (max-width: 600px) {
-  .statsGrid {
-    grid-template-columns: 1fr;
-  }
+/* ════════════════════════════════════════════
+   RESPONSIVE
+   ════════════════════════════════════════════ */
+
+/* ── Tablette (640px – 1024px) ── */
+@media (max-width: 1024px) {
+  .panel { padding: 16px; gap: 20px }
+
+  .statsGrid { grid-template-columns: repeat(3, 1fr); gap: 10px }
+
+  .statCard { padding: 18px 16px }
+  .statRevenue { font-size: 24px }
+
+  .orderRow { padding: 10px 14px; gap: 10px }
+}
+
+/* ── Mobile (< 640px) ── */
+@media (max-width: 640px) {
+  .panel { padding: 12px; gap: 16px }
+
+  .statsGrid { grid-template-columns: 1fr }
+
+  .statRevenue { font-size: 26px }
+
   .orderRow {
-    grid-template-columns: 40px 1fr auto;
+    grid-template-columns: 44px 1fr auto;
     grid-template-rows: auto auto;
+    gap: 6px 10px;
+    padding: 10px 12px;
   }
-  .orderDate { display: none }
-  .orderTotal { grid-column: 3 }
-  .statusBadge { grid-column: 2; justify-self: start }
+
+  .orderDate  { display: none }
+  .orderTotal { grid-column: 3; grid-row: 1 }
+  .statusBadge { grid-column: 2; justify-self: start; grid-row: 2 }
 }
