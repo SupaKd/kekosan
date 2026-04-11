@@ -17,6 +17,18 @@ import { formatPrice } from '../../utils/formatting'
 const formatDate = (d) =>
   new Date(d).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Paris' })
 
+// Calcule la fourchette de livraison estimée à partir du créneau (ex: "12:30" → "12:30 – 13:00")
+function getDeliveryWindow(deliveryTime) {
+  if (!deliveryTime) return null
+  const [h, m] = deliveryTime.split(':').map(Number)
+  const start = new Date(0)
+  start.setHours(h, m, 0, 0)
+  const end = new Date(start.getTime() + 30 * 60000)
+  const fmt = (d) =>
+    `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+  return `${fmt(start)} – ${fmt(end)}`
+}
+
 function TrackingPage() {
   const { token } = useParams()
   const navigate = useNavigate()
@@ -63,6 +75,7 @@ function TrackingPage() {
   }
 
   const currentStepIndex = STATUS_STEPS.findIndex(s => s.key === order.status)
+  const deliveryWindow = getDeliveryWindow(order.delivery_time)
 
   return (
     <div className={styles.page}>
@@ -86,6 +99,11 @@ function TrackingPage() {
                 <div className={styles.stepContent}>
                   <div className={styles.stepLabel}>{step.label}</div>
                   {isCurrent && <div className={styles.stepDesc}>{step.desc}</div>}
+                  {isCurrent && step.key === 'delivering' && deliveryWindow && (
+                    <div className={styles.estimatedTime}>
+                      🕐 Livraison estimée entre {deliveryWindow}
+                    </div>
+                  )}
                 </div>
               </div>
             )

@@ -26,9 +26,11 @@ function PaymentForm({
 }) {
   const stripe = useStripe();
   const elements = useElements();
+  const [submitted, setSubmitted] = useState(false);
 
   const handlePay = async () => {
-    if (!stripe || !elements) return;
+    if (!stripe || !elements || submitted) return;
+    setSubmitted(true);
     setLoading(true);
     onError(null);
 
@@ -40,6 +42,7 @@ function PaymentForm({
     if (error) {
       onError(error.message);
       setLoading(false);
+      setSubmitted(false);
     } else {
       onSuccess();
     }
@@ -52,7 +55,7 @@ function PaymentForm({
         <button
           className={styles.payBtn}
           onClick={handlePay}
-          disabled={!stripe || loading}
+          disabled={!stripe || loading || submitted}
         >
           {loading ? "Traitement…" : `Payer`}
         </button>
@@ -74,6 +77,7 @@ function CheckoutModal({ cart, onClose }) {
   const [appliedPromo, setAppliedPromo] = useState(null); // { promo_code, discount_amount }
   const [promoError, setPromoError] = useState(null);
   const [promoLoading, setPromoLoading] = useState(false);
+  const [promoFlash, setPromoFlash] = useState(false);
 
   const discountAmount = appliedPromo?.discount_amount || 0;
   const subtotalAfterDiscount = Math.max(0, total - discountAmount);
@@ -122,6 +126,9 @@ function CheckoutModal({ cart, onClose }) {
       const result = await applyPromo(promoInput.trim().toUpperCase(), total);
       setAppliedPromo(result);
       setPromoInput("");
+      // Flash d'animation pour confirmer visuellement l'application
+      setPromoFlash(true);
+      setTimeout(() => setPromoFlash(false), 500);
     } catch (err) {
       setPromoError(err.response?.data?.error || "Code promo invalide");
     } finally {
@@ -267,7 +274,7 @@ function CheckoutModal({ cart, onClose }) {
         )}
 
         {/* ── Étape 1 : Formulaire client ── */}
-        {step === "form" && (
+        {step === "form" && !loading && (
           <>
             <div className={styles.body}>
               {/* Récap */}
@@ -493,7 +500,7 @@ function CheckoutModal({ cart, onClose }) {
                         </button>
                       </div>
                     ) : (
-                      <div className={styles.promoApplied}>
+                      <div className={`${styles.promoApplied}${promoFlash ? ` ${styles.promoFlash}` : ''}`}>
                         <span className={styles.promoAppliedLabel}>
                           ✓ <strong>{appliedPromo.promo_code}</strong> — −{" "}
                           {formatPrice(discountAmount)}
@@ -552,6 +559,17 @@ function CheckoutModal({ cart, onClose }) {
               </p>
             </div>
           </>
+        )}
+
+        {/* ── Skeleton : transition form → payment ── */}
+        {step === "form" && loading && (
+          <div className={styles.skeletonPayment}>
+            <div className={styles.skeletonPaymentRow} />
+            <div className={styles.skeletonPaymentRowShort} />
+            <div className={styles.skeletonPaymentCard} />
+            <div className={styles.skeletonPaymentCard} />
+            <div className={styles.skeletonPaymentBtn} />
+          </div>
         )}
 
         {/* ── Étape 2 : Paiement Stripe ── */}

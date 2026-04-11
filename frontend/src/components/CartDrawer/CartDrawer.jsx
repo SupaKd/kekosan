@@ -1,7 +1,28 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import styles from "./CartDrawer.module.css";
 import { API_BASE } from '../../config/api'
 import { formatPrice } from '../../utils/formatting'
+
+// Retourne jusqu'à `max` produits non présents dans le panier
+// Priorité : banhmi > entree > dessert > boisson
+function getSuggestions(catalog, cartItems, max = 3) {
+  if (!catalog || Object.keys(catalog).length === 0) return []
+  const cartProductIds = new Set(
+    cartItems.filter(i => i.type === 'product').map(i => i.product_id)
+  )
+  const PRIORITY = ['banhmi', 'entree', 'dessert', 'boisson']
+  const suggestions = []
+  for (const cat of PRIORITY) {
+    if (!catalog[cat]) continue
+    for (const p of catalog[cat]) {
+      if (!cartProductIds.has(p.id)) {
+        suggestions.push(p)
+        if (suggestions.length >= max) return suggestions
+      }
+    }
+  }
+  return suggestions
+}
 
 const FREE_DELIVERY_THRESHOLD = 20;
 const DELIVERY_FEE = 5;
@@ -73,9 +94,19 @@ function CartItem({ item, onUpdateQty, onRemove }) {
   );
 }
 
-function CartDrawer({ cart, onCheckout }) {
+function CartDrawer({ cart, onCheckout, catalog = {} }) {
   const [open, setOpen] = useState(false);
   const { items, updateQuantity, removeItem, total, count } = cart;
+  const itemsRef = useRef(null);
+
+  // Scroll en haut de la liste à chaque ouverture
+  useEffect(() => {
+    if (open && itemsRef.current) {
+      itemsRef.current.scrollTop = 0;
+    }
+  }, [open]);
+
+  const suggestions = getSuggestions(catalog, items);
 
   const deliveryFee = total >= FREE_DELIVERY_THRESHOLD ? 0 : DELIVERY_FEE;
   const totalWithDelivery = total + deliveryFee;
@@ -110,7 +141,7 @@ function CartDrawer({ cart, onCheckout }) {
               </button>
             </div>
 
-            <div className={styles.items}>
+            <div className={styles.items} ref={itemsRef}>
               {items.length === 0 ? (
                 <div className={styles.emptyState}>
                   <div className={styles.emptyIcon}>🥡</div>
@@ -127,6 +158,44 @@ function CartDrawer({ cart, onCheckout }) {
                 ))
               )}
             </div>
+
+            {/* Suggestions — ajout direct au panier sans ouvrir la modale */}
+            {suggestions.length > 0 && (
+              <div className={styles.suggestions}>
+                <div className={styles.suggestionsTitle}>Tu pourrais aussi aimer</div>
+                <div className={styles.suggestionsList}>
+                  {suggestions.map((p) => (
+                    <button
+                      key={p.id}
+                      className={styles.suggestionItem}
+                      onClick={() => cart.addItem({
+                        type: 'product',
+                        product_id: p.id,
+                        name: p.name,
+                        price: p.price,
+                        image_url: p.image_url || null,
+                        options: [],
+                      })}
+                    >
+                      {p.image_url && (
+                        <img
+                          src={`${API_BASE}${p.image_url}`}
+                          alt={p.name}
+                          className={styles.suggestionImg}
+                          loading="lazy"
+                          decoding="async"
+                        />
+                      )}
+                      <div className={styles.suggestionBody}>
+                        <span className={styles.suggestionName}>{p.name}</span>
+                        <span className={styles.suggestionPrice}>{formatPrice(p.price)}</span>
+                      </div>
+                      <span className={styles.suggestionAdd}>+</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div className={styles.drawerFooter}>
               <div className={styles.footerTop}>

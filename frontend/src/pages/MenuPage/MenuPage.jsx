@@ -14,6 +14,8 @@ import styles from "./MenuPage.module.css";
 
 import { API_BASE } from "../../config/api";
 import { formatPrice } from "../../utils/formatting";
+import { getServiceStatus } from "../../api/admin";
+import { getAvailableSlots } from "../../utils/deliverySlots";
 
 const CATEGORY_LABELS = {
   entree: "Entrées",
@@ -57,6 +59,16 @@ function MenuPage({ cart, onCheckout }) {
   const timerRef = useRef(null);
   const touchStartX = useRef(null);
 
+  // État service ouvert/fermé pour la bannière
+  const [serviceOpen, setServiceOpen] = useState(true);
+  useEffect(() => {
+    getServiceStatus()
+      .then((d) => setServiceOpen(d.service_open))
+      .catch(() => {});
+  }, []);
+  const { available: slotsAvailable, message: closedMessage } = getAvailableSlots();
+  const isClosed = !serviceOpen || !slotsAvailable;
+
   const goTo = (index) => {
     setHeroIndex((index + HERO_SLIDES.length) % HERO_SLIDES.length);
   };
@@ -95,12 +107,39 @@ function MenuPage({ cart, onCheckout }) {
   };
 
   if (loading) {
+    const SKELETON_CARDS = 4;
     return (
       <div className={styles.page}>
-        <div className={styles.loading}>
-          <div className={styles.spinner} />
-          <span>Chargement du menu…</span>
+        {/* Hero skeleton */}
+        <div className={styles.skeletonHero}>
+          <div className={styles.skeletonHeroTitle} />
+          <div className={styles.skeletonHeroSub} />
+          <div className={styles.skeletonHeroBtn} />
         </div>
+        {/* Filtres skeleton */}
+        <div className={styles.skeletonFilterBar}>
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className={styles.skeletonFilterItem} />
+          ))}
+        </div>
+        {/* Section produits skeleton */}
+        {Array.from({ length: 2 }).map((_, si) => (
+          <div key={si} className={styles.skeletonSection}>
+            <div className={styles.skeletonSectionTitle} />
+            <div className={styles.skeletonGrid}>
+              {Array.from({ length: SKELETON_CARDS }).map((_, ci) => (
+                <div key={ci} className={styles.skeletonCard}>
+                  <div className={styles.skeletonCardImg} />
+                  <div className={styles.skeletonCardBody}>
+                    <div className={styles.skeletonCardName} />
+                    <div className={styles.skeletonCardDesc} />
+                    <div className={styles.skeletonCardPrice} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
       </div>
     );
   }
@@ -117,6 +156,19 @@ function MenuPage({ cart, onCheckout }) {
     <div className={styles.page}>
       {/* Hero slider */}
       <PromoBanner />
+
+      {/* Bannière service fermé */}
+      {isClosed && (
+        <div className={styles.closedBanner}>
+          <span className={styles.closedBannerIcon}>🕐</span>
+          <span>
+            {!serviceOpen
+              ? "Le service est momentanément fermé. Revenez bientôt !"
+              : closedMessage}
+          </span>
+        </div>
+      )}
+
       <div
         className={styles.hero}
         onTouchStart={handleTouchStart}
@@ -131,11 +183,20 @@ function MenuPage({ cart, onCheckout }) {
         >
           {HERO_SLIDES.map((slide) => (
             <div key={slide.id} className={styles.heroSlide}>
-              <img
-                src={slide.image}
-                alt={slide.label}
-                className={styles.heroSlideImg}
-              />
+              <picture>
+                <source
+                  srcSet={slide.image.replace('.png', '.webp')}
+                  type="image/webp"
+                />
+                <img
+                  src={slide.image}
+                  alt={slide.label}
+                  className={styles.heroSlideImg}
+                  loading="eager"
+                  decoding="async"
+                  fetchPriority="high"
+                />
+              </picture>
               <div className={styles.heroSlideOverlay} />
             </div>
           ))}
@@ -342,7 +403,11 @@ function MenuPage({ cart, onCheckout }) {
       <Footer />
 
       {/* Panier flottant */}
-      <CartDrawer cart={cart} onCheckout={onCheckout} />
+      <CartDrawer
+        cart={cart}
+        onCheckout={onCheckout}
+        catalog={catalog}
+      />
     </div>
   );
 }

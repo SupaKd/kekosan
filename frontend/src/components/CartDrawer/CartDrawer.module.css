@@ -130,7 +130,8 @@
 .closeBtn:hover { color: var(--text-heading) }
 
 .items {
-  flex: 1;
+  flex: 1 1 0;
+  min-height: 0;
   overflow-y: auto;
   padding: 16px 24px;
   display: flex;
@@ -154,6 +155,7 @@
 }
 
 .item {
+  flex-shrink: 0;
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
@@ -253,8 +255,88 @@
 }
 .deleteBtn:hover { color: var(--danger) }
 
+/* Suggestions */
+.suggestions {
+  flex-shrink: 0;
+  border-top: 1px solid var(--border);
+  padding: 16px 20px;
+}
+
+.suggestionsTitle {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 10px;
+}
+
+.suggestionsList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.suggestionItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.suggestionItem:hover {
+  border-color: var(--neon-cyan);
+  background: rgba(255, 214, 10, 0.04);
+}
+
+.suggestionImg {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.suggestionBody {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.suggestionName {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-heading);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.suggestionPrice {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.suggestionAdd {
+  font-size: 20px;
+  font-weight: 300;
+  color: var(--neon-cyan);
+  line-height: 1;
+  flex-shrink: 0;
+}
+
 /* Footer avec total */
 .drawerFooter {
+  flex-shrink: 0;
   border-top: 1px solid var(--border);
   display: flex;
   flex-direction: column;
