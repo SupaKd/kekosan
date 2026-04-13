@@ -24,10 +24,18 @@ export default defineConfig({
     },
     rollupOptions: {
       output: {
-        manualChunks: {
-          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
-          'vendor-stripe': ['@stripe/react-stripe-js', '@stripe/stripe-js'],
-          'vendor-socket': ['socket.io-client'],
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (['react', 'react-dom', 'react-router-dom'].some(pkg => id.includes(`/node_modules/${pkg}/`))) {
+              return 'vendor-react';
+            }
+            if (['@stripe/react-stripe-js', '@stripe/stripe-js'].some(pkg => id.includes(`/node_modules/${pkg}/`))) {
+              return 'vendor-stripe';
+            }
+            if (id.includes('/node_modules/socket.io-client/')) {
+              return 'vendor-socket';
+            }
+          }
         },
       },
     },
