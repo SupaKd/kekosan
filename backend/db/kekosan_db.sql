@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : localhost:8889
--- Généré le : lun. 13 avr. 2026 à 12:24
+-- Généré le : lun. 13 avr. 2026 à 20:57
 -- Version du serveur : 8.0.40
 -- Version de PHP : 8.3.14
 
@@ -145,7 +145,12 @@ INSERT INTO `orders` (`id`, `tracking_token`, `customer_name`, `customer_phone`,
 (15, 'f8bbdf77-af30-4128-82d8-ce185466c4ae', 'supad', '0783052412', 'supaco.digital@gmail.com', '1 reef freg, Saint-Genis-Pouilly 01630', '11:00', 'delivered', 9.00, 5.00, NULL, 0.00, 14.00, 'paid', 'pi_3TKSCBIVAdbyXDlk2BRr5fK5', NULL, '2026-04-09 23:41:10', '2026-04-10 14:10:52'),
 (16, '9fe3904b-656d-4506-a74b-7a6471b729c8', 'supakd', '0783052412', 'supaco.digital@gmail.com', '1 rue de la prairie, Saint-Genis-Pouilly 01630', '11:30', 'delivered', 15.90, 5.00, NULL, 0.00, 20.90, 'paid', 'pi_3TKljtIVAdbyXDlk0POvvmEG', NULL, '2026-04-10 20:33:16', '2026-04-10 22:37:05'),
 (17, '1b759b4b-1185-48ec-b1b0-4d3611578b86', 'kevin', '0783052412', 'supaco.digital@gmail.com', '1 rue de la prairie, Saint-Genis-Pouilly 01630', '11:30', 'delivered', 24.80, 0.00, NULL, 0.00, 24.80, 'paid', 'pi_3TLWzRIVAdbyXDlk1DqG5v7D', NULL, '2026-04-12 23:00:28', '2026-04-12 23:54:52'),
-(18, 'd1d96b92-41bd-40b9-83e4-a927b4f10e63', 'supa', '0783052412', 'supaco.digital@gmail.com', '1 rue de la praire, Saint-Genis-Pouilly 01630', '11:15', 'cancelled', 24.80, 0.00, NULL, 0.00, 24.80, 'refunded', 'pi_3TLj9OIVAdbyXDlk1JhygVzN', NULL, '2026-04-13 11:59:34', '2026-04-13 12:00:31');
+(18, 'd1d96b92-41bd-40b9-83e4-a927b4f10e63', 'supa', '0783052412', 'supaco.digital@gmail.com', '1 rue de la praire, Saint-Genis-Pouilly 01630', '11:15', 'cancelled', 24.80, 0.00, NULL, 0.00, 24.80, 'refunded', 'pi_3TLj9OIVAdbyXDlk1JhygVzN', NULL, '2026-04-13 11:59:34', '2026-04-13 12:00:31'),
+(19, 'ccc36641-7bde-4623-8e05-5a2e1f2749b4', 'supa', '0783052412', 'supaco.digital@gmail.com', '1 rue p, Saint-Genis-Pouilly 01630', '11:00', 'cancelled', 21.90, 0.00, NULL, 0.00, 21.90, 'paid', 'pi_3TLkSpIVAdbyXDlk2fSvPMjJ', NULL, '2026-04-13 13:23:43', '2026-04-13 13:24:54'),
+(20, '9533befa-2164-49af-828b-824ac6fbd18d', 'dssd', '0783052412', 'supaco.digital@gmail.com', 'dsf, Saint-Genis-Pouilly 01630', '11:00', 'pending', 9.90, 5.00, NULL, 0.00, 14.90, 'pending', 'pi_3TLkbIIVAdbyXDlk1uvbBWmS', NULL, '2026-04-13 13:32:28', '2026-04-13 13:32:29'),
+(21, '4554f676-c613-4495-9071-59b6a7587de6', 'ok', '0783052412', 'supaco.digital@gmail.com', '1 rue dees, Saint-Genis-Pouilly 01630', '11:30', 'pending', 14.40, 5.00, NULL, 0.00, 19.40, 'pending', 'pi_3TLkfAIVAdbyXDlk2ZuFQ6Br', NULL, '2026-04-13 13:36:27', '2026-04-13 13:36:28'),
+(22, '19db2dfb-dd84-4543-b143-57780a05d07b', 'kevin', '0783052412', 'supaco.digital@gmail.com', '1 rue de la prairie, Saint-Genis-Pouilly 01630', '11:15', 'delivered', 11.90, 5.00, NULL, 0.00, 16.90, 'paid', 'pi_3TLkozIVAdbyXDlk2piv0n04', NULL, '2026-04-13 13:46:37', '2026-04-13 13:47:18'),
+(23, '3a527753-2b05-40b5-94a0-fc5fa7a8922a', 'suoakd', '0783052412', 'supaco.digital@gmail.com', '1 rue, Saint-Genis-Pouilly 01630', '11:00', 'pending', 29.80, 0.00, NULL, 0.00, 29.80, 'pending', 'pi_3TLrQPIVAdbyXDlk2lDhNYXC', NULL, '2026-04-13 20:49:41', '2026-04-13 20:49:41');
 
 -- --------------------------------------------------------
 
@@ -180,7 +185,11 @@ INSERT INTO `order_formula_items` (`id`, `order_id`, `formula_id`, `formula_name
 (11, 14, 6, 'Kekosan', 13.90, 1),
 (12, 16, 6, 'Kekosan', 15.90, 1),
 (13, 17, 6, 'Kekosan', 14.90, 1),
-(14, 18, 6, 'Kekosan', 14.90, 1);
+(14, 18, 6, 'Kekosan', 14.90, 1),
+(15, 19, 6, 'Kekosan', 14.90, 1),
+(16, 22, 5, 'Keko speed', 11.90, 1),
+(17, 23, 6, 'Kekosan', 14.90, 1),
+(18, 23, 6, 'Kekosan', 14.90, 1);
 
 -- --------------------------------------------------------
 
@@ -241,7 +250,18 @@ INSERT INTO `order_formula_slots` (`id`, `order_formula_item_id`, `slot_name`, `
 (37, 13, 'Boisson', 9, 'Coca-Cola', 0.00),
 (38, 14, 'Entrée', 3, 'Nems', 0.00),
 (39, 14, 'Bánh mì', 4, 'Bánh Mì Classique', 0.00),
-(40, 14, 'Boisson', 9, 'Coca-Cola', 0.00);
+(40, 14, 'Boisson', 9, 'Coca-Cola', 0.00),
+(41, 15, 'Bánh mì', 5, 'Bánh Mì Poulet', 0.00),
+(42, 15, 'Boisson', 9, 'Coca-Cola', 0.00),
+(43, 15, 'Entrée', 3, 'Nems', 0.00),
+(44, 16, 'Bánh mì', 5, 'Bánh Mì Poulet', 0.00),
+(45, 16, 'Boisson', 9, 'Coca-Cola', 0.00),
+(46, 17, 'Bánh mì', 6, 'Bánh Mì Végétarien', 0.00),
+(47, 17, 'Boisson', 9, 'Coca-Cola', 0.00),
+(48, 17, 'Entrée', 7, 'Perle de Coco', 0.00),
+(49, 18, 'Bánh mì', 6, 'Bánh Mì Végétarien', 0.00),
+(50, 18, 'Boisson', 9, 'Coca-Cola', 0.00),
+(51, 18, 'Entrée', 3, 'Nems', 0.00);
 
 -- --------------------------------------------------------
 
@@ -273,7 +293,12 @@ INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `product_name_snapsho
 (8, 8, 9, 'Coca-Cola', 2, 2.50),
 (9, 15, 5, 'Bánh Mì Poulet', 1, 9.00),
 (10, 17, 2, 'Pinces de crabes', 1, 9.90),
-(11, 18, 4, 'Bánh Mì Classique', 1, 9.90);
+(11, 18, 4, 'Bánh Mì Classique', 1, 9.90),
+(12, 19, 10, 'Café froid', 1, 3.50),
+(13, 19, 14, 'Red bull', 1, 3.50),
+(14, 20, 2, 'Pinces de crabes', 1, 9.90),
+(15, 21, 2, 'Pinces de crabes', 1, 9.90),
+(16, 21, 1, 'Soupe Miso', 1, 4.50);
 
 -- --------------------------------------------------------
 
@@ -320,7 +345,7 @@ INSERT INTO `products` (`id`, `category`, `name`, `description`, `badge`, `aller
 (3, 'entree', 'Nems', '6 nems croustillants au porc et légumes, sauce nuoc-mâm', NULL, NULL, '/uploads/product_3_1775831520972.webp', 9.90, 1, 3, 2, 0.00),
 (4, 'banhmi', 'Bánh Mì Classique', 'Porc rôti, pâté, légumes marinés, coriandre, mayo sriracha', NULL, NULL, '/uploads/product_4_1775419592964.webp', 9.90, 1, 1, NULL, 0.00),
 (5, 'banhmi', 'Bánh Mì Poulet', 'Poulet grillé citronelle, concombre, carottes, coriandre', NULL, NULL, '/uploads/product_5_1775419601209.webp', 9.90, 1, 2, NULL, 0.00),
-(6, 'banhmi', 'Bánh Mì Végétarien', 'Tofu sauté, shiitake, légumes croquants, sauce hoisin', NULL, NULL, '/uploads/product_6_1775419609652.webp', 9.90, 1, 3, NULL, 0.00),
+(6, 'banhmi', 'Bánh Mì Végétarien', 'Tofu sauté, shiitake, légumes croquants, sauce hoisin', 'Végan 🌿', '[]', '/uploads/product_6_1775419609652.webp', 9.90, 1, 3, NULL, 0.00),
 (7, 'dessert', 'Perle de Coco', 'Perles de tapioca, lait de coco, mangue fraîche', NULL, NULL, '/uploads/product_7_1776034706685.webp', 3.90, 1, 1, NULL, 0.00),
 (8, 'dessert', 'Mochi glacé', 'Mochi glacé — parfums : matcha, framboise ou vanille', NULL, NULL, '/uploads/product_8_1775852595356.webp', 4.50, 1, 2, NULL, 0.00),
 (9, 'boisson', 'Coca-Cola', NULL, NULL, NULL, '/uploads/product_9_1776034533999.webp', 3.00, 1, 0, NULL, 0.00),
@@ -385,7 +410,7 @@ CREATE TABLE `promo_codes` (
 
 INSERT INTO `promo_codes` (`id`, `code`, `type`, `value`, `starts_at`, `expires_at`, `active`, `created_at`, `updated_at`) VALUES
 (2, 'BIENVENUE10', 'fixed', 2.00, NULL, NULL, 0, '2026-04-08 23:29:53', '2026-04-12 23:36:05'),
-(3, 'KEKOSAN10', 'percent', 10.00, NULL, NULL, 0, '2026-04-12 23:35:30', '2026-04-12 23:37:05');
+(3, 'KEKOSAN10', 'percent', 10.00, NULL, NULL, 1, '2026-04-12 23:35:30', '2026-04-13 13:49:24');
 
 -- --------------------------------------------------------
 
@@ -404,15 +429,15 @@ CREATE TABLE `settings` (
 
 INSERT INTO `settings` (`key`, `value`) VALUES
 ('closed_days', '[]'),
-('closing_hour', '15'),
+('closing_hour', '14'),
 ('delivery_fee', '5'),
 ('free_delivery_threshold', '20'),
-('maintenance_message', 'Ouverture du service le 20 avril, à très vite!'),
+('maintenance_message', 'Ouverture du service le 19 avril, à très vite!'),
 ('max_orders_per_slot', '5'),
 ('min_delivery_delay', '30'),
 ('min_order_amount', '5'),
 ('opening_hour', '11'),
-('service_open', 'false'),
+('service_open', 'true'),
 ('slot_interval', '15');
 
 --
@@ -535,25 +560,25 @@ ALTER TABLE `formula_slots`
 -- AUTO_INCREMENT pour la table `orders`
 --
 ALTER TABLE `orders`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
 
 --
 -- AUTO_INCREMENT pour la table `order_formula_items`
 --
 ALTER TABLE `order_formula_items`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- AUTO_INCREMENT pour la table `order_formula_slots`
 --
 ALTER TABLE `order_formula_slots`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=41;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=52;
 
 --
 -- AUTO_INCREMENT pour la table `order_items`
 --
 ALTER TABLE `order_items`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- AUTO_INCREMENT pour la table `order_item_options`
