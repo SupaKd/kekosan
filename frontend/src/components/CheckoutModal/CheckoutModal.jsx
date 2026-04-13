@@ -8,7 +8,7 @@ import {
   useStripe,
   useElements,
 } from "@stripe/react-stripe-js";
-import { createOrder, applyPromo } from "../../api/orders";
+import { createOrder, applyPromo, getActivePromos } from "../../api/orders";
 import { getServiceStatus, getSchedule, getSlotSettings, getDeliverySettings, getClosedDays, getSlotAvailability, getMaintenanceMessage } from "../../api/admin";
 import { getAvailableSlots } from "../../utils/deliverySlots";
 import styles from "./CheckoutModal.module.css";
@@ -76,6 +76,7 @@ function CheckoutModal({ cart, onClose }) {
   const [promoError, setPromoError] = useState(null);
   const [promoLoading, setPromoLoading] = useState(false);
   const [promoFlash, setPromoFlash] = useState(false);
+  const [activePromos, setActivePromos] = useState([]);
 
   const [deliveryConfig, setDeliveryConfig] = useState({ delivery_fee: 5, free_delivery_threshold: 20, min_order_amount: 20 });
 
@@ -117,6 +118,9 @@ function CheckoutModal({ cart, onClose }) {
       .catch(() => {});
     getMaintenanceMessage()
       .then((d) => setMaintenanceMsg(d.maintenance_message))
+      .catch(() => {});
+    getActivePromos()
+      .then((d) => setActivePromos(d))
       .catch(() => {});
   }, []);
 
@@ -489,55 +493,57 @@ function CheckoutModal({ cart, onClose }) {
                     )}
                   </div>
 
-                  {/* Code promo */}
-                  <div className={styles.field}>
-                    <label className={styles.label}>
-                      Code promo{" "}
-                      <span style={{ color: "var(--text-muted)" }}>
-                        (optionnel)
-                      </span>
-                    </label>
-                    {!appliedPromo ? (
-                      <div className={styles.promoRow}>
-                        <input
-                          className={styles.input}
-                          placeholder="BIENVENUE10"
-                          value={promoInput}
-                          onChange={(e) => {
-                            setPromoInput(e.target.value.toUpperCase());
-                            setPromoError(null);
-                          }}
-                          onKeyDown={(e) =>
-                            e.key === "Enter" && handleApplyPromo()
-                          }
-                          disabled={promoLoading}
-                        />
-                        <button
-                          className={styles.promoBtn}
-                          onClick={handleApplyPromo}
-                          disabled={promoLoading || !promoInput.trim()}
-                        >
-                          {promoLoading ? "…" : "Appliquer"}
-                        </button>
-                      </div>
-                    ) : (
-                      <div className={`${styles.promoApplied}${promoFlash ? ` ${styles.promoFlash}` : ''}`}>
-                        <span className={styles.promoAppliedLabel}>
-                          ✓ <strong>{appliedPromo.promo_code}</strong> — −{" "}
-                          {formatPrice(discountAmount)}
+                  {/* Code promo — affiché uniquement si des promos sont actives */}
+                  {activePromos.length > 0 && (
+                    <div className={styles.field}>
+                      <label className={styles.label}>
+                        Code promo{" "}
+                        <span style={{ color: "var(--text-muted)" }}>
+                          (optionnel)
                         </span>
-                        <button
-                          className={styles.promoRemoveBtn}
-                          onClick={handleRemovePromo}
-                        >
-                          ✕
-                        </button>
-                      </div>
-                    )}
-                    {promoError && (
-                      <span className={styles.fieldError}>{promoError}</span>
-                    )}
-                  </div>
+                      </label>
+                      {!appliedPromo ? (
+                        <div className={styles.promoRow}>
+                          <input
+                            className={styles.input}
+                            placeholder="BIENVENUE10"
+                            value={promoInput}
+                            onChange={(e) => {
+                              setPromoInput(e.target.value.toUpperCase());
+                              setPromoError(null);
+                            }}
+                            onKeyDown={(e) =>
+                              e.key === "Enter" && handleApplyPromo()
+                            }
+                            disabled={promoLoading}
+                          />
+                          <button
+                            className={styles.promoBtn}
+                            onClick={handleApplyPromo}
+                            disabled={promoLoading || !promoInput.trim()}
+                          >
+                            {promoLoading ? "…" : "Appliquer"}
+                          </button>
+                        </div>
+                      ) : (
+                        <div className={`${styles.promoApplied}${promoFlash ? ` ${styles.promoFlash}` : ''}`}>
+                          <span className={styles.promoAppliedLabel}>
+                            ✓ <strong>{appliedPromo.promo_code}</strong> — −{" "}
+                            {formatPrice(discountAmount)}
+                          </span>
+                          <button
+                            className={styles.promoRemoveBtn}
+                            onClick={handleRemovePromo}
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      )}
+                      {promoError && (
+                        <span className={styles.fieldError}>{promoError}</span>
+                      )}
+                    </div>
+                  )}
 
                   <div className={styles.field}>
                     <label className={styles.label}>
