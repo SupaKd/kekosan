@@ -19,6 +19,14 @@ export const setServiceStatus = (open) =>
 export const getSchedule = () =>
   client.get('/admin/schedule').then(r => r.data)
 
+export const getSlotSettings = () =>
+  client.get('/admin/slot-settings').then(r => r.data)
+
+export const setSlotSettings = (data) =>
+  client.put('/admin/slot-settings', data, {
+    headers: { Authorization: `Bearer ${localStorage.getItem('admin_token')}` },
+  }).then(r => r.data)
+
 export const getMaintenanceMessage = () =>
   client.get('/admin/maintenance-message').then(r => r.data)
 

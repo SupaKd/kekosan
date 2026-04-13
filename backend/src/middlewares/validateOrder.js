@@ -1,8 +1,6 @@
 const settingsRepository = require('../repositories/settingsRepository');
 const orderRepository   = require('../repositories/orderRepository');
 
-const MIN_DELAY_MIN  = 30;
-const SLOT_INTERVAL  = 30; // minutes
 
 // Vérifie qu'un créneau HH:MM est valide (plage horaire, jour ouvré, délai minimum)
 const isSlotValid = async (slot) => {
@@ -11,14 +9,18 @@ const isSlotValid = async (slot) => {
   const [h, m] = slot.split(':').map(Number);
 
   // Lecture des horaires et jours fermés depuis la DB (fallback sur les valeurs par défaut)
-  const openingRaw   = await settingsRepository.get('opening_hour');
-  const closingRaw   = await settingsRepository.get('closing_hour');
-  const closedRaw    = await settingsRepository.get('closed_days');
-  const SERVICE_START = parseInt(openingRaw ?? '11');
-  const SERVICE_END   = parseInt(closingRaw  ?? '15');
-  const closedDays    = closedRaw ? JSON.parse(closedRaw) : [];
+  const openingRaw  = await settingsRepository.get('opening_hour');
+  const closingRaw  = await settingsRepository.get('closing_hour');
+  const closedRaw   = await settingsRepository.get('closed_days');
+  const intervalRaw = await settingsRepository.get('slot_interval');
+  const delayRaw    = await settingsRepository.get('min_delivery_delay');
+  const SERVICE_START   = parseInt(openingRaw  ?? '11');
+  const SERVICE_END     = parseInt(closingRaw  ?? '15');
+  const closedDays      = closedRaw ? JSON.parse(closedRaw) : [];
+  const SLOT_INTERVAL   = parseInt(intervalRaw ?? '30');
+  const MIN_DELAY_MIN   = parseInt(delayRaw    ?? '30');
 
-  // Le créneau doit être dans la plage horaire et sur une tranche de 30min
+  // Le créneau doit être dans la plage horaire et sur une tranche valide
   if (h < SERVICE_START || h >= SERVICE_END) return false;
   if (m % SLOT_INTERVAL !== 0) return false;
 
@@ -30,6 +32,7 @@ const isSlotValid = async (slot) => {
 
   const slotDate = new Date(now);
   slotDate.setHours(h, m, 0, 0);
+  const earliest = new Date(now.getTime() + MIN_DELAY_MIN * 60000);
 
   // Si le créneau est déjà passé aujourd'hui, on essaie le lendemain ouvré
   if (slotDate <= now) {
@@ -44,8 +47,8 @@ const isSlotValid = async (slot) => {
   const slotDateStr = slotDate.toISOString().slice(0, 10);
   if (closedDays.includes(slotDateStr)) return false;
 
-  const diffMin = (slotDate - now) / 60000;
-  return diffMin >= MIN_DELAY_MIN;
+  const diffMin = (slotDate - earliest) / 60000;
+  return diffMin >= 0;
 };
 
 // Valide le body de la requête POST /api/orders

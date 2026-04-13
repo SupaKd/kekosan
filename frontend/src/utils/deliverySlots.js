@@ -1,14 +1,15 @@
-const SLOT_INTERVAL = 30  // minutes entre chaque créneau
-const MIN_DELAY     = 30  // minutes minimum avant le premier créneau dispo
-
 // Retourne { available: bool, slots: ['11:00', '11:30', ...], message: string | null }
-// message est défini uniquement quand available = false (raison lisible par le client)
-// La disponibilité réelle est contrôlée par le toggle admin (service_open)
-// opening_hour, closing_hour et closed_days sont lus depuis la DB et passés en paramètre
+// Tous les paramètres sont lus depuis la DB et passés en argument
 // availability = objet { 'YYYY-MM-DD|HH:MM': placesRestantes } retourné par /slot-availability
-export function getAvailableSlots({ opening_hour = 11, closing_hour = 15, closed_days = [], availability = {} } = {}) {
-  const SERVICE_START = opening_hour
-  const SERVICE_END   = closing_hour
+export function getAvailableSlots({
+  opening_hour = 11, closing_hour = 15,
+  closed_days = [], availability = {},
+  slot_interval = 30, min_delivery_delay = 30,
+} = {}) {
+  const SERVICE_START  = opening_hour
+  const SERVICE_END    = closing_hour
+  const SLOT_INTERVAL  = slot_interval
+  const MIN_DELAY      = min_delivery_delay
 
   const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'Europe/Paris' }))
 
@@ -61,8 +62,9 @@ export function getAvailableSlots({ opening_hour = 11, closing_hour = 15, closed
     }
   }
 
+  const lastSlotMin = 60 - SLOT_INTERVAL
   const message = slots.length === 0
-    ? `Le service est terminé pour aujourd'hui (dernier créneau : ${SERVICE_END - 1}h${String(60 - SLOT_INTERVAL).padStart(2, '0')}). Revenez demain à partir de ${SERVICE_START}h !`
+    ? `Le service est terminé pour aujourd'hui (dernier créneau : ${SERVICE_END - 1}h${String(lastSlotMin).padStart(2, '0')}). Revenez demain à partir de ${SERVICE_START}h !`
     : null
 
   return { available: slots.length > 0, slots, message }

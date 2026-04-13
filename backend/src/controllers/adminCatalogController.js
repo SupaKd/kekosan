@@ -279,6 +279,32 @@ const deleteFormulaImage = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
+// ── Paramètres créneaux ───────────────────────────────────────────────────────
+
+const getSlotSettings = async (req, res, next) => {
+  try {
+    const interval = await settingsRepository.get('slot_interval');
+    const delay    = await settingsRepository.get('min_delivery_delay');
+    res.json({
+      slot_interval:      parseInt(interval ?? '30'),
+      min_delivery_delay: parseInt(delay    ?? '30'),
+    });
+  } catch (err) { next(err); }
+};
+
+const setSlotSettings = async (req, res, next) => {
+  try {
+    const { slot_interval, min_delivery_delay } = req.body;
+    if (!Number.isInteger(slot_interval) || slot_interval < 5 || slot_interval > 60)
+      return res.status(400).json({ error: 'slot_interval invalide (5–60 min)' });
+    if (!Number.isInteger(min_delivery_delay) || min_delivery_delay < 0 || min_delivery_delay > 120)
+      return res.status(400).json({ error: 'min_delivery_delay invalide (0–120 min)' });
+    await settingsRepository.set('slot_interval',      String(slot_interval));
+    await settingsRepository.set('min_delivery_delay', String(min_delivery_delay));
+    res.json({ slot_interval, min_delivery_delay });
+  } catch (err) { next(err); }
+};
+
 // ── Message de maintenance ────────────────────────────────────────────────────
 
 const getMaintenanceMessage = async (req, res, next) => {
@@ -394,6 +420,7 @@ const setDeliverySettings = async (req, res, next) => {
 module.exports = {
   getServiceStatus, setServiceStatus,
   getSchedule, setSchedule,
+  getSlotSettings, setSlotSettings,
   getMaintenanceMessage, setMaintenanceMessage,
   getSlotAvailability, getMaxOrdersPerSlot, setMaxOrdersPerSlot,
   getClosedDays, setClosedDays,

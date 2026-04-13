@@ -14,7 +14,7 @@ import styles from "./MenuPage.module.css";
 
 import { API_BASE } from "../../config/api";
 import { formatPrice } from "../../utils/formatting";
-import { getServiceStatus, getSchedule, getDeliverySettings, getClosedDays, getMaintenanceMessage } from "../../api/admin";
+import { getServiceStatus, getSchedule, getSlotSettings, getDeliverySettings, getClosedDays, getMaintenanceMessage } from "../../api/admin";
 import { getAvailableSlots } from "../../utils/deliverySlots";
 
 const CATEGORY_LABELS = {
@@ -60,7 +60,7 @@ function MenuPage({ cart, onCheckout }) {
 
   // État service ouvert/fermé + horaires + jours fermés + config livraison
   const [serviceOpen, setServiceOpen] = useState(true);
-  const [schedule, setSchedule] = useState({ opening_hour: 11, closing_hour: 15, closed_days: [] });
+  const [schedule, setSchedule] = useState({ opening_hour: 11, closing_hour: 15, closed_days: [], slot_interval: 30, min_delivery_delay: 30 });
   const [deliveryConfig, setDeliveryConfig] = useState({ delivery_fee: 5, free_delivery_threshold: 20, min_order_amount: 20 });
   const [maintenanceMessage, setMaintenanceMessage] = useState('Le service est momentanément fermé. Revenez bientôt !');
   useEffect(() => {
@@ -68,6 +68,9 @@ function MenuPage({ cart, onCheckout }) {
       .then((d) => setServiceOpen(d.service_open))
       .catch(() => {});
     getSchedule()
+      .then((d) => setSchedule(s => ({ ...s, ...d })))
+      .catch(() => {});
+    getSlotSettings()
       .then((d) => setSchedule(s => ({ ...s, ...d })))
       .catch(() => {});
     getClosedDays()

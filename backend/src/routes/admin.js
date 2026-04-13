@@ -27,6 +27,9 @@ router.get('/schedule', c.getSchedule);
 // GET /api/admin/maintenance-message — public (lu par le frontend quand le service est fermé)
 router.get('/maintenance-message', c.getMaintenanceMessage);
 
+// GET /api/admin/slot-settings — public (intervalle et délai minimum)
+router.get('/slot-settings', c.getSlotSettings);
+
 // GET /api/admin/delivery-settings — public (lu par le frontend pour frais livraison et min commande)
 router.get('/delivery-settings', c.getDeliverySettings);
 
@@ -67,6 +70,9 @@ router.put('/schedule', c.setSchedule);
 
 // ── Message de maintenance ──────────────────────────────────────────────────
 router.put('/maintenance-message', c.setMaintenanceMessage);
+
+// ── Paramètres créneaux ─────────────────────────────────────────────────────
+router.put('/slot-settings', c.setSlotSettings);
 
 // ── Paramètres livraison ────────────────────────────────────────────────────
 router.put('/delivery-settings', c.setDeliverySettings);

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import {
   getSchedule, setSchedule,
+  getSlotSettings, setSlotSettings,
   getMaintenanceMessage, setMaintenanceMessage,
   getDeliverySettings, setDeliverySettings,
   getMaxOrdersPerSlot, setMaxOrdersPerSlot,
@@ -146,6 +147,11 @@ function SettingsPanel() {
   const [scheduleLoading, setScheduleLoading] = useState(false)
   const [scheduleMsg, setScheduleMsg] = useState(null) // 'ok' | 'error'
 
+  // Créneaux
+  const [slotForm, setSlotForm] = useState({ slot_interval: 30, min_delivery_delay: 30 })
+  const [slotLoading, setSlotLoading] = useState(false)
+  const [slotMsg, setSlotMsg] = useState(null)
+
   // Jours de fermeture
   const [closedDays, setClosedDaysState] = useState([])
   const [newClosedDay, setNewClosedDay] = useState('')
@@ -168,8 +174,9 @@ function SettingsPanel() {
 
   const load = useCallback(async () => {
     try {
-      const [sched, maint, delivery, maxSlot, closed, promos] = await Promise.all([getSchedule(), getMaintenanceMessage(), getDeliverySettings(), getMaxOrdersPerSlot(), getClosedDays(), getPromoCodes()])
+      const [sched, slots, maint, delivery, maxSlot, closed, promos] = await Promise.all([getSchedule(), getSlotSettings(), getMaintenanceMessage(), getDeliverySettings(), getMaxOrdersPerSlot(), getClosedDays(), getPromoCodes()])
       setScheduleForm({ opening_hour: sched.opening_hour, closing_hour: sched.closing_hour })
+      setSlotForm({ slot_interval: slots.slot_interval, min_delivery_delay: slots.min_delivery_delay })
       setMaintMsg(maint.maintenance_message)
       setDeliveryForm({ delivery_fee: delivery.delivery_fee, free_delivery_threshold: delivery.free_delivery_threshold, min_order_amount: delivery.min_order_amount })
       setMaxPerSlot(maxSlot.max_orders_per_slot)
@@ -214,6 +221,20 @@ function SettingsPanel() {
       await setClosedDays(updated)
       setClosedDaysState(updated)
     } catch { setClosedDaysMsg('error') }
+  }
+
+  const handleSaveSlots = async () => {
+    setSlotLoading(true)
+    setSlotMsg(null)
+    try {
+      await setSlotSettings(slotForm)
+      setSlotMsg('ok')
+    } catch {
+      setSlotMsg('error')
+    } finally {
+      setSlotLoading(false)
+      setTimeout(() => setSlotMsg(null), 3000)
+    }
   }
 
   const handleSaveMaintMsg = async () => {
@@ -302,7 +323,48 @@ function SettingsPanel() {
             {scheduleMsg === 'error' && <span className={styles.scheduleErr}>⚠️ Erreur</span>}
           </div>
           <p className={styles.scheduleHint}>
-            Dernier créneau disponible : {scheduleForm.closing_hour - 1}h30. Les clients ne pourront commander que dans cette plage.
+            Dernier créneau disponible : {scheduleForm.closing_hour - 1}h{String(60 - slotForm.slot_interval).padStart(2, '0')}. Les clients ne pourront commander que dans cette plage.
+          </p>
+
+          {/* Paramètres créneaux */}
+          <div className={styles.scheduleRow} style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 14 }}>
+            <div className={styles.field}>
+              <label className={styles.label}>Intervalle entre créneaux (min)</label>
+              <input
+                className={styles.input}
+                type="number"
+                min="5"
+                max="60"
+                step="5"
+                value={slotForm.slot_interval}
+                onChange={e => setSlotForm(f => ({ ...f, slot_interval: parseInt(e.target.value) || 30 }))}
+              />
+            </div>
+            <div className={styles.field}>
+              <label className={styles.label}>Délai minimum avant 1er créneau (min)</label>
+              <input
+                className={styles.input}
+                type="number"
+                min="0"
+                max="120"
+                step="5"
+                value={slotForm.min_delivery_delay}
+                onChange={e => setSlotForm(f => ({ ...f, min_delivery_delay: parseInt(e.target.value) || 0 }))}
+              />
+            </div>
+            <button
+              className={styles.addBtn}
+              onClick={handleSaveSlots}
+              disabled={slotLoading}
+              style={{ alignSelf: 'flex-end' }}
+            >
+              {slotLoading ? 'Sauvegarde…' : 'Enregistrer'}
+            </button>
+            {slotMsg === 'ok'    && <span className={styles.scheduleOk}>✓ Sauvegardé</span>}
+            {slotMsg === 'error' && <span className={styles.scheduleErr}>⚠️ Erreur</span>}
+          </div>
+          <p className={styles.scheduleHint}>
+            Créneaux toutes les {slotForm.slot_interval} min. Premier créneau disponible {slotForm.min_delivery_delay} min après la commande.
           </p>
         </div>
       </div>
