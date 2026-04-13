@@ -1,7 +1,7 @@
 .overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.8);
+  background: rgba(0, 0, 0, 0.6);
   backdrop-filter: blur(6px);
   z-index: 300;
   display: flex;
@@ -17,14 +17,14 @@
 }
 
 .modal {
-  background: var(--bg-elevated);
-  border: 1px solid var(--border-bright);
-  border-radius: var(--radius-lg);
+  background: #faf6ef;
+  border: 1px solid rgba(0,0,0,0.1);
+  border-radius: 16px;
   width: 100%;
   max-width: 520px;
   max-height: 92vh;
   overflow-y: auto;
-  box-shadow: var(--shadow-card), 0 0 60px rgba(255, 214, 10, 0.1);
+  box-shadow: 0 8px 40px rgba(0,0,0,0.18);
   animation: slideUp 0.2s ease;
   display: flex;
   flex-direction: column;
@@ -42,37 +42,36 @@
   padding: 24px 28px 0;
   position: sticky;
   top: 0;
-  background: var(--bg-elevated);
+  background: #faf6ef;
   z-index: 1;
   padding-bottom: 20px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid rgba(0,0,0,0.08);
 }
 
 .title {
   font-size: 20px;
   font-weight: 700;
-  color: var(--text-heading);
+  color: #1a1a1a;
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
 .titleJp {
-  font-family: var(--font-jp);
   font-size: 12px;
-  color: var(--text-muted);
+  color: #888;
   font-weight: 400;
 }
 
 .closeBtn {
   background: none;
   border: none;
-  color: var(--text-muted);
+  color: #888;
   font-size: 20px;
   cursor: pointer;
   transition: color 0.15s;
 }
-.closeBtn:hover { color: var(--text-heading) }
+.closeBtn:hover { color: #1a1a1a }
 
 .body {
   padding: 24px 28px;
@@ -83,9 +82,9 @@
 
 /* ── Récap commande ── */
 .recap {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  background: #fff;
+  border: 1px solid rgba(0,0,0,0.1);
+  border-radius: 10px;
   padding: 16px;
   display: flex;
   flex-direction: column;
@@ -97,27 +96,27 @@
   justify-content: space-between;
   align-items: baseline;
   font-size: 13px;
-  color: var(--text);
+  color: #1a1a1a;
 }
 
 .recapItemName {
   flex: 1;
-  color: var(--text);
+  color: #1a1a1a;
 }
 
 .recapItemQty {
-  color: var(--text-muted);
+  color: #888;
   margin: 0 8px;
 }
 
 .recapItemPrice {
-  color: var(--neon-cyan);
+  color: #c0392b;
   font-weight: 600;
 }
 
 .recapDivider {
   border: none;
-  border-top: 1px solid var(--border);
+  border-top: 1px solid rgba(0,0,0,0.08);
   margin: 4px 0;
 }
 
@@ -125,7 +124,7 @@
   display: flex;
   justify-content: space-between;
   font-size: 13px;
-  color: var(--text-muted);
+  color: #666;
   padding: 2px 0;
 }
 
@@ -134,24 +133,23 @@
   justify-content: space-between;
   font-size: 16px;
   font-weight: 700;
-  color: var(--text-heading);
-  border-top: 1px solid var(--border);
+  color: #1a1a1a;
+  border-top: 1px solid rgba(0,0,0,0.08);
   padding-top: 8px;
   margin-top: 4px;
 }
 
 .recapTotalAmount {
-  color: var(--neon-cyan);
-  text-shadow: 0 0 8px rgba(255, 214, 10, 0.3);
+  color: #c0392b;
 }
 
 /* ── Formulaire ── */
 .sectionTitle {
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 1px;
-  color: var(--neon-cyan);
+  color: #c0392b;
   margin-bottom: 12px;
 }
 
@@ -175,39 +173,38 @@
 
 .label {
   font-size: 12px;
-  color: var(--text-muted);
+  color: #666;
   font-weight: 500;
 }
 
 .input {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  background: #fff;
+  border: 1px solid rgba(0,0,0,0.15);
+  border-radius: 8px;
   padding: 13px 14px;
   font-size: 15px;
-  color: var(--text-heading);
-  font-family: var(--font-sans);
+  color: #1a1a1a;
   transition: border-color 0.15s, box-shadow 0.15s;
   outline: none;
   min-height: 48px;
 }
 
 .input::placeholder {
-  color: var(--text-muted);
+  color: #aaa;
 }
 
 .input:focus {
-  border-color: var(--neon-cyan);
-  box-shadow: 0 0 0 3px rgba(255, 214, 10, 0.1);
+  border-color: #c0392b;
+  box-shadow: 0 0 0 3px rgba(192, 57, 43, 0.1);
 }
 
 .input.error {
-  border-color: var(--danger);
+  border-color: #ff453a;
 }
 
 .fieldError {
   font-size: 11px;
-  color: var(--danger);
+  color: #ff453a;
 }
 
 /* ── Code promo ── */
@@ -220,20 +217,19 @@
   flex: 0 0 auto;
   padding: 0 16px;
   background: transparent;
-  border: 1px solid var(--border-bright);
-  color: var(--text-primary);
-  border-radius: var(--radius-sm);
+  border: 1px solid rgba(0,0,0,0.2);
+  color: #1a1a1a;
+  border-radius: 8px;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
   transition: border-color 0.15s, color 0.15s;
-  font-family: var(--font-sans);
 }
 
 .promoBtn:hover:not(:disabled) {
-  border-color: var(--neon-cyan);
-  color: var(--neon-cyan);
+  border-color: #c0392b;
+  color: #c0392b;
 }
 
 .promoBtn:disabled {
@@ -245,9 +241,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: var(--bg-card);
+  background: #fff;
   border: 1px solid #30d158;
-  border-radius: var(--radius-sm);
+  border-radius: 8px;
   padding: 10px 12px;
 }
 
@@ -256,9 +252,9 @@
 }
 
 @keyframes promoPopIn {
-  0%   { transform: scale(0.92); opacity: 0; background: rgba(48, 209, 88, 0.15); }
-  60%  { background: rgba(48, 209, 88, 0.1); }
-  100% { transform: scale(1);    opacity: 1; background: var(--bg-card); }
+  0%   { transform: scale(0.92); opacity: 0; background: rgba(48, 209, 88, 0.1); }
+  60%  { background: rgba(48, 209, 88, 0.05); }
+  100% { transform: scale(1);    opacity: 1; background: #fff; }
 }
 
 .promoAppliedLabel {
@@ -269,7 +265,7 @@
 .promoRemoveBtn {
   background: none;
   border: none;
-  color: var(--text-muted);
+  color: #888;
   cursor: pointer;
   font-size: 14px;
   padding: 0 4px;
@@ -278,16 +274,16 @@
 
 /* ── Zone Stripe ── */
 .stripeBox {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  background: #fff;
+  border: 1px solid rgba(0,0,0,0.15);
+  border-radius: 8px;
   padding: 12px 14px;
   transition: border-color 0.15s;
 }
 
 .stripeBox.focused {
-  border-color: var(--neon-cyan);
-  box-shadow: 0 0 0 3px rgba(255, 214, 10, 0.1);
+  border-color: #c0392b;
+  box-shadow: 0 0 0 3px rgba(192, 57, 43, 0.1);
 }
 
 /* ── Footer ── */
@@ -299,17 +295,16 @@
 }
 
 .payBtn {
-  background: var(--neon-cyan);
-  color: #000;
+  background: #ffd60a;
+  color: #1a1a1a;
   border: none;
-  border-radius: var(--radius-sm);
+  border-radius: 8px;
   padding: 14px;
   font-size: 16px;
   font-weight: 700;
   cursor: pointer;
-  font-family: var(--font-sans);
   transition: opacity 0.15s, box-shadow 0.15s;
-  box-shadow: 0 0 20px rgba(255, 214, 10, 0.3);
+  box-shadow: 0 2px 12px rgba(255, 214, 10, 0.4);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -324,13 +319,13 @@
 
 .payBtn:not(:disabled):hover {
   opacity: 0.9;
-  box-shadow: 0 0 30px rgba(255, 214, 10, 0.5);
+  box-shadow: 0 4px 20px rgba(255, 214, 10, 0.5);
 }
 
 .secureNote {
   text-align: center;
   font-size: 12px;
-  color: var(--text-muted);
+  color: #888;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -340,8 +335,7 @@
 .legalNote {
   text-align: center;
   font-size: 11px;
-  color: var(--text-muted);
-  opacity: 0.6;
+  color: #aaa;
   margin: 0;
 }
 
@@ -350,15 +344,16 @@
   border: none;
   padding: 0;
   font-size: 11px;
-  color: var(--text-muted);
+  color: #888;
   text-decoration: underline;
+  text-underline-offset: 2px;
   cursor: pointer;
   font-family: inherit;
-  opacity: 0.8;
+  transition: color 0.15s;
 }
-.legalLink:hover { opacity: 1 }
+.legalLink:hover { color: #c0392b }
 
-/* ── Modale CGV ── */
+/* ── Modale CGV (kept for backward compat, not used — LegalModal is shared) ── */
 .legalOverlay {
   position: fixed;
   inset: 0;
@@ -452,13 +447,12 @@
 }
 
 .select {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  background: #fff;
+  border: 1px solid rgba(0,0,0,0.15);
+  border-radius: 8px;
   padding: 13px 14px;
   font-size: 15px;
-  color: var(--text-heading);
-  font-family: var(--font-sans);
+  color: #1a1a1a;
   transition: border-color 0.15s, box-shadow 0.15s;
   outline: none;
   width: 100%;
@@ -467,29 +461,29 @@
 }
 
 .select:focus {
-  border-color: var(--neon-cyan);
-  box-shadow: 0 0 0 3px rgba(255, 214, 10, 0.1);
+  border-color: #c0392b;
+  box-shadow: 0 0 0 3px rgba(192, 57, 43, 0.1);
 }
 
 .closedMessage {
   background: rgba(255, 159, 10, 0.07);
-  border: 1px solid rgba(255, 159, 10, 0.25);
-  border-radius: var(--radius-md);
+  border: 1px solid rgba(255, 159, 10, 0.3);
+  border-radius: 10px;
   padding: 16px;
   text-align: center;
-  color: var(--neon-yellow);
+  color: #b97a00;
   font-size: 14px;
   line-height: 1.6;
 }
 
 .globalError {
   font-size: 13px;
-  color: var(--danger);
+  color: #c0392b;
   text-align: center;
   padding: 10px;
-  background: rgba(255, 69, 58, 0.1);
-  border-radius: var(--radius-sm);
-  border: 1px solid rgba(255, 69, 58, 0.2);
+  background: rgba(192, 57, 43, 0.07);
+  border-radius: 8px;
+  border: 1px solid rgba(192, 57, 43, 0.2);
 }
 
 /* ── Skeleton transition vers paiement ── */
@@ -501,13 +495,13 @@
 .skeletonPulse {
   background: linear-gradient(
     90deg,
-    var(--bg-card) 25%,
-    rgba(255,255,255,0.06) 50%,
-    var(--bg-card) 75%
+    #ede8e0 25%,
+    rgba(255,255,255,0.8) 50%,
+    #ede8e0 75%
   );
   background-size: 1200px 100%;
   animation: shimmer 1.4s ease infinite;
-  border-radius: var(--radius-sm);
+  border-radius: 8px;
 }
 
 .skeletonPayment {
@@ -533,7 +527,7 @@
   composes: skeletonPulse;
   height: 52px;
   width: 100%;
-  border-radius: var(--radius-md);
+  border-radius: 10px;
   margin-top: 8px;
 }
 
@@ -541,7 +535,7 @@
   composes: skeletonPulse;
   height: 48px;
   width: 100%;
-  border-radius: var(--radius-sm);
+  border-radius: 8px;
   margin-top: 8px;
 }
 
@@ -563,31 +557,31 @@
 .successTitle {
   font-size: 22px;
   font-weight: 700;
-  color: var(--success);
+  color: #30d158;
 }
 
 .successText {
   font-size: 14px;
-  color: var(--text-muted);
+  color: #666;
   line-height: 1.6;
 }
 
 .trackingBtn {
   margin-top: 8px;
   background: transparent;
-  border: 1px solid var(--neon-cyan);
-  color: var(--neon-cyan);
-  border-radius: var(--radius-sm);
+  border: 2px solid #c0392b;
+  color: #c0392b;
+  border-radius: 8px;
   padding: 12px 24px;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  font-family: var(--font-sans);
-  transition: background 0.15s;
+  transition: background 0.15s, color 0.15s;
 }
 
 .trackingBtn:hover {
-  background: var(--accent-glow);
+  background: #c0392b;
+  color: #fff;
 }
 
 /* ── Responsive mobile ── */
@@ -600,7 +594,7 @@
   .modal {
     max-width: 100%;
     max-height: 96vh;
-    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    border-radius: 16px 16px 0 0;
     animation: slideUpMobile 0.3s cubic-bezier(0.32, 0.72, 0, 1);
   }
 

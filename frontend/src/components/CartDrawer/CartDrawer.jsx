@@ -10,7 +10,7 @@ function getSuggestions(catalog, cartItems, max = 2) {
   const cartProductIds = new Set(
     cartItems.filter((i) => i.type === "product").map((i) => i.product_id)
   );
-  const PRIORITY = ["banhmi", "entree", "dessert", "boisson"];
+  const PRIORITY = ["entree", "dessert"];
   const suggestions = [];
   for (const cat of PRIORITY) {
     if (!catalog[cat]) continue;
