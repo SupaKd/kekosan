@@ -14,7 +14,14 @@ import styles from "./MenuPage.module.css";
 
 import { API_BASE } from "../../config/api";
 import { formatPrice } from "../../utils/formatting";
-import { getServiceStatus, getSchedule, getSlotSettings, getDeliverySettings, getClosedDays, getMaintenanceMessage } from "../../api/admin";
+import {
+  getServiceStatus,
+  getSchedule,
+  getSlotSettings,
+  getDeliverySettings,
+  getClosedDays,
+  getMaintenanceMessage,
+} from "../../api/admin";
 import { getAvailableSlots } from "../../utils/deliverySlots";
 
 const CATEGORY_LABELS = {
@@ -35,14 +42,14 @@ const HERO_SLIDES = [
   {
     id: "banhmi",
     label: "Bánh Mì",
-    accroche: "Fait maison, livré chaud.",
+    accroche: "Fait maison, préparé avec coeur.",
     cta: "Commander",
     image: "/banhh.png",
   },
   {
     id: null,
     label: "Notre histoire",
-    accroche: "Née à Saint-Genis-Pouilly, avec du caractère et du piment.",
+    accroche: "Née à Saint-Genis-Pouilly, avec goût et passion.",
     cta: "En savoir plus",
     image: "/about.png",
   },
@@ -60,21 +67,33 @@ function MenuPage({ cart, onCheckout }) {
 
   // État service ouvert/fermé + horaires + jours fermés + config livraison
   const [serviceOpen, setServiceOpen] = useState(true);
-  const [schedule, setSchedule] = useState({ opening_hour: 11, closing_hour: 15, closed_days: [], slot_interval: 30, min_delivery_delay: 30 });
-  const [deliveryConfig, setDeliveryConfig] = useState({ delivery_fee: 5, free_delivery_threshold: 20, min_order_amount: 20 });
-  const [maintenanceMessage, setMaintenanceMessage] = useState('Le service est momentanément fermé. Revenez bientôt !');
+  const [schedule, setSchedule] = useState({
+    opening_hour: 11,
+    closing_hour: 15,
+    closed_days: [],
+    slot_interval: 30,
+    min_delivery_delay: 30,
+  });
+  const [deliveryConfig, setDeliveryConfig] = useState({
+    delivery_fee: 5,
+    free_delivery_threshold: 20,
+    min_order_amount: 20,
+  });
+  const [maintenanceMessage, setMaintenanceMessage] = useState(
+    "Le service est momentanément fermé. Revenez bientôt !"
+  );
   useEffect(() => {
     getServiceStatus()
       .then((d) => setServiceOpen(d.service_open))
       .catch(() => {});
     getSchedule()
-      .then((d) => setSchedule(s => ({ ...s, ...d })))
+      .then((d) => setSchedule((s) => ({ ...s, ...d })))
       .catch(() => {});
     getSlotSettings()
-      .then((d) => setSchedule(s => ({ ...s, ...d })))
+      .then((d) => setSchedule((s) => ({ ...s, ...d })))
       .catch(() => {});
     getClosedDays()
-      .then((d) => setSchedule(s => ({ ...s, closed_days: d.closed_days })))
+      .then((d) => setSchedule((s) => ({ ...s, closed_days: d.closed_days })))
       .catch(() => {});
     getDeliverySettings()
       .then((d) => setDeliveryConfig(d))
@@ -192,7 +211,10 @@ function MenuPage({ cart, onCheckout }) {
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
-        <Header opening_hour={schedule.opening_hour} closing_hour={schedule.closing_hour} />
+        <Header
+          opening_hour={schedule.opening_hour}
+          closing_hour={schedule.closing_hour}
+        />
 
         {/* Panneaux */}
         <div
@@ -301,7 +323,9 @@ function MenuPage({ cart, onCheckout }) {
                           #{String(index + 1).padStart(2, "0")}
                         </span>
                         {formula.badge && (
-                          <span className={styles.formulaBadge}>{formula.badge}</span>
+                          <span className={styles.formulaBadge}>
+                            {formula.badge}
+                          </span>
                         )}
                       </div>
                     ) : null}
@@ -367,7 +391,10 @@ function MenuPage({ cart, onCheckout }) {
             styles[`section_${cat}`] ||
             (index % 2 === 0 ? "" : styles.sectionAlt);
           return (
-            <div key={cat} className={cat === "dessert" ? styles.dessertWrapper : undefined}>
+            <div
+              key={cat}
+              className={cat === "dessert" ? styles.dessertWrapper : undefined}
+            >
               {cat === "dessert" && <IngredientsStrip />}
               <section
                 key={cat}
@@ -422,7 +449,12 @@ function MenuPage({ cart, onCheckout }) {
       <Footer />
 
       {/* Panier flottant */}
-      <CartDrawer cart={cart} onCheckout={onCheckout} catalog={catalog} deliveryConfig={deliveryConfig} />
+      <CartDrawer
+        cart={cart}
+        onCheckout={onCheckout}
+        catalog={catalog}
+        deliveryConfig={deliveryConfig}
+      />
     </div>
   );
 }
