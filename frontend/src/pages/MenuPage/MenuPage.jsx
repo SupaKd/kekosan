@@ -10,6 +10,7 @@ import InstagramSection from "../../components/InstagramSection/InstagramSection
 import Marquee from "../../components/Marquee/Marquee";
 import PromoBanner from "../../components/PromoBanner/PromoBanner";
 import IngredientsStrip from "../../components/IngredientsStrip/IngredientsStrip";
+import ClosedModal from "../../components/ClosedModal/ClosedModal";
 import styles from "./MenuPage.module.css";
 
 import { API_BASE } from "../../config/api";
@@ -194,16 +195,9 @@ function MenuPage({ cart, onCheckout }) {
       {/* Hero slider */}
       <PromoBanner />
 
-      {/* Bannière service fermé */}
+      {/* Modal service fermé */}
       {isClosed && (
-        <div className={styles.closedBanner}>
-          <div className={styles.closedBannerInner}>
-            <span className={styles.closedBannerDot} />
-            <span className={styles.closedBannerText}>
-              {!serviceOpen ? maintenanceMessage : closedMessage}
-            </span>
-          </div>
-        </div>
+        <ClosedModal message={!serviceOpen ? maintenanceMessage : closedMessage} />
       )}
 
       <div
