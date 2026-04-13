@@ -31,9 +31,9 @@ export function useCart() {
       const key = itemKey(item)
       const existing = prev.find(i => itemKey(i) === key)
       if (existing) {
-        return prev.map(i => itemKey(i) === key ? { ...i, quantity: i.quantity + 1 } : i)
+        return prev.map(i => itemKey(i) === key ? { ...i, quantity: i.quantity + (item.quantity ?? 1) } : i)
       }
-      return [...prev, { ...item, quantity: 1, _key: key }]
+      return [...prev, { ...item, quantity: item.quantity ?? 1, _key: key }]
     })
   }, [])
 
