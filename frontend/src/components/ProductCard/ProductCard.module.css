@@ -34,6 +34,13 @@
   border-right: 1px dashed rgba(0, 0, 0, 0.15);
 }
 
+.nameRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 .name {
   font-family: "Black Han Sans", "Bebas Neue", sans-serif;
   font-size: 20px;
@@ -42,6 +49,24 @@
   text-transform: uppercase;
   color: #1a1a1a;
   line-height: 1.1;
+}
+
+.badge {
+  position: absolute;
+  top: 8px;
+  left: 5px;
+  padding: 3px 10px 3px 8px;
+  border-radius: 0 20px 20px 0;
+  font-size: 10px;
+  font-weight: 700;
+  font-family: var(--font-sans, sans-serif);
+  text-transform: none;
+  letter-spacing: 0.3px;
+  background: #ffd60a;
+  color: #1a1a1a;
+  white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+  z-index: 2;
 }
 
 .description {

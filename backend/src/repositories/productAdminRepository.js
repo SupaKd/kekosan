@@ -4,7 +4,7 @@ const pool = require('../config/db');
 
 const findAll = async () => {
   const [products] = await pool.query(
-    `SELECT id, category, name, description, image_url, price, available, sort_order, formula_quantity
+    `SELECT id, category, name, description, badge, allergens, image_url, price, available, sort_order, formula_quantity
      FROM products ORDER BY category, sort_order, name`
   );
   if (products.length === 0) return [];
@@ -23,24 +23,25 @@ const findAll = async () => {
   return products.map(p => ({
     ...p,
     price: parseFloat(p.price),
+    allergens: p.allergens ? (typeof p.allergens === 'string' ? JSON.parse(p.allergens) : p.allergens) : [],
     options: optsByProduct[p.id] || [],
   }));
 };
 
-const create = async ({ category, name, description, price, available = 1, sort_order = 0, formula_quantity = null }) => {
+const create = async ({ category, name, description, badge, allergens, price, available = 1, sort_order = 0, formula_quantity = null }) => {
   const [result] = await pool.query(
-    `INSERT INTO products (category, name, description, price, available, sort_order, formula_quantity)
-     VALUES (?, ?, ?, ?, ?, ?, ?)`,
-    [category, name, description || null, price, available, sort_order, formula_quantity || null]
+    `INSERT INTO products (category, name, description, badge, allergens, price, available, sort_order, formula_quantity)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [category, name, description || null, badge || null, allergens ? JSON.stringify(allergens) : null, price, available, sort_order, formula_quantity || null]
   );
   return result.insertId;
 };
 
-const update = async (id, { category, name, description, price, available, sort_order, formula_quantity }) => {
+const update = async (id, { category, name, description, badge, allergens, price, available, sort_order, formula_quantity }) => {
   await pool.query(
-    `UPDATE products SET category = ?, name = ?, description = ?, price = ?,
+    `UPDATE products SET category = ?, name = ?, description = ?, badge = ?, allergens = ?, price = ?,
      available = ?, sort_order = ?, formula_quantity = ? WHERE id = ?`,
-    [category, name, description || null, price, available, sort_order, formula_quantity || null, id]
+    [category, name, description || null, badge || null, allergens ? JSON.stringify(allergens) : null, price, available, sort_order, formula_quantity || null, id]
   );
 };
 

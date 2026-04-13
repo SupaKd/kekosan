@@ -110,10 +110,15 @@ function CategoryModal({ category, onClose, onSaved }) {
 // ── Modale produit ──────────────────────────────────────────────────────────
 function ProductModal({ product, categories, onClose, onSaved }) {
   const isEdit = !!product
+  const BADGES = ['', 'Nouveau', 'Populaire', 'Spécial', 'Épicé 🌶', 'Végan 🌿', 'Sans gluten']
+  const ALLERGENS = ['gluten', 'crustacés', 'oeufs', 'poisson', 'arachides', 'soja', 'lait', 'fruits à coque', 'céleri', 'moutarde', 'sésame', 'sulfites', 'lupin', 'mollusques']
+
   const [form, setForm] = useState({
     category: product?.category || (categories[0]?.slug || ''),
     name: product?.name || '',
     description: product?.description || '',
+    badge: product?.badge || '',
+    allergens: product?.allergens || [],
     price: product?.price != null ? String(product.price) : '',
     sort_order: product?.sort_order != null ? String(product.sort_order) : '0',
     formula_quantity: product?.formula_quantity != null ? String(product.formula_quantity) : '',
@@ -159,6 +164,8 @@ function ProductModal({ product, categories, onClose, onSaved }) {
         category: form.category,
         name: form.name.trim(),
         description: form.description.trim() || undefined,
+        badge: form.badge || null,
+        allergens: form.allergens,
         price: parseFloat(form.price),
         sort_order: parseInt(form.sort_order) || 0,
         available: true,
@@ -199,12 +206,39 @@ function ProductModal({ product, categories, onClose, onSaved }) {
 
         <div className={styles.fieldRow}>
           <div className={styles.field}>
+            <label className={styles.label}>Badge <span style={{ color: 'var(--text-muted)' }}>(optionnel)</span></label>
+            <select className={styles.select} value={form.badge} onChange={e => setForm(f => ({ ...f, badge: e.target.value }))}>
+              {BADGES.map(b => <option key={b} value={b}>{b || '— Aucun —'}</option>)}
+            </select>
+          </div>
+          <div className={styles.field}>
             <label className={styles.label}>Prix (€)</label>
             <input className={styles.input} type="number" step="0.01" min="0" value={form.price} onChange={e => setForm(f => ({ ...f, price: e.target.value }))} placeholder="8.50" />
           </div>
           <div className={styles.field}>
             <label className={styles.label}>Ordre d'affichage</label>
             <input className={styles.input} type="number" min="0" value={form.sort_order} onChange={e => setForm(f => ({ ...f, sort_order: e.target.value }))} />
+          </div>
+        </div>
+
+        <div className={styles.field}>
+          <label className={styles.label}>Allergènes <span style={{ color: 'var(--text-muted)' }}>(optionnel)</span></label>
+          <div className={styles.allergensGrid}>
+            {ALLERGENS.map(a => (
+              <label key={a} className={styles.allergenChip}>
+                <input
+                  type="checkbox"
+                  checked={form.allergens.includes(a)}
+                  onChange={() => setForm(f => ({
+                    ...f,
+                    allergens: f.allergens.includes(a)
+                      ? f.allergens.filter(x => x !== a)
+                      : [...f.allergens, a]
+                  }))}
+                />
+                {a}
+              </label>
+            ))}
           </div>
         </div>
 

@@ -117,26 +117,33 @@ const getProducts = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
+const VALID_BADGES = ['Nouveau', 'Populaire', 'Spécial', 'Épicé 🌶', 'Végan 🌿', 'Sans gluten'];
+const VALID_ALLERGENS = ['gluten', 'crustacés', 'oeufs', 'poisson', 'arachides', 'soja', 'lait', 'fruits à coque', 'céleri', 'moutarde', 'sésame', 'sulfites', 'lupin', 'mollusques'];
+
 const createProduct = async (req, res, next) => {
   try {
-    const { category, name, description, price, available, sort_order, formula_quantity } = req.body;
+    const { category, name, description, badge, allergens, price, available, sort_order, formula_quantity } = req.body;
     if (!name?.trim()) return res.status(400).json({ error: 'Nom requis' });
     if (isNaN(parseFloat(price))) return res.status(400).json({ error: 'Prix invalide' });
+    if (badge && !VALID_BADGES.includes(badge)) return res.status(400).json({ error: 'Badge invalide' });
+    if (allergens && (!Array.isArray(allergens) || allergens.some(a => !VALID_ALLERGENS.includes(a)))) return res.status(400).json({ error: 'Allergène invalide' });
     const categories = await categoryRepository.findAll();
     if (!categories.find(c => c.slug === category)) return res.status(400).json({ error: 'Catégorie invalide' });
-    const id = await productAdminRepository.create({ category, name: name.trim(), description, price: parseFloat(price), available: available !== false ? 1 : 0, sort_order: sort_order || 0, formula_quantity: formula_quantity || null });
+    const id = await productAdminRepository.create({ category, name: name.trim(), description, badge: badge || null, allergens: allergens || [], price: parseFloat(price), available: available !== false ? 1 : 0, sort_order: sort_order || 0, formula_quantity: formula_quantity || null });
     res.status(201).json({ id });
   } catch (err) { next(err); }
 };
 
 const updateProduct = async (req, res, next) => {
   try {
-    const { category, name, description, price, available, sort_order, formula_quantity } = req.body;
+    const { category, name, description, badge, allergens, price, available, sort_order, formula_quantity } = req.body;
     if (!name?.trim()) return res.status(400).json({ error: 'Nom requis' });
     if (isNaN(parseFloat(price))) return res.status(400).json({ error: 'Prix invalide' });
+    if (badge && !VALID_BADGES.includes(badge)) return res.status(400).json({ error: 'Badge invalide' });
+    if (allergens && (!Array.isArray(allergens) || allergens.some(a => !VALID_ALLERGENS.includes(a)))) return res.status(400).json({ error: 'Allergène invalide' });
     const categories = await categoryRepository.findAll();
     if (!categories.find(c => c.slug === category)) return res.status(400).json({ error: 'Catégorie invalide' });
-    await productAdminRepository.update(parseInt(req.params.id), { category, name: name.trim(), description, price: parseFloat(price), available: available ? 1 : 0, sort_order: sort_order || 0, formula_quantity: formula_quantity || null });
+    await productAdminRepository.update(parseInt(req.params.id), { category, name: name.trim(), description, badge: badge || null, allergens: allergens || [], price: parseFloat(price), available: available ? 1 : 0, sort_order: sort_order || 0, formula_quantity: formula_quantity || null });
     res.json({ success: true });
   } catch (err) { next(err); }
 };

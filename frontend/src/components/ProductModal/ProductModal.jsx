@@ -56,10 +56,19 @@ function ProductModal({ product, onClose, onAdd }) {
         )}
 
         <div className={styles.header}>
-          <div className={styles.name}>{product.name}</div>
+          <div className={styles.nameRow}>
+            <div className={styles.name}>{product.name}</div>
+            {product.badge && <span className={styles.badge}>{product.badge}</span>}
+          </div>
           <div className={styles.price}>{formatPrice(totalPrice)}</div>
           {product.description && (
             <p className={styles.description}>{product.description}</p>
+          )}
+          {product.allergens && product.allergens.length > 0 && (
+            <div className={styles.allergens}>
+              <span className={styles.allergensLabel}>Allergènes :</span>
+              {product.allergens.join(', ')}
+            </div>
           )}
         </div>
 

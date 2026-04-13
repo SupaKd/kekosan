@@ -9,7 +9,9 @@ function ProductCard({ product, onSelect }) {
   return (
     <div className={styles.card} onClick={() => onSelect(product)}>
       <div className={styles.info}>
-        <span className={styles.name}>{product.name}</span>
+        <div className={styles.nameRow}>
+          <span className={styles.name}>{product.name}</span>
+        </div>
         {product.description && (
           <p className={styles.description}>{product.description}</p>
         )}
@@ -27,6 +29,7 @@ function ProductCard({ product, onSelect }) {
           ? <img src={`${API_BASE}${product.image_url}`} alt={product.name} className={styles.image} loading="lazy" decoding="async" />
           : <div className={styles.imagePlaceholder}>🥖</div>
         }
+        {product.badge && <span className={styles.badge}>{product.badge}</span>}
       </div>
     </div>
   )
