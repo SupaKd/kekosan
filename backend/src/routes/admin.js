@@ -61,6 +61,7 @@ router.get('/stats', adminController.getStats);
 router.get('/orders', adminController.getOrders);
 router.get('/orders/:id', adminController.getOrderById);
 router.patch('/orders/:id/status', adminController.updateOrderStatus);
+router.post('/orders/:id/refund', adminController.refundOrder);
 
 // ── Service ouvert/fermé ────────────────────────────────────────────────────
 router.patch('/service', c.setServiceStatus);

@@ -86,7 +86,20 @@
   font-size: 13px;
   color: var(--text-muted);
   line-height: 1.5;
-  margin: 0 0 14px;
+  margin: 0 0 8px;
+}
+
+.allergens {
+  font-size: 11px;
+  color: var(--text-muted);
+  opacity: 0.7;
+  line-height: 1.4;
+  margin-bottom: 12px;
+}
+
+.allergensLabel {
+  font-weight: 700;
+  margin-right: 4px;
 }
 
 .progress {
@@ -163,6 +176,17 @@
   color: var(--neon-cyan);
   font-weight: 600;
   margin-left: auto;
+}
+
+.slotOptionalTag {
+  font-size: 10px;
+  font-weight: 700;
+  color: #888899;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 20px;
+  padding: 2px 8px;
+  flex-shrink: 0;
 }
 
 .slotHint {

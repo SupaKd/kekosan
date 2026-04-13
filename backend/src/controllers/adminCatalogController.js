@@ -226,22 +226,26 @@ const getFormulas = async (req, res, next) => {
 
 const createFormula = async (req, res, next) => {
   try {
-    const { name, description, price, available, sort_order, slots } = req.body;
+    const { name, description, badge, allergens, price, available, sort_order, slots } = req.body;
     if (!name?.trim()) return res.status(400).json({ error: 'Nom requis' });
     if (isNaN(parseFloat(price))) return res.status(400).json({ error: 'Prix invalide' });
+    if (badge && !VALID_BADGES.includes(badge)) return res.status(400).json({ error: 'Badge invalide' });
+    if (allergens && (!Array.isArray(allergens) || allergens.some(a => !VALID_ALLERGENS.includes(a)))) return res.status(400).json({ error: 'Allergène invalide' });
     if (!Array.isArray(slots) || slots.length === 0) return res.status(400).json({ error: 'Au moins un slot requis' });
-    const id = await formulaAdminRepository.create({ name: name.trim(), description, price: parseFloat(price), available: available !== false ? 1 : 0, sort_order: parseInt(sort_order) || 0, slots });
+    const id = await formulaAdminRepository.create({ name: name.trim(), description, badge: badge || null, allergens: allergens || [], price: parseFloat(price), available: available !== false ? 1 : 0, sort_order: parseInt(sort_order) || 0, slots });
     res.status(201).json({ id });
   } catch (err) { next(err); }
 };
 
 const updateFormula = async (req, res, next) => {
   try {
-    const { name, description, price, available, sort_order, slots } = req.body;
+    const { name, description, badge, allergens, price, available, sort_order, slots } = req.body;
     if (!name?.trim()) return res.status(400).json({ error: 'Nom requis' });
     if (isNaN(parseFloat(price))) return res.status(400).json({ error: 'Prix invalide' });
+    if (badge && !VALID_BADGES.includes(badge)) return res.status(400).json({ error: 'Badge invalide' });
+    if (allergens && (!Array.isArray(allergens) || allergens.some(a => !VALID_ALLERGENS.includes(a)))) return res.status(400).json({ error: 'Allergène invalide' });
     if (!Array.isArray(slots) || slots.length === 0) return res.status(400).json({ error: 'Au moins un slot requis' });
-    await formulaAdminRepository.update(parseInt(req.params.id), { name: name.trim(), description, price: parseFloat(price), available, sort_order: parseInt(sort_order) || 0, slots });
+    await formulaAdminRepository.update(parseInt(req.params.id), { name: name.trim(), description, badge: badge || null, allergens: allergens || [], price: parseFloat(price), available, sort_order: parseInt(sort_order) || 0, slots });
     res.json({ success: true });
   } catch (err) { next(err); }
 };

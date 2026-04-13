@@ -354,6 +354,7 @@ function FormulaModal({ formula, categories, onClose, onSaved }) {
     if (!formula?.slots?.length) return []
     return formula.slots.map(s => ({
       slot_name: s.slot_name,
+      required: s.required !== false,
       allowed_categories: Array.isArray(s.allowed_categories)
         ? s.allowed_categories
         : (s.allowed_categories || '').split(',').map(c => c.trim()).filter(Boolean),
@@ -363,11 +364,14 @@ function FormulaModal({ formula, categories, onClose, onSaved }) {
   const [form, setForm] = useState({
     name: formula?.name || '',
     description: formula?.description || '',
+    badge: formula?.badge || '',
+    allergens: formula?.allergens || [],
     price: formula?.price != null ? String(formula.price) : '',
     sort_order: formula?.sort_order != null ? String(formula.sort_order) : '0',
   })
-  // slots = tableau de { slot_name, allowed_categories[] }
+  // slots = tableau de { slot_name, required, sort_order, allowed_categories[] }
   const [slots, setSlots] = useState(initSlots)
+  const dragIndexRef = useRef(null)
   const [imageUrl, setImageUrl] = useState(formula?.image_url || null)
   const [imageUploading, setImageUploading] = useState(false)
   const [error, setError] = useState(null)
@@ -400,7 +404,31 @@ function FormulaModal({ formula, categories, onClose, onSaved }) {
   }
 
   const addSlot = () => {
-    setSlots(prev => [...prev, { slot_name: '', allowed_categories: [] }])
+    setSlots(prev => [...prev, { slot_name: '', required: true, sort_order: prev.length, allowed_categories: [] }])
+  }
+
+  const handleDragStart = (i) => { dragIndexRef.current = i }
+  const handleDragOver = (e, i) => {
+    e.preventDefault()
+    const from = dragIndexRef.current
+    if (from === null || from === i) return
+    setSlots(prev => {
+      const next = [...prev]
+      const [moved] = next.splice(from, 1)
+      next.splice(i, 0, moved)
+      dragIndexRef.current = i
+      return next.map((s, idx) => ({ ...s, sort_order: idx }))
+    })
+  }
+  const handleDragEnd = () => { dragIndexRef.current = null }
+
+  const toggleFormulaAllergen = (allergen) => {
+    setForm(f => ({
+      ...f,
+      allergens: f.allergens.includes(allergen)
+        ? f.allergens.filter(a => a !== allergen)
+        : [...f.allergens, allergen],
+    }))
   }
 
   const removeSlot = (i) => {
@@ -424,6 +452,12 @@ function FormulaModal({ formula, categories, onClose, onSaved }) {
     }))
   }
 
+  const toggleSlotRequired = (i) => {
+    setSlots(prev => prev.map((s, idx) =>
+      idx === i ? { ...s, required: !s.required } : s
+    ))
+  }
+
   const handleSave = async () => {
     setError(null)
     if (!form.name.trim()) return setError('Nom requis')
@@ -438,11 +472,15 @@ function FormulaModal({ formula, categories, onClose, onSaved }) {
       const body = {
         name: form.name.trim(),
         description: form.description.trim() || undefined,
+        badge: form.badge || null,
         price: parseFloat(form.price),
         sort_order: parseInt(form.sort_order) || 0,
         available: true,
-        slots: slots.map(s => ({
+        allergens: form.allergens,
+        slots: slots.map((s, idx) => ({
           slot_name: s.slot_name.trim(),
+          required: s.required,
+          sort_order: idx,
           allowed_categories: s.allowed_categories.join(','),
         })),
       }
@@ -484,6 +522,33 @@ function FormulaModal({ formula, categories, onClose, onSaved }) {
         </div>
 
         <div className={styles.field}>
+          <label className={styles.label}>Badge <span style={{ color: 'var(--text-muted)' }}>(optionnel)</span></label>
+          <select className={styles.input} value={form.badge} onChange={e => setForm(f => ({ ...f, badge: e.target.value }))}>
+            <option value="">— Aucun —</option>
+            {['Nouveau', 'Populaire', 'Spécial', 'Épicé 🌶', 'Végan 🌿', 'Sans gluten'].map(b => (
+              <option key={b} value={b}>{b}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className={styles.field}>
+          <label className={styles.label}>Allergènes <span style={{ color: 'var(--text-muted)' }}>(optionnel)</span></label>
+          <div className={styles.allergensGrid}>
+            {['gluten','crustacés','oeufs','poisson','arachides','soja','lait','fruits à coque','céleri','moutarde','sésame','sulfites','lupin','mollusques'].map(a => (
+              <label key={a} className={styles.allergenChip}>
+                <input
+                  type="checkbox"
+                  checked={form.allergens.includes(a)}
+                  onChange={() => toggleFormulaAllergen(a)}
+                  style={{ display: 'none' }}
+                />
+                {a}
+              </label>
+            ))}
+          </div>
+        </div>
+
+        <div className={styles.field}>
           <label className={styles.label}>
             Photo de la formule
             {!isEdit && <span style={{ color: 'var(--text-muted)', marginLeft: 6 }}>(disponible après création)</span>}
@@ -510,8 +575,16 @@ function FormulaModal({ formula, categories, onClose, onSaved }) {
           <label className={styles.label}>Slots (choix du client)</label>
           <div className={styles.slotEditor}>
             {slots.map((slot, i) => (
-              <div key={i} className={styles.slotRow}>
+              <div
+                key={i}
+                className={styles.slotRow}
+                draggable
+                onDragStart={() => handleDragStart(i)}
+                onDragOver={e => handleDragOver(e, i)}
+                onDragEnd={handleDragEnd}
+              >
                 <div className={styles.slotRowHeader}>
+                  <span className={styles.slotDragHandle} title="Glisser pour réordonner">⠿</span>
                   <span className={styles.slotNum}>{i + 1}</span>
                   <input
                     className={styles.slotNameInput}
@@ -519,6 +592,13 @@ function FormulaModal({ formula, categories, onClose, onSaved }) {
                     value={slot.slot_name}
                     onChange={e => updateSlotName(i, e.target.value)}
                   />
+                  <label
+                    className={`${styles.slotRequiredToggle} ${slot.required ? styles.slotRequiredOn : styles.slotRequiredOff}`}
+                    title={slot.required ? 'Slot obligatoire' : 'Slot optionnel'}
+                    onClick={() => toggleSlotRequired(i)}
+                  >
+                    {slot.required ? 'Obligatoire' : 'Optionnel'}
+                  </label>
                   <button
                     type="button"
                     className={styles.slotRemoveBtn}
@@ -705,74 +785,89 @@ function AdminPanel() {
             ⚠️ Créez au moins une catégorie avant d'ajouter des produits.
           </div>
         )}
-        <div className={styles.list}>
-          {products.map(p => (
-            <div key={p.id}>
-              <div className={styles.row}>
-                <AvailToggle available={p.available} onChange={() => handleToggleProduct(p)} />
-                <div className={styles.rowInfo}>
-                  <div className={styles.rowName}>{p.name}</div>
-                  <div className={styles.rowMeta}>
-                    {categories.find(c => c.slug === p.category)?.label || p.category}
-                    {p.description ? ` — ${p.description}` : ''}
-                  </div>
-                  {p.options?.length > 0 && (
-                    <div className={styles.options}>
-                      {p.options.map(o => (
-                        <span
-                          key={o.id}
-                          className={`${styles.optionChip} ${!o.available ? styles.disabled : ''}`}
-                        >
-                          {o.name}{o.price_delta > 0 ? ` +${o.price_delta}€` : ''}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-                <div className={styles.rowPrice}>{parseFloat(p.price).toFixed(2)} €</div>
-                <div className={styles.rowActions}>
-                  <button
-                    className={styles.iconBtn}
-                    title="Options"
-                    onClick={() => setExpandedProduct(expandedProduct === p.id ? null : p.id)}
-                  >⚙</button>
-                  <button className={styles.iconBtn} title="Modifier" onClick={() => setProductModal(p)}>✏</button>
-                  <button className={`${styles.iconBtn} ${styles.danger}`} title="Supprimer" onClick={() => handleDeleteProduct(p.id)}>🗑</button>
-                </div>
+        {categories.map(cat => {
+          const catProducts = products.filter(p => p.category === cat.slug)
+          return (
+            <div key={cat.slug} className={styles.categoryGroup}>
+              <div className={styles.categoryGroupHeader}>
+                <span className={styles.categoryGroupLabel}>{cat.label}</span>
+                <span className={styles.categoryGroupCount}>{catProducts.length} produit{catProducts.length !== 1 ? 's' : ''}</span>
               </div>
-
-              {/* Options sous-panneau */}
-              {expandedProduct === p.id && (
-                <div style={{ background: 'var(--bg-card)', borderBottom: '1px solid var(--border)', padding: '12px 20px 12px 48px' }}>
-                  <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 8, fontWeight: 600 }}>Options du produit</div>
-                  {p.options?.length === 0 && (
-                    <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 8 }}>Aucune option</div>
-                  )}
-                  {p.options?.map(o => (
-                    <div key={o.id} className={styles.row} style={{ padding: '8px 0' }}>
-                      <AvailToggle available={o.available} onChange={() => handleToggleOption(p.id, o)} />
+              <div className={styles.list}>
+                {catProducts.length === 0 && (
+                  <div className={styles.emptyHint} style={{ padding: '12px 20px' }}>
+                    Aucun produit dans cette catégorie.
+                  </div>
+                )}
+                {catProducts.map(p => (
+                  <div key={p.id}>
+                    <div className={styles.row}>
+                      <AvailToggle available={p.available} onChange={() => handleToggleProduct(p)} />
                       <div className={styles.rowInfo}>
-                        <div className={styles.rowName} style={{ fontSize: 13 }}>{o.name}</div>
+                        <div className={styles.rowName}>{p.name}</div>
+                        <div className={styles.rowMeta}>
+                          {p.description ? p.description : <span style={{ opacity: 0.4 }}>Pas de description</span>}
+                        </div>
+                        {p.options?.length > 0 && (
+                          <div className={styles.options}>
+                            {p.options.map(o => (
+                              <span
+                                key={o.id}
+                                className={`${styles.optionChip} ${!o.available ? styles.disabled : ''}`}
+                              >
+                                {o.name}{o.price_delta > 0 ? ` +${o.price_delta}€` : ''}
+                              </span>
+                            ))}
+                          </div>
+                        )}
                       </div>
-                      <div className={styles.rowPrice} style={{ fontSize: 13 }}>
-                        {o.price_delta > 0 ? `+${parseFloat(o.price_delta).toFixed(2)} €` : '—'}
-                      </div>
+                      <div className={styles.rowPrice}>{parseFloat(p.price).toFixed(2)} €</div>
                       <div className={styles.rowActions}>
-                        <button className={styles.iconBtn} onClick={() => setOptionModal({ productId: p.id, option: o })}>✏</button>
-                        <button className={`${styles.iconBtn} ${styles.danger}`} onClick={() => handleDeleteOption(p.id, o.id)}>🗑</button>
+                        <button
+                          className={styles.iconBtn}
+                          title="Options"
+                          onClick={() => setExpandedProduct(expandedProduct === p.id ? null : p.id)}
+                        >⚙</button>
+                        <button className={styles.iconBtn} title="Modifier" onClick={() => setProductModal(p)}>✏</button>
+                        <button className={`${styles.iconBtn} ${styles.danger}`} title="Supprimer" onClick={() => handleDeleteProduct(p.id)}>🗑</button>
                       </div>
                     </div>
-                  ))}
-                  <button
-                    className={styles.addBtn}
-                    style={{ marginTop: 8 }}
-                    onClick={() => setOptionModal({ productId: p.id, option: null })}
-                  >+ Ajouter une option</button>
-                </div>
-              )}
+
+                    {/* Options sous-panneau */}
+                    {expandedProduct === p.id && (
+                      <div style={{ background: 'var(--bg-card)', borderBottom: '1px solid var(--border)', padding: '12px 20px 12px 48px' }}>
+                        <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 8, fontWeight: 600 }}>Options du produit</div>
+                        {p.options?.length === 0 && (
+                          <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 8 }}>Aucune option</div>
+                        )}
+                        {p.options?.map(o => (
+                          <div key={o.id} className={styles.row} style={{ padding: '8px 0' }}>
+                            <AvailToggle available={o.available} onChange={() => handleToggleOption(p.id, o)} />
+                            <div className={styles.rowInfo}>
+                              <div className={styles.rowName} style={{ fontSize: 13 }}>{o.name}</div>
+                            </div>
+                            <div className={styles.rowPrice} style={{ fontSize: 13 }}>
+                              {o.price_delta > 0 ? `+${parseFloat(o.price_delta).toFixed(2)} €` : '—'}
+                            </div>
+                            <div className={styles.rowActions}>
+                              <button className={styles.iconBtn} onClick={() => setOptionModal({ productId: p.id, option: o })}>✏</button>
+                              <button className={`${styles.iconBtn} ${styles.danger}`} onClick={() => handleDeleteOption(p.id, o.id)}>🗑</button>
+                            </div>
+                          </div>
+                        ))}
+                        <button
+                          className={styles.addBtn}
+                          style={{ marginTop: 8 }}
+                          onClick={() => setOptionModal({ productId: p.id, option: null })}
+                        >+ Ajouter une option</button>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
-          ))}
-        </div>
+          )
+        })}
       </div>
 
       {/* ── Formules ─────────────────────────────────────────────────────── */}

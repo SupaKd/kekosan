@@ -180,6 +180,11 @@ export const updateOrderStatus = (id, status) =>
     headers: { Authorization: `Bearer ${localStorage.getItem('admin_token')}` },
   }).then(r => r.data)
 
+export const refundOrder = (id) =>
+  client.post(`/admin/orders/${id}/refund`, {}, {
+    headers: { Authorization: `Bearer ${localStorage.getItem('admin_token')}` },
+  }).then(r => r.data)
+
 // ── Disponibilité créneaux ────────────────────────────────────────────────────
 export const getSlotAvailability = () =>
   client.get('/admin/slot-availability').then(r => r.data)

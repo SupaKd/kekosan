@@ -459,6 +459,23 @@
   backdrop-filter: blur(2px);
 }
 
+.formulaBadge {
+  position: absolute;
+  bottom: 10px;
+  left: 0;
+  padding: 4px 12px 4px 10px;
+  border-radius: 0 20px 20px 0;
+  font-size: 10px;
+  font-weight: 700;
+  font-family: var(--font-sans, sans-serif);
+  letter-spacing: 0.3px;
+  background: #ffd60a;
+  color: #1a1a1a;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  z-index: 3;
+}
+
 /* En-tête du ticket */
 .formulaTicketHeader {
   background: #1a1a1a;

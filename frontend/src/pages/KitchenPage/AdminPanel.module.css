@@ -111,6 +111,33 @@
   flex-direction: column;
 }
 
+.categoryGroup {
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+.categoryGroup:first-child { border-top: none }
+
+.categoryGroupHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+  background: rgba(255, 214, 10, 0.04);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.categoryGroupLabel {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: #ffd60a;
+}
+
+.categoryGroupCount {
+  font-size: 11px;
+  color: #555566;
+}
+
 .row {
   display: flex;
   align-items: center;
@@ -448,6 +475,19 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+  cursor: default;
+}
+
+.slotRow[draggable="true"] { cursor: grab }
+.slotRow[draggable="true"]:active { cursor: grabbing; opacity: 0.7 }
+
+.slotDragHandle {
+  color: #555566;
+  font-size: 16px;
+  cursor: grab;
+  flex-shrink: 0;
+  user-select: none;
+  line-height: 1;
 }
 
 .slotRowHeader {
@@ -500,6 +540,29 @@
   transition: all 0.15s;
 }
 .slotRemoveBtn:hover { border-color: var(--danger); color: var(--danger) }
+
+.slotRequiredToggle {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 20px;
+  cursor: pointer;
+  user-select: none;
+  flex-shrink: 0;
+  transition: background 0.15s, color 0.15s;
+}
+
+.slotRequiredOn {
+  background: rgba(255, 214, 10, 0.15);
+  color: #ffd60a;
+  border: 1px solid rgba(255, 214, 10, 0.4);
+}
+
+.slotRequiredOff {
+  background: rgba(255, 255, 255, 0.06);
+  color: #888899;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
 
 .slotCatPicker {
   display: flex;

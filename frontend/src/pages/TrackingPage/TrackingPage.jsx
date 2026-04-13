@@ -76,6 +76,8 @@ function TrackingPage() {
 
   const currentStepIndex = STATUS_STEPS.findIndex(s => s.key === order.status)
   const deliveryWindow = getDeliveryWindow(order.delivery_time)
+  const isCancelled = order.status === 'cancelled'
+  const isRefunded = isCancelled && order.payment_status === 'refunded'
 
   return (
     <div className={styles.page}>
@@ -85,8 +87,25 @@ function TrackingPage() {
           <div className={styles.logoJp}>SUIVI DE COMMANDE</div>
         </div>
 
-        {/* Stepper */}
-        <div className={styles.stepper}>
+        {/* Bandeau annulation / remboursement */}
+        {isCancelled && (
+          <div className={styles.cancelledBanner}>
+            <div className={styles.cancelledIcon}>{isRefunded ? '↩' : '✕'}</div>
+            <div>
+              <div className={styles.cancelledTitle}>
+                {isRefunded ? 'Commande annulée et remboursée' : 'Commande annulée'}
+              </div>
+              <div className={styles.cancelledDesc}>
+                {isRefunded
+                  ? `Le remboursement de ${formatPrice(order.total)} a été initié. Comptez 5 à 10 jours ouvrés pour le crédit sur votre compte.`
+                  : 'Votre commande a été annulée. Contactez-nous si vous avez des questions.'}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Stepper — masqué si annulée */}
+        {!isCancelled && <div className={styles.stepper}>
           {STATUS_STEPS.map((step, i) => {
             const isDone = i < currentStepIndex
             const isCurrent = i === currentStepIndex
@@ -108,7 +127,7 @@ function TrackingPage() {
               </div>
             )
           })}
-        </div>
+        </div>}
 
         {/* Récapitulatif des articles */}
         {((order.items?.length > 0) || (order.formula_items?.length > 0)) && (

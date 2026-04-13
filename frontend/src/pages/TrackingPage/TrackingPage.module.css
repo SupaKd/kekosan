@@ -38,6 +38,37 @@
 }
 
 /* ── Stepper statut ── */
+.cancelledBanner {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  background: rgba(255, 69, 58, 0.08);
+  border: 1px solid rgba(255, 69, 58, 0.25);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 28px;
+}
+
+.cancelledIcon {
+  font-size: 28px;
+  line-height: 1;
+  flex-shrink: 0;
+  color: #ff453a;
+}
+
+.cancelledTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: #ff453a;
+  margin-bottom: 6px;
+}
+
+.cancelledDesc {
+  font-size: 13px;
+  color: #c0c0d8;
+  line-height: 1.5;
+}
+
 .stepper {
   display: flex;
   flex-direction: column;

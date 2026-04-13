@@ -3,7 +3,7 @@ const pool = require('../config/db');
 // Récupère toutes les formules disponibles avec leurs slots
 const findAllAvailable = async () => {
   const [formulas] = await pool.query(
-    `SELECT id, name, description, price, image_url
+    `SELECT id, name, description, badge, allergens, price, image_url
      FROM formulas
      WHERE available = 1
      ORDER BY sort_order, name`
@@ -14,10 +14,10 @@ const findAllAvailable = async () => {
   const formulaIds = formulas.map((f) => f.id);
 
   const [slots] = await pool.query(
-    `SELECT id, formula_id, slot_name, allowed_categories
+    `SELECT id, formula_id, slot_name, allowed_categories, required, sort_order
      FROM formula_slots
      WHERE formula_id IN (?)
-     ORDER BY formula_id, id`,
+     ORDER BY formula_id, sort_order, id`,
     [formulaIds]
   );
 
@@ -28,7 +28,8 @@ const findAllAvailable = async () => {
     slotsByFormula[slot.formula_id].push({
       id: slot.id,
       slot_name: slot.slot_name,
-      // allowed_categories est stocké en CSV — on expose un tableau
+      required: slot.required === 1,
+      sort_order: slot.sort_order ?? 0,
       allowed_categories: slot.allowed_categories.split(',').map((c) => c.trim()),
     });
   }
@@ -37,6 +38,8 @@ const findAllAvailable = async () => {
     id: f.id,
     name: f.name,
     description: f.description,
+    badge: f.badge || null,
+    allergens: Array.isArray(f.allergens) ? f.allergens : (f.allergens && f.allergens !== '' ? JSON.parse(f.allergens) : []),
     price: parseFloat(f.price),
     image_url: f.image_url || null,
     slots: slotsByFormula[f.id] || [],
@@ -54,7 +57,7 @@ const findById = async (id) => {
   if (!rows[0]) return null;
 
   const [slots] = await pool.query(
-    `SELECT id, slot_name, allowed_categories
+    `SELECT id, slot_name, allowed_categories, required
      FROM formula_slots
      WHERE formula_id = ?
      ORDER BY id`,
@@ -67,6 +70,7 @@ const findById = async (id) => {
     slots: slots.map((s) => ({
       id: s.id,
       slot_name: s.slot_name,
+      required: s.required === 1,
       allowed_categories: s.allowed_categories.split(',').map((c) => c.trim()),
     })),
   };

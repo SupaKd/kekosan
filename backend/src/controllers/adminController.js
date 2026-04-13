@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const adminRepository = require('../repositories/adminRepository');
 const orderRepository = require('../repositories/orderRepository');
 
@@ -85,6 +86,41 @@ const updateOrderStatus = async (req, res, next) => {
   }
 };
 
+// POST /api/admin/orders/:id/refund
+const refundOrder = async (req, res, next) => {
+  try {
+    const orderId = parseInt(req.params.id);
+    const order = await adminRepository.findOrderById(orderId);
+    if (!order) return res.status(404).json({ error: 'Commande introuvable' });
+
+    if (order.payment_status !== 'paid')
+      return res.status(400).json({ error: 'Cette commande n\'a pas été payée — remboursement impossible' });
+
+    if (order.status === 'cancelled')
+      return res.status(400).json({ error: 'Commande déjà annulée' });
+
+    if (!order.stripe_payment_intent_id)
+      return res.status(400).json({ error: 'Aucun identifiant Stripe sur cette commande' });
+
+    // Remboursement total via Stripe
+    await stripe.refunds.create({ payment_intent: order.stripe_payment_intent_id });
+
+    // Mise à jour DB : annulée + remboursée
+    await orderRepository.updateStatus(orderId, {
+      status: 'cancelled',
+      payment_status: 'refunded',
+    });
+
+    res.json({ success: true, order_id: orderId });
+  } catch (err) {
+    // Erreur Stripe (ex: déjà remboursé)
+    if (err.type?.startsWith('Stripe')) {
+      return res.status(400).json({ error: err.message });
+    }
+    next(err);
+  }
+};
+
 // GET /api/admin/stats
 const getStats = async (req, res, next) => {
   try {
@@ -95,4 +131,4 @@ const getStats = async (req, res, next) => {
   }
 };
 
-module.exports = { login, refreshToken, getOrders, getOrderById, updateOrderStatus, getStats };
+module.exports = { login, refreshToken, getOrders, getOrderById, updateOrderStatus, refundOrder, getStats };

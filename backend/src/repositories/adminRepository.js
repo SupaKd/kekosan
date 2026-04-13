@@ -156,41 +156,75 @@ const findOrderById = async (id) => {
 // Statistiques pour le dashboard admin
 const getStats = async () => {
   const [[today]] = await pool.query(`
-    SELECT
-      COUNT(*) AS count,
-      COALESCE(SUM(total), 0) AS revenue
+    SELECT COUNT(*) AS count, COALESCE(SUM(total), 0) AS revenue
     FROM orders
-    WHERE status NOT IN ('cancelled', 'pending')
-      AND DATE(created_at) = CURDATE()
+    WHERE status NOT IN ('cancelled', 'pending') AND DATE(created_at) = CURDATE()
   `);
 
   const [[week]] = await pool.query(`
-    SELECT
-      COUNT(*) AS count,
-      COALESCE(SUM(total), 0) AS revenue
+    SELECT COUNT(*) AS count, COALESCE(SUM(total), 0) AS revenue
     FROM orders
     WHERE status NOT IN ('cancelled', 'pending')
       AND YEARWEEK(created_at, 1) = YEARWEEK(NOW(), 1)
   `);
 
   const [[month]] = await pool.query(`
-    SELECT
-      COUNT(*) AS count,
-      COALESCE(SUM(total), 0) AS revenue
+    SELECT COUNT(*) AS count, COALESCE(SUM(total), 0) AS revenue
     FROM orders
     WHERE status NOT IN ('cancelled', 'pending')
-      AND YEAR(created_at) = YEAR(NOW())
-      AND MONTH(created_at) = MONTH(NOW())
+      AND YEAR(created_at) = YEAR(NOW()) AND MONTH(created_at) = MONTH(NOW())
+  `);
+
+  // Ticket moyen global (commandes non annulées)
+  const [[avgTicket]] = await pool.query(`
+    SELECT COALESCE(AVG(total), 0) AS avg_ticket
+    FROM orders WHERE status NOT IN ('cancelled', 'pending')
+  `);
+
+  // Top 5 produits les plus commandés (par quantité)
+  const [topProducts] = await pool.query(`
+    SELECT oi.product_name_snapshot AS name, SUM(oi.quantity) AS qty
+    FROM order_items oi
+    JOIN orders o ON o.id = oi.order_id
+    WHERE o.status NOT IN ('cancelled', 'pending')
+    GROUP BY oi.product_name_snapshot
+    ORDER BY qty DESC
+    LIMIT 5
+  `);
+
+  // Top 5 créneaux les plus chargés
+  const [topSlots] = await pool.query(`
+    SELECT delivery_time AS slot, COUNT(*) AS cnt
+    FROM orders
+    WHERE status NOT IN ('cancelled', 'pending') AND delivery_time IS NOT NULL
+    GROUP BY delivery_time
+    ORDER BY cnt DESC
+    LIMIT 5
+  `);
+
+  // CA des 30 derniers jours (par jour) — pour le mini graphe
+  const [revenueByDay] = await pool.query(`
+    SELECT DATE(created_at) AS day, COALESCE(SUM(total), 0) AS revenue, COUNT(*) AS count
+    FROM orders
+    WHERE status NOT IN ('cancelled', 'pending')
+      AND created_at >= DATE_SUB(CURDATE(), INTERVAL 29 DAY)
+    GROUP BY DATE(created_at)
+    ORDER BY day ASC
   `);
 
   const [recentOrders] = await pool.query(`
     SELECT id, customer_name, total, status, payment_status, created_at
-    FROM orders
-    ORDER BY created_at DESC
-    LIMIT 8
+    FROM orders ORDER BY created_at DESC LIMIT 8
   `);
 
-  return { today, week, month, recentOrders };
+  return {
+    today, week, month,
+    avg_ticket: parseFloat(avgTicket.avg_ticket),
+    top_products: topProducts,
+    top_slots: topSlots,
+    revenue_by_day: revenueByDay,
+    recentOrders,
+  };
 };
 
 module.exports = { findOrders, findOrderById, getStats };

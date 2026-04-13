@@ -1,7 +1,11 @@
+import { useState } from "react";
 import { MapPin, Clock, Mail } from "lucide-react";
 import styles from "./Footer.module.css";
+import LegalModal from "../LegalModal/LegalModal";
 
 function Footer() {
+  const [showLegal, setShowLegal] = useState(false)
+
   return (
     <footer className={styles.footer}>
       <div className={styles.top}>
@@ -63,7 +67,9 @@ function Footer() {
 
       <div className={styles.bottom}>
         <span className={styles.legal}>© {new Date().getFullYear()} Kekosan — Tous droits réservés</span>
-        <span className={styles.madeWith}>Fait avec ❤️ à Saint-Genis-Pouilly</span>
+        <button className={styles.legalLink} onClick={() => setShowLegal(true)}>
+          CGV & Confidentialité
+        </button>
         <span className={styles.madeBy}>
           Site réalisé par{" "}
           <a href="https://supaco-digital.com/" target="_blank" rel="noopener noreferrer" className={styles.madeByLink}>
@@ -71,6 +77,8 @@ function Footer() {
           </a>
         </span>
       </div>
+
+      {showLegal && <LegalModal onClose={() => setShowLegal(false)} />}
     </footer>
   );
 }

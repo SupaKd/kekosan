@@ -178,6 +178,123 @@
   font-size: 13px;
 }
 
+/* ── Statistiques détaillées ── */
+.statsDetail {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.statDetailCard {
+  padding: 20px;
+  border-right: 1px solid rgba(255,255,255,0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.statDetailCard:last-child { border-right: none }
+
+.statDetailLabel {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #888899;
+}
+
+.statDetailValue {
+  font-size: 32px;
+  font-weight: 800;
+  color: #ffffff;
+  line-height: 1;
+}
+
+.topList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.topRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.topRank {
+  font-size: 10px;
+  font-weight: 700;
+  color: #ffd60a;
+  min-width: 22px;
+}
+
+.topName {
+  flex: 1;
+  color: #e0e0f0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.topVal {
+  color: #888899;
+  flex-shrink: 0;
+  font-size: 11px;
+}
+
+.topEmpty {
+  font-size: 12px;
+  color: #555566;
+}
+
+/* ── Graphe CA ── */
+.chartSection {
+  padding: 20px;
+}
+
+.chartLabel {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #888899;
+  margin-bottom: 14px;
+}
+
+.chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 80px;
+}
+
+.chartCol {
+  flex: 1;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+  cursor: default;
+}
+
+.chartBar {
+  width: 100%;
+  background: var(--neon-cyan);
+  border-radius: 2px 2px 0 0;
+  opacity: 0.7;
+  transition: opacity 0.15s;
+  min-height: 2px;
+}
+
+.chartCol:hover .chartBar { opacity: 1 }
+
+@media (max-width: 768px) {
+  .statsDetail { grid-template-columns: 1fr }
+  .statDetailCard { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.08) }
+  .statDetailCard:last-child { border-bottom: none }
+}
+
 /* ── Historique intégré ── */
 
 /* Wrapper filtres + compteur : padding interne cohérent */

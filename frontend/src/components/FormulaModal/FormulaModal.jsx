@@ -23,7 +23,10 @@ function FormulaModal({ formula, catalog, onClose, onAdd }) {
 
   if (!formula) return null
 
-  const allSlotsFilled = formula.slots.every(s => slotChoices[s.slot_name])
+  // Seuls les slots obligatoires doivent être remplis
+  const allSlotsFilled = formula.slots
+    .filter(s => s.required !== false)
+    .every(s => slotChoices[s.slot_name])
 
   // Supplément total basé sur les choix actuels
   const supplementTotal = Object.values(slotChoices).reduce(
@@ -68,6 +71,12 @@ function FormulaModal({ formula, catalog, onClose, onAdd }) {
           {formula.description && (
             <p className={styles.description}>{formula.description}</p>
           )}
+          {formula.allergens && formula.allergens.length > 0 && (
+            <div className={styles.allergens}>
+              <span className={styles.allergensLabel}>Allergènes :</span>
+              {formula.allergens.join(', ')}
+            </div>
+          )}
           <div className={styles.progress}>
             {formula.slots.map(s => (
               <div
@@ -95,6 +104,9 @@ function FormulaModal({ formula, catalog, onClose, onAdd }) {
                 <div className={styles.slotLabel}>
                   <span className={styles.slotNumber}>{String(slotIndex + 1).padStart(2, '0')}</span>
                   <span className={styles.slotName}>{slot.slot_name}</span>
+                  {slot.required === false && (
+                    <span className={styles.slotOptionalTag}>Optionnel</span>
+                  )}
                   {chosen
                     ? <span className={styles.slotChosen}>
                         {chosen.name}

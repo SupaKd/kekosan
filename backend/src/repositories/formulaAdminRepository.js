@@ -4,12 +4,12 @@ const pool = require('../config/db');
 
 const findAll = async () => {
   const [formulas] = await pool.query(
-    `SELECT id, name, description, price, available, sort_order, image_url FROM formulas ORDER BY sort_order, name`
+    `SELECT id, name, description, badge, allergens, price, available, sort_order, image_url FROM formulas ORDER BY sort_order, name`
   );
   if (formulas.length === 0) return [];
 
   const [slots] = await pool.query(
-    `SELECT id, formula_id, slot_name, allowed_categories FROM formula_slots ORDER BY formula_id, id`
+    `SELECT id, formula_id, slot_name, allowed_categories, required, sort_order FROM formula_slots ORDER BY formula_id, sort_order, id`
   );
 
   const slotsByFormula = {};
@@ -17,6 +17,8 @@ const findAll = async () => {
     if (!slotsByFormula[s.formula_id]) slotsByFormula[s.formula_id] = [];
     slotsByFormula[s.formula_id].push({
       ...s,
+      required: s.required === 1,
+      sort_order: s.sort_order ?? 0,
       allowed_categories: s.allowed_categories
         ? s.allowed_categories.split(',').map(c => c.trim()).filter(Boolean)
         : [],
@@ -27,23 +29,26 @@ const findAll = async () => {
     ...f,
     price: parseFloat(f.price),
     sort_order: f.sort_order ?? 0,
+    badge: f.badge || null,
+    allergens: Array.isArray(f.allergens) ? f.allergens : (f.allergens && f.allergens !== '' ? JSON.parse(f.allergens) : []),
     slots: slotsByFormula[f.id] || [],
   }));
 };
 
-const create = async ({ name, description, price, available = 1, sort_order = 0, slots = [] }) => {
+const create = async ({ name, description, badge = null, allergens = [], price, available = 1, sort_order = 0, slots = [] }) => {
   const conn = await pool.getConnection();
   try {
     await conn.beginTransaction();
     const [result] = await conn.query(
-      `INSERT INTO formulas (name, description, price, available, sort_order, image_url) VALUES (?, ?, ?, ?, ?, NULL)`,
-      [name, description || null, price, available, sort_order]
+      `INSERT INTO formulas (name, description, badge, allergens, price, available, sort_order, image_url) VALUES (?, ?, ?, ?, ?, ?, ?, NULL)`,
+      [name, description || null, badge || null, JSON.stringify(allergens), price, available, sort_order]
     );
     const formulaId = result.insertId;
-    for (const slot of slots) {
+    for (let idx = 0; idx < slots.length; idx++) {
+      const slot = slots[idx];
       await conn.query(
-        `INSERT INTO formula_slots (formula_id, slot_name, allowed_categories) VALUES (?, ?, ?)`,
-        [formulaId, slot.slot_name, slot.allowed_categories || '']
+        `INSERT INTO formula_slots (formula_id, slot_name, allowed_categories, required, sort_order) VALUES (?, ?, ?, ?, ?)`,
+        [formulaId, slot.slot_name, slot.allowed_categories || '', slot.required !== false ? 1 : 0, slot.sort_order ?? idx]
       );
     }
     await conn.commit();
@@ -56,20 +61,21 @@ const create = async ({ name, description, price, available = 1, sort_order = 0,
   }
 };
 
-const update = async (id, { name, description, price, available, sort_order = 0, slots = [] }) => {
+const update = async (id, { name, description, badge = null, allergens = [], price, available, sort_order = 0, slots = [] }) => {
   const conn = await pool.getConnection();
   try {
     await conn.beginTransaction();
     await conn.query(
-      `UPDATE formulas SET name = ?, description = ?, price = ?, available = ?, sort_order = ? WHERE id = ?`,
-      [name, description || null, price, available ? 1 : 0, sort_order, id]
+      `UPDATE formulas SET name = ?, description = ?, badge = ?, allergens = ?, price = ?, available = ?, sort_order = ? WHERE id = ?`,
+      [name, description || null, badge || null, JSON.stringify(allergens), price, available ? 1 : 0, sort_order, id]
     );
     // Remplace tous les slots existants
     await conn.query('DELETE FROM formula_slots WHERE formula_id = ?', [id]);
-    for (const slot of slots) {
+    for (let idx = 0; idx < slots.length; idx++) {
+      const slot = slots[idx];
       await conn.query(
-        `INSERT INTO formula_slots (formula_id, slot_name, allowed_categories) VALUES (?, ?, ?)`,
-        [id, slot.slot_name, slot.allowed_categories || '']
+        `INSERT INTO formula_slots (formula_id, slot_name, allowed_categories, required, sort_order) VALUES (?, ?, ?, ?, ?)`,
+        [id, slot.slot_name, slot.allowed_categories || '', slot.required !== false ? 1 : 0, slot.sort_order ?? idx]
       );
     }
     await conn.commit();

@@ -44,6 +44,33 @@ function StatCard({ label, count, revenue, accent }) {
   )
 }
 
+// ── Mini barre graphe CA 30 jours ────────────────────────────────────────────
+function RevenueChart({ data }) {
+  if (!data || data.length === 0) return null
+  const max = Math.max(...data.map(d => parseFloat(d.revenue)), 1)
+  // Remplir les 30 derniers jours (jours sans commande = 0)
+  const days = []
+  for (let i = 29; i >= 0; i--) {
+    const d = new Date()
+    d.setDate(d.getDate() - i)
+    const key = d.toISOString().slice(0, 10)
+    const found = data.find(r => r.day?.slice(0, 10) === key)
+    days.push({ day: key, revenue: found ? parseFloat(found.revenue) : 0, count: found?.count || 0 })
+  }
+  return (
+    <div className={styles.chart}>
+      {days.map((d, i) => (
+        <div key={i} className={styles.chartCol} title={`${d.day}\n${fmt(d.revenue)} — ${d.count} cmd`}>
+          <div
+            className={styles.chartBar}
+            style={{ height: `${Math.max(2, (d.revenue / max) * 100)}%` }}
+          />
+        </div>
+      ))}
+    </div>
+  )
+}
+
 // ── Dashboard + Historique fusionnés ─────────────────────────────────────────
 function DashboardPanel() {
   // Stats
@@ -121,6 +148,60 @@ function DashboardPanel() {
           <StatCard label="Aujourd'hui"  count={stats.today.count}  revenue={stats.today.revenue}  accent="accentToday" />
           <StatCard label="Cette semaine" count={stats.week.count}  revenue={stats.week.revenue}   accent="accentWeek" />
           <StatCard label="Ce mois"      count={stats.month.count}  revenue={stats.month.revenue}  accent="accentMonth" />
+        </div>
+      )}
+
+      {/* ── Statistiques détaillées ────────────────────────────────────────── */}
+      {stats && (
+        <div className={styles.section}>
+          <div className={styles.sectionHeader}>
+            <span className={styles.sectionTitle}>📊 Statistiques</span>
+          </div>
+          <div className={styles.statsDetail}>
+
+            {/* Ticket moyen */}
+            <div className={styles.statDetailCard}>
+              <div className={styles.statDetailLabel}>Ticket moyen</div>
+              <div className={styles.statDetailValue}>{fmt(stats.avg_ticket)}</div>
+            </div>
+
+            {/* Top produits */}
+            <div className={styles.statDetailCard}>
+              <div className={styles.statDetailLabel}>Top produits</div>
+              <div className={styles.topList}>
+                {stats.top_products.map((p, i) => (
+                  <div key={i} className={styles.topRow}>
+                    <span className={styles.topRank}>#{i + 1}</span>
+                    <span className={styles.topName}>{p.name}</span>
+                    <span className={styles.topVal}>{p.qty} vendus</span>
+                  </div>
+                ))}
+                {stats.top_products.length === 0 && <div className={styles.topEmpty}>Aucune donnée</div>}
+              </div>
+            </div>
+
+            {/* Top créneaux */}
+            <div className={styles.statDetailCard}>
+              <div className={styles.statDetailLabel}>Créneaux populaires</div>
+              <div className={styles.topList}>
+                {stats.top_slots.map((s, i) => (
+                  <div key={i} className={styles.topRow}>
+                    <span className={styles.topRank}>#{i + 1}</span>
+                    <span className={styles.topName}>{s.slot}</span>
+                    <span className={styles.topVal}>{s.cnt} cmd</span>
+                  </div>
+                ))}
+                {stats.top_slots.length === 0 && <div className={styles.topEmpty}>Aucune donnée</div>}
+              </div>
+            </div>
+
+          </div>
+
+          {/* CA 30 derniers jours */}
+          <div className={styles.chartSection}>
+            <div className={styles.chartLabel}>Chiffre d'affaires — 30 derniers jours</div>
+            <RevenueChart data={stats.revenue_by_day} />
+          </div>
         </div>
       )}
 

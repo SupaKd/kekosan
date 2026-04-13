@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { getOrders, getOrderById, updateOrderStatus } from '../../api/admin'
+import { getOrders, getOrderById, updateOrderStatus, refundOrder } from '../../api/admin'
 import ConfirmDialog from '../../components/ConfirmDialog/ConfirmDialog'
 import styles from './OrdersPanel.module.css'
 
@@ -57,6 +57,9 @@ export function OrderDetailModal({ orderId, onClose, onStatusChanged }) {
   const [statusLoading, setStatusLoading] = useState(false)
   const [error, setError] = useState(null)
   const [statusConfirm, setStatusConfirm] = useState(null) // { newStatus, label }
+  const [refundConfirm, setRefundConfirm] = useState(false)
+  const [refundLoading, setRefundLoading] = useState(false)
+  const [refundDone, setRefundDone] = useState(false)
 
   const load = useCallback(async () => {
     try {
@@ -90,6 +93,25 @@ export function OrderDetailModal({ orderId, onClose, onStatusChanged }) {
       setStatusLoading(false)
     }
   }
+
+  const doRefund = async () => {
+    setRefundConfirm(false)
+    setRefundLoading(true)
+    try {
+      await refundOrder(order.id)
+      setRefundDone(true)
+      await load()
+      onStatusChanged()
+    } catch (err) {
+      setError(err.response?.data?.error || 'Erreur lors du remboursement')
+    } finally {
+      setRefundLoading(false)
+    }
+  }
+
+  // Bouton visible si commande payée et pas encore annulée/livrée
+  const canRefund = order?.payment_status === 'paid'
+    && !['cancelled', 'delivered'].includes(order?.status)
 
   return (
     <div className={styles.overlay} onClick={e => e.target === e.currentTarget && onClose()}>
@@ -125,6 +147,22 @@ export function OrderDetailModal({ orderId, onClose, onStatusChanged }) {
                 ))}
               </div>
             </div>
+
+            {/* Remboursement Stripe */}
+            {refundDone && (
+              <div className={styles.refundSuccess}>
+                ✓ Remboursement envoyé à Stripe — le client sera crédité sous 5–10 jours ouvrés.
+              </div>
+            )}
+            {canRefund && !refundDone && (
+              <button
+                className={styles.refundBtn}
+                onClick={() => setRefundConfirm(true)}
+                disabled={refundLoading}
+              >
+                {refundLoading ? 'Remboursement en cours…' : '↩ Annuler et rembourser via Stripe'}
+              </button>
+            )}
 
             {/* Infos client */}
             <div className={styles.infoGrid}>
@@ -207,6 +245,17 @@ export function OrderDetailModal({ orderId, onClose, onStatusChanged }) {
             danger={statusConfirm.newStatus === 'cancelled'}
             onConfirm={doStatusChange}
             onCancel={() => setStatusConfirm(null)}
+          />
+        )}
+
+        {/* Confirmation remboursement */}
+        {refundConfirm && (
+          <ConfirmDialog
+            message={`Annuler la commande #${order?.id} et rembourser ${fmt(order?.total)} via Stripe ? Cette action est irréversible.`}
+            confirmLabel="Rembourser"
+            danger={true}
+            onConfirm={doRefund}
+            onCancel={() => setRefundConfirm(false)}
           />
         )}
       </div>

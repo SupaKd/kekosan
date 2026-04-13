@@ -300,6 +300,9 @@ function MenuPage({ cart, onCheckout }) {
                         <span className={styles.formulaTicketNum}>
                           #{String(index + 1).padStart(2, "0")}
                         </span>
+                        {formula.badge && (
+                          <span className={styles.formulaBadge}>{formula.badge}</span>
+                        )}
                       </div>
                     ) : null}
                     {!formula.image_url && (

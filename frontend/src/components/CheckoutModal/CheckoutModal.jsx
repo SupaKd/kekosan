@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import LegalModal from "../LegalModal/LegalModal";
 import { loadStripe } from "@stripe/stripe-js";
 import {
   Elements,
@@ -90,6 +91,7 @@ function CheckoutModal({ cart, onClose }) {
   const [trackingToken, setTrackingToken] = useState(null);
   const [loading, setLoading] = useState(false);
   const [globalError, setGlobalError] = useState(null);
+  const [showLegal, setShowLegal] = useState(false);
 
   const [serviceOpen, setServiceOpen] = useState(true);
   const [schedule, setSchedule] = useState({ opening_hour: 11, closing_hour: 15, closed_days: [], availability: {}, slot_interval: 30, min_delivery_delay: 30 });
@@ -576,6 +578,12 @@ function CheckoutModal({ cart, onClose }) {
               <p className={styles.secureNote}>
                 🔒 Paiement sécurisé par Stripe
               </p>
+              <p className={styles.legalNote}>
+                En passant commande, vous acceptez nos{' '}
+                <button className={styles.legalLink} onClick={() => setShowLegal(true)}>
+                  CGV et politique de confidentialité
+                </button>
+              </p>
             </div>
           </>
         )}
@@ -612,9 +620,17 @@ function CheckoutModal({ cart, onClose }) {
               <p className={styles.secureNote}>
                 🔒 Paiement sécurisé par Stripe
               </p>
+              <p className={styles.legalNote}>
+                En passant commande, vous acceptez nos{' '}
+                <button className={styles.legalLink} onClick={() => setShowLegal(true)}>
+                  CGV et politique de confidentialité
+                </button>
+              </p>
             </div>
           </>
         )}
+
+        {showLegal && <LegalModal onClose={() => setShowLegal(false)} />}
       </div>
     </div>
   );
