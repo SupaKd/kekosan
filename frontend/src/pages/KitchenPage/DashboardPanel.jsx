@@ -1,23 +1,34 @@
 import { useState, useEffect, useCallback } from 'react'
-import { getStats } from '../../api/admin'
+import { getStats, getOrders } from '../../api/admin'
 import { OrderDetailModal } from './OrdersPanel'
 import styles from './DashboardPanel.module.css'
+import orderStyles from './OrdersPanel.module.css'
+
+const STATUS_OPTIONS = [
+  { value: '',           label: 'Tous les statuts' },
+  { value: 'pending',    label: 'En attente' },
+  { value: 'confirmed',  label: 'Confirmée' },
+  { value: 'preparing',  label: 'En préparation' },
+  { value: 'delivering', label: 'En livraison' },
+  { value: 'delivered',  label: 'Livrée' },
+  { value: 'cancelled',  label: 'Annulée' },
+]
 
 const STATUS_LABELS = {
-  pending:    { label: 'En attente',    cls: 'pending' },
-  confirmed:  { label: 'Confirmée',     cls: 'confirmed' },
+  pending:    { label: 'En attente',     cls: 'pending' },
+  confirmed:  { label: 'Confirmée',      cls: 'confirmed' },
   preparing:  { label: 'En préparation', cls: 'preparing' },
-  delivering: { label: 'En livraison',  cls: 'delivering' },
-  delivered:  { label: 'Livrée',        cls: 'delivered' },
-  cancelled:  { label: 'Annulée',       cls: 'cancelled' },
+  delivering: { label: 'En livraison',   cls: 'delivering' },
+  delivered:  { label: 'Livrée',         cls: 'delivered' },
+  cancelled:  { label: 'Annulée',        cls: 'cancelled' },
 }
 
 const fmt = (n) =>
   new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(n)
 
-const fmtTime = (d) =>
+const fmtDateTime = (d) =>
   new Date(d).toLocaleString('fr-FR', {
-    day: '2-digit', month: '2-digit',
+    day: '2-digit', month: '2-digit', year: 'numeric',
     hour: '2-digit', minute: '2-digit',
     timeZone: 'Europe/Paris',
   })
@@ -33,79 +44,208 @@ function StatCard({ label, count, revenue, accent }) {
   )
 }
 
-// ── Dashboard ────────────────────────────────────────────────────────────────
+// ── Dashboard + Historique fusionnés ─────────────────────────────────────────
 function DashboardPanel() {
+  // Stats
   const [stats, setStats] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
+  const [statsLoading, setStatsLoading] = useState(true)
+  const [statsError, setStatsError] = useState(null)
+
+  // Historique
+  const [orders, setOrders] = useState([])
+  const [total, setTotal] = useState(0)
+  const [page, setPage] = useState(1)
+  const [ordersLoading, setOrdersLoading] = useState(false)
+  const [filters, setFilters] = useState({ status: '', search: '', date_from: '', date_to: '' })
+  const [pendingSearch, setPendingSearch] = useState('')
+
   const [selectedOrderId, setSelectedOrderId] = useState(null)
 
-  const load = useCallback(async () => {
+  const LIMIT = 15
+
+  const loadStats = useCallback(async () => {
     try {
-      setLoading(true)
-      setError(null)
+      setStatsLoading(true)
+      setStatsError(null)
       const data = await getStats()
       setStats(data)
     } catch {
-      setError('Impossible de charger les statistiques')
+      setStatsError('Impossible de charger les statistiques')
     } finally {
-      setLoading(false)
+      setStatsLoading(false)
     }
   }, [])
 
-  useEffect(() => { load() }, [load])
+  const loadOrders = useCallback(async (p, f) => {
+    setOrdersLoading(true)
+    try {
+      const result = await getOrders({
+        status: f.status || undefined,
+        search: f.search || undefined,
+        date_from: f.date_from || undefined,
+        date_to: f.date_to || undefined,
+        page: p,
+        limit: LIMIT,
+      })
+      setOrders(result.orders)
+      setTotal(result.total)
+      setPage(p)
+    } catch {
+      // token expiré géré en amont
+    } finally {
+      setOrdersLoading(false)
+    }
+  }, [])
 
-  if (loading) return <div className={styles.loader}>Chargement…</div>
-  if (error)   return <div className={styles.errorMsg}>{error}</div>
+  useEffect(() => { loadStats() }, [loadStats])
+  useEffect(() => { loadOrders(1, filters) }, [filters, loadOrders])
 
-  const { today, week, month, recentOrders } = stats
+  const applySearch = () => setFilters(f => ({ ...f, search: pendingSearch }))
+
+  const resetFilters = () => {
+    const empty = { status: '', search: '', date_from: '', date_to: '' }
+    setPendingSearch('')
+    setFilters(empty)
+  }
+
+  const totalPages = Math.ceil(total / LIMIT)
 
   return (
     <div className={styles.panel}>
 
       {/* ── Cartes stats ───────────────────────────────────────────────────── */}
-      <div className={styles.statsGrid}>
-        <StatCard label="Aujourd'hui" count={today.count}  revenue={today.revenue}  accent="accentToday" />
-        <StatCard label="Cette semaine" count={week.count} revenue={week.revenue}   accent="accentWeek" />
-        <StatCard label="Ce mois"     count={month.count}  revenue={month.revenue}  accent="accentMonth" />
-      </div>
+      {statsLoading && <div className={styles.loader}>Chargement des statistiques…</div>}
+      {statsError  && <div className={styles.errorMsg}>{statsError}</div>}
+      {stats && (
+        <div className={styles.statsGrid}>
+          <StatCard label="Aujourd'hui"  count={stats.today.count}  revenue={stats.today.revenue}  accent="accentToday" />
+          <StatCard label="Cette semaine" count={stats.week.count}  revenue={stats.week.revenue}   accent="accentWeek" />
+          <StatCard label="Ce mois"      count={stats.month.count}  revenue={stats.month.revenue}  accent="accentMonth" />
+        </div>
+      )}
 
-      {/* ── Dernières commandes ─────────────────────────────────────────────── */}
+      {/* ── Historique des commandes ────────────────────────────────────────── */}
       <div className={styles.section}>
         <div className={styles.sectionHeader}>
-          <span className={styles.sectionTitle}>🕐 Dernières commandes</span>
-          <button className={styles.refreshBtn} onClick={load}>↻ Actualiser les stats</button>
+          <span className={styles.sectionTitle}>📋 Historique des commandes</span>
+          <button className={styles.refreshBtn} onClick={() => { loadStats(); loadOrders(1, filters) }}>
+            ↻ Actualiser
+          </button>
         </div>
 
-        {recentOrders.length === 0 ? (
-          <div className={styles.empty}>Aucune commande pour l'instant</div>
-        ) : (
-          <div className={styles.orderList}>
-            {recentOrders.map(o => {
-              const st = STATUS_LABELS[o.status] || { label: o.status, cls: 'pending' }
-              return (
-                <div
-                  key={o.id}
-                  className={`${styles.orderRow} ${styles.orderRowClickable}`}
-                  onClick={() => setSelectedOrderId(o.id)}
-                >
-                  <span className={styles.orderId}>#{o.id}</span>
-                  <span className={styles.orderName}>{o.customer_name}</span>
-                  <span className={`${styles.statusBadge} ${styles[st.cls]}`}>{st.label}</span>
-                  <span className={styles.orderTotal}>{fmt(o.total)}</span>
-                  <span className={styles.orderDate}>{fmtTime(o.created_at)}</span>
-                </div>
-              )
-            })}
+        {/* Filtres + tableau dans un wrapper avec padding cohérent */}
+        <div className={styles.historyBody}>
+
+          <div className={orderStyles.filtersBar}>
+            <div className={orderStyles.searchGroup}>
+              <input
+                className={orderStyles.searchInput}
+                placeholder="#123, nom, email, téléphone…"
+                value={pendingSearch}
+                onChange={e => setPendingSearch(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && applySearch()}
+              />
+              <button className={orderStyles.searchBtn} onClick={applySearch}>Chercher</button>
+            </div>
+
+            <select
+              className={orderStyles.filterSelect}
+              value={filters.status}
+              onChange={e => setFilters(f => ({ ...f, status: e.target.value }))}
+            >
+              {STATUS_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+            </select>
+
+            <div className={orderStyles.dateGroup}>
+              <label className={orderStyles.dateLabel}>Du</label>
+              <input
+                type="date"
+                className={orderStyles.filterSelect}
+                value={filters.date_from}
+                onChange={e => setFilters(f => ({ ...f, date_from: e.target.value }))}
+              />
+            </div>
+            <div className={orderStyles.dateGroup}>
+              <label className={orderStyles.dateLabel}>Au</label>
+              <input
+                type="date"
+                className={orderStyles.filterSelect}
+                value={filters.date_to}
+                onChange={e => setFilters(f => ({ ...f, date_to: e.target.value }))}
+              />
+            </div>
+
+            <button className={orderStyles.resetBtn} onClick={resetFilters}>Effacer</button>
+          </div>
+
+          {/* Compteur */}
+          <div className={orderStyles.resultsBar}>
+            {ordersLoading ? 'Chargement…' : `${total} commande${total !== 1 ? 's' : ''}`}
+          </div>
+
+        </div>
+
+        {/* Tableau pleine largeur (sans padding latéral pour coller aux bords) */}
+        <div className={orderStyles.tableWrap}>
+          <table className={orderStyles.table}>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Client</th>
+                <th>Date</th>
+                <th>Créneau</th>
+                <th>Statut</th>
+                <th>Total</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {orders.length === 0 && !ordersLoading && (
+                <tr><td colSpan={7} className={orderStyles.emptyCell}>Aucune commande</td></tr>
+              )}
+              {orders.map(o => {
+                const st = STATUS_LABELS[o.status] || { label: o.status, cls: 'pending' }
+                return (
+                  <tr key={o.id} className={orderStyles.tr}>
+                    <td className={orderStyles.tdId}>#{o.id}</td>
+                    <td className={orderStyles.tdClient}>
+                      <div>{o.customer_name}</div>
+                      <div className={orderStyles.sub}>{o.customer_phone}</div>
+                    </td>
+                    <td className={orderStyles.tdDate}>{fmtDateTime(o.created_at)}</td>
+                    <td className={orderStyles.tdSlot}>{o.delivery_time || '—'}</td>
+                    <td>
+                      <span className={`${orderStyles.badge} ${orderStyles[st.cls]}`}>{st.label}</span>
+                    </td>
+                    <td className={orderStyles.tdTotal}>{fmt(o.total)}</td>
+                    <td>
+                      <button className={orderStyles.detailBtn} onClick={() => setSelectedOrderId(o.id)}>
+                        Voir →
+                      </button>
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className={`${orderStyles.pagination} ${styles.historyPagination}`}>
+            <button className={orderStyles.pageBtn} disabled={page <= 1} onClick={() => loadOrders(page - 1, filters)}>← Précédent</button>
+            <span className={orderStyles.pageInfo}>Page {page} sur {totalPages}</span>
+            <button className={orderStyles.pageBtn} disabled={page >= totalPages} onClick={() => loadOrders(page + 1, filters)}>Suivant →</button>
           </div>
         )}
       </div>
 
+      {/* Modale détail */}
       {selectedOrderId && (
         <OrderDetailModal
           orderId={selectedOrderId}
           onClose={() => setSelectedOrderId(null)}
-          onStatusChanged={load}
+          onStatusChanged={() => { loadStats(); loadOrders(page, filters) }}
         />
       )}
     </div>

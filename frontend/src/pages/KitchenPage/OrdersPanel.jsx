@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { getOrders, getOrderById, updateOrderStatus } from '../../api/admin'
+import ConfirmDialog from '../../components/ConfirmDialog/ConfirmDialog'
 import styles from './OrdersPanel.module.css'
 
 const STATUS_OPTIONS = [
@@ -55,6 +56,7 @@ export function OrderDetailModal({ orderId, onClose, onStatusChanged }) {
   const [loading, setLoading] = useState(true)
   const [statusLoading, setStatusLoading] = useState(false)
   const [error, setError] = useState(null)
+  const [statusConfirm, setStatusConfirm] = useState(null) // { newStatus, label }
 
   const load = useCallback(async () => {
     try {
@@ -70,15 +72,20 @@ export function OrderDetailModal({ orderId, onClose, onStatusChanged }) {
 
   useEffect(() => { load() }, [load])
 
-  const handleStatusChange = async (newStatus) => {
-    if (!confirm(`Confirmer : passer la commande #${order.id} en "${STATUS_LABELS[newStatus]?.label}" ?`)) return
+  const handleStatusChange = (newStatus) => {
+    setStatusConfirm({ newStatus, label: STATUS_LABELS[newStatus]?.label })
+  }
+
+  const doStatusChange = async () => {
+    const { newStatus } = statusConfirm
+    setStatusConfirm(null)
     setStatusLoading(true)
     try {
       await updateOrderStatus(order.id, newStatus)
       await load()
       onStatusChanged()
     } catch {
-      alert('Erreur lors du changement de statut')
+      setError('Erreur lors du changement de statut')
     } finally {
       setStatusLoading(false)
     }
@@ -190,6 +197,17 @@ export function OrderDetailModal({ orderId, onClose, onStatusChanged }) {
               <span className={styles.totalAmount}>{fmt(order.total)}</span>
             </div>
           </div>
+        )}
+
+        {/* Confirmation changement de statut */}
+        {statusConfirm && (
+          <ConfirmDialog
+            message={`Passer la commande #${order.id} en "${statusConfirm.label}" ?`}
+            confirmLabel="Confirmer"
+            danger={statusConfirm.newStatus === 'cancelled'}
+            onConfirm={doStatusChange}
+            onCancel={() => setStatusConfirm(null)}
+          />
         )}
       </div>
     </div>

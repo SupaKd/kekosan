@@ -81,6 +81,34 @@ const setServiceStatus = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
+// ── Horaires d'ouverture ────────────────────────────────────────────────────
+
+const getSchedule = async (req, res, next) => {
+  try {
+    const opening = await settingsRepository.get('opening_hour');
+    const closing = await settingsRepository.get('closing_hour');
+    res.json({
+      opening_hour: parseInt(opening ?? '11'),
+      closing_hour: parseInt(closing ?? '15'),
+    });
+  } catch (err) { next(err); }
+};
+
+const setSchedule = async (req, res, next) => {
+  try {
+    const { opening_hour, closing_hour } = req.body;
+    if (!Number.isInteger(opening_hour) || opening_hour < 0 || opening_hour > 23)
+      return res.status(400).json({ error: 'opening_hour invalide (0-23)' });
+    if (!Number.isInteger(closing_hour) || closing_hour < 0 || closing_hour > 24)
+      return res.status(400).json({ error: 'closing_hour invalide (0-24)' });
+    if (closing_hour <= opening_hour)
+      return res.status(400).json({ error: 'closing_hour doit être après opening_hour' });
+    await settingsRepository.set('opening_hour', String(opening_hour));
+    await settingsRepository.set('closing_hour', String(closing_hour));
+    res.json({ opening_hour, closing_hour });
+  } catch (err) { next(err); }
+};
+
 // ── Produits ────────────────────────────────────────────────────────────────
 
 const getProducts = async (req, res, next) => {
@@ -251,8 +279,125 @@ const deleteFormulaImage = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
+// ── Message de maintenance ────────────────────────────────────────────────────
+
+const getMaintenanceMessage = async (req, res, next) => {
+  try {
+    const msg = await settingsRepository.get('maintenance_message');
+    res.json({ maintenance_message: msg ?? 'Le service est momentanément fermé. Revenez bientôt !' });
+  } catch (err) { next(err); }
+};
+
+const setMaintenanceMessage = async (req, res, next) => {
+  try {
+    const { maintenance_message } = req.body;
+    if (typeof maintenance_message !== 'string' || !maintenance_message.trim())
+      return res.status(400).json({ error: 'maintenance_message invalide' });
+    await settingsRepository.set('maintenance_message', maintenance_message.trim());
+    res.json({ maintenance_message: maintenance_message.trim() });
+  } catch (err) { next(err); }
+};
+
+// ── Disponibilité des créneaux ────────────────────────────────────────────────
+
+const getSlotAvailability = async (req, res, next) => {
+  try {
+    const orderRepository = require('../repositories/orderRepository');
+    const maxRaw = await settingsRepository.get('max_orders_per_slot');
+    const max = parseInt(maxRaw ?? '5');
+    const counts = await orderRepository.getSlotCounts();
+    // Retourne un objet { 'YYYY-MM-DD|HH:MM': countRestant, ... } — créneaux pleins ont 0
+    const availability = {};
+    for (const row of counts) {
+      const key = `${row.date instanceof Date ? row.date.toISOString().slice(0,10) : String(row.date).slice(0,10)}|${row.delivery_time}`;
+      availability[key] = Math.max(0, max - Number(row.cnt));
+    }
+    res.json({ availability, max_orders_per_slot: max });
+  } catch (err) { next(err); }
+};
+
+const getMaxOrdersPerSlot = async (req, res, next) => {
+  try {
+    const raw = await settingsRepository.get('max_orders_per_slot');
+    res.json({ max_orders_per_slot: parseInt(raw ?? '5') });
+  } catch (err) { next(err); }
+};
+
+const setMaxOrdersPerSlot = async (req, res, next) => {
+  try {
+    const { max_orders_per_slot } = req.body;
+    if (!Number.isInteger(max_orders_per_slot) || max_orders_per_slot < 1)
+      return res.status(400).json({ error: 'max_orders_per_slot invalide (entier ≥ 1)' });
+    await settingsRepository.set('max_orders_per_slot', String(max_orders_per_slot));
+    res.json({ max_orders_per_slot });
+  } catch (err) { next(err); }
+};
+
+// ── Jours de fermeture exceptionnelle ────────────────────────────────────────
+
+const getClosedDays = async (req, res, next) => {
+  try {
+    const raw = await settingsRepository.get('closed_days');
+    const days = raw ? JSON.parse(raw) : [];
+    res.json({ closed_days: days });
+  } catch (err) { next(err); }
+};
+
+const setClosedDays = async (req, res, next) => {
+  try {
+    const { closed_days } = req.body;
+    if (!Array.isArray(closed_days)) return res.status(400).json({ error: 'closed_days doit être un tableau' });
+    // Valide chaque date au format YYYY-MM-DD
+    const dateRe = /^\d{4}-\d{2}-\d{2}$/;
+    for (const d of closed_days) {
+      if (typeof d !== 'string' || !dateRe.test(d) || isNaN(Date.parse(d)))
+        return res.status(400).json({ error: `Date invalide : ${d}` });
+    }
+    // Dédoublonne et trie
+    const unique = [...new Set(closed_days)].sort();
+    await settingsRepository.set('closed_days', JSON.stringify(unique));
+    res.json({ closed_days: unique });
+  } catch (err) { next(err); }
+};
+
+// ── Paramètres livraison ─────────────────────────────────────────────────────
+
+const getDeliverySettings = async (req, res, next) => {
+  try {
+    const fee       = await settingsRepository.get('delivery_fee');
+    const threshold = await settingsRepository.get('free_delivery_threshold');
+    const minOrder  = await settingsRepository.get('min_order_amount');
+    res.json({
+      delivery_fee:            parseFloat(fee       ?? '5'),
+      free_delivery_threshold: parseFloat(threshold ?? '20'),
+      min_order_amount:        parseFloat(minOrder  ?? '20'),
+    });
+  } catch (err) { next(err); }
+};
+
+const setDeliverySettings = async (req, res, next) => {
+  try {
+    const { delivery_fee, free_delivery_threshold, min_order_amount } = req.body;
+    if (isNaN(parseFloat(delivery_fee)) || parseFloat(delivery_fee) < 0)
+      return res.status(400).json({ error: 'delivery_fee invalide (≥ 0)' });
+    if (isNaN(parseFloat(free_delivery_threshold)) || parseFloat(free_delivery_threshold) < 0)
+      return res.status(400).json({ error: 'free_delivery_threshold invalide (≥ 0)' });
+    if (isNaN(parseFloat(min_order_amount)) || parseFloat(min_order_amount) < 0)
+      return res.status(400).json({ error: 'min_order_amount invalide (≥ 0)' });
+    await settingsRepository.set('delivery_fee',            String(parseFloat(delivery_fee)));
+    await settingsRepository.set('free_delivery_threshold', String(parseFloat(free_delivery_threshold)));
+    await settingsRepository.set('min_order_amount',        String(parseFloat(min_order_amount)));
+    res.json({ delivery_fee: parseFloat(delivery_fee), free_delivery_threshold: parseFloat(free_delivery_threshold), min_order_amount: parseFloat(min_order_amount) });
+  } catch (err) { next(err); }
+};
+
 module.exports = {
   getServiceStatus, setServiceStatus,
+  getSchedule, setSchedule,
+  getMaintenanceMessage, setMaintenanceMessage,
+  getSlotAvailability, getMaxOrdersPerSlot, setMaxOrdersPerSlot,
+  getClosedDays, setClosedDays,
+  getDeliverySettings, setDeliverySettings,
   getCategories, createCategory, updateCategory, deleteCategory,
   getProducts, createProduct, updateProduct, deleteProduct, toggleProduct,
   createOption, updateOption, deleteOption,

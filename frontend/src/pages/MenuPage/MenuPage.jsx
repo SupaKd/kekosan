@@ -14,7 +14,7 @@ import styles from "./MenuPage.module.css";
 
 import { API_BASE } from "../../config/api";
 import { formatPrice } from "../../utils/formatting";
-import { getServiceStatus } from "../../api/admin";
+import { getServiceStatus, getSchedule, getDeliverySettings, getClosedDays, getMaintenanceMessage } from "../../api/admin";
 import { getAvailableSlots } from "../../utils/deliverySlots";
 
 const CATEGORY_LABELS = {
@@ -42,8 +42,7 @@ const HERO_SLIDES = [
   {
     id: null,
     label: "Notre histoire",
-    accroche:
-      "Née à Saint-Genis-Pouilly, avec du caractère et du piment.",
+    accroche: "Née à Saint-Genis-Pouilly, avec du caractère et du piment.",
     cta: "En savoir plus",
     image: "/about.png",
   },
@@ -59,14 +58,30 @@ function MenuPage({ cart, onCheckout }) {
   const timerRef = useRef(null);
   const touchStartX = useRef(null);
 
-  // État service ouvert/fermé pour la bannière
+  // État service ouvert/fermé + horaires + jours fermés + config livraison
   const [serviceOpen, setServiceOpen] = useState(true);
+  const [schedule, setSchedule] = useState({ opening_hour: 11, closing_hour: 15, closed_days: [] });
+  const [deliveryConfig, setDeliveryConfig] = useState({ delivery_fee: 5, free_delivery_threshold: 20, min_order_amount: 20 });
+  const [maintenanceMessage, setMaintenanceMessage] = useState('Le service est momentanément fermé. Revenez bientôt !');
   useEffect(() => {
     getServiceStatus()
       .then((d) => setServiceOpen(d.service_open))
       .catch(() => {});
+    getSchedule()
+      .then((d) => setSchedule(s => ({ ...s, ...d })))
+      .catch(() => {});
+    getClosedDays()
+      .then((d) => setSchedule(s => ({ ...s, closed_days: d.closed_days })))
+      .catch(() => {});
+    getDeliverySettings()
+      .then((d) => setDeliveryConfig(d))
+      .catch(() => {});
+    getMaintenanceMessage()
+      .then((d) => setMaintenanceMessage(d.maintenance_message))
+      .catch(() => {});
   }, []);
-  const { available: slotsAvailable, message: closedMessage } = getAvailableSlots();
+  const { available: slotsAvailable, message: closedMessage } =
+    getAvailableSlots(schedule);
   const isClosed = !serviceOpen || !slotsAvailable;
 
   const goTo = (index) => {
@@ -160,12 +175,12 @@ function MenuPage({ cart, onCheckout }) {
       {/* Bannière service fermé */}
       {isClosed && (
         <div className={styles.closedBanner}>
-          <span className={styles.closedBannerIcon}>🕐</span>
-          <span>
-            {!serviceOpen
-              ? "Le service est momentanément fermé. Revenez bientôt !"
-              : closedMessage}
-          </span>
+          <div className={styles.closedBannerInner}>
+            <span className={styles.closedBannerDot} />
+            <span className={styles.closedBannerText}>
+              {!serviceOpen ? maintenanceMessage : closedMessage}
+            </span>
+          </div>
         </div>
       )}
 
@@ -174,7 +189,7 @@ function MenuPage({ cart, onCheckout }) {
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
-        <Header />
+        <Header opening_hour={schedule.opening_hour} closing_hour={schedule.closing_hour} />
 
         {/* Panneaux */}
         <div
@@ -185,7 +200,7 @@ function MenuPage({ cart, onCheckout }) {
             <div key={slide.id} className={styles.heroSlide}>
               <picture>
                 <source
-                  srcSet={slide.image.replace('.png', '.webp')}
+                  srcSet={slide.image.replace(".png", ".webp")}
                   type="image/webp"
                 />
                 <img
@@ -204,9 +219,7 @@ function MenuPage({ cart, onCheckout }) {
 
         {/* Contenu du slide actif */}
         <div className={styles.heroContent} key={heroIndex}>
-          <div className={styles.heroEyebrow}>
-            Saint-Genis-Pouilly
-          </div>
+          <div className={styles.heroEyebrow}>Saint-Genis-Pouilly</div>
           <div className={styles.heroLabel}>{HERO_SLIDES[heroIndex].label}</div>
           <div className={styles.heroDivider} />
           <p className={styles.heroSub}>{HERO_SLIDES[heroIndex].accroche}</p>
@@ -348,7 +361,7 @@ function MenuPage({ cart, onCheckout }) {
             styles[`section_${cat}`] ||
             (index % 2 === 0 ? "" : styles.sectionAlt);
           return (
-            <div key={cat}>
+            <div key={cat} className={cat === "dessert" ? styles.dessertWrapper : undefined}>
               {cat === "dessert" && <IngredientsStrip />}
               <section
                 key={cat}
@@ -403,11 +416,7 @@ function MenuPage({ cart, onCheckout }) {
       <Footer />
 
       {/* Panier flottant */}
-      <CartDrawer
-        cart={cart}
-        onCheckout={onCheckout}
-        catalog={catalog}
-      />
+      <CartDrawer cart={cart} onCheckout={onCheckout} catalog={catalog} deliveryConfig={deliveryConfig} />
     </div>
   );
 }

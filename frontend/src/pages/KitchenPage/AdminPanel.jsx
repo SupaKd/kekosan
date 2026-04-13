@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
+import ConfirmDialog from '../../components/ConfirmDialog/ConfirmDialog'
 import {
   getAdminCategories, createCategory, updateCategory, deleteCategory,
   getAdminProducts, createProduct, updateProduct, deleteProduct, toggleProduct,
@@ -6,7 +7,6 @@ import {
   createOption, updateOption, deleteOption,
   getAdminFormulas, createFormula, updateFormula, deleteFormula, toggleFormula,
   uploadFormulaImage, deleteFormulaImage,
-  getPromoCodes, createPromoCode, updatePromoCode, deletePromoCode,
 } from '../../api/admin'
 import styles from './AdminPanel.module.css'
 
@@ -546,30 +546,26 @@ function AdminPanel() {
   const [categories, setCategories] = useState([])
   const [products, setProducts] = useState([])
   const [formulas, setFormulas] = useState([])
-  const [promoCodes, setPromoCodes] = useState([])
 
   // Modales
   const [categoryModal, setCategoryModal] = useState(null) // null | 'create' | category obj
   const [productModal, setProductModal] = useState(null)
   const [optionModal, setOptionModal] = useState(null)
   const [formulaModal, setFormulaModal] = useState(null)
-  const [promoModal, setPromoModal] = useState(null) // null | 'create' | promo obj
 
   // Expanded rows produits (options)
   const [expandedProduct, setExpandedProduct] = useState(null)
 
   const load = useCallback(async () => {
     try {
-      const [cats, prods, forms, promos] = await Promise.all([
+      const [cats, prods, forms] = await Promise.all([
         getAdminCategories(),
         getAdminProducts(),
         getAdminFormulas(),
-        getPromoCodes(),
       ])
       setCategories(cats)
       setProducts(prods)
       setFormulas(forms)
-      setPromoCodes(promos)
     } catch (err) {
       console.error('AdminPanel load error', err)
     }
@@ -577,16 +573,26 @@ function AdminPanel() {
 
   useEffect(() => { load() }, [load])
 
-  // ── Handlers catégories ────────────────────────────────────────────────
-  const handleDeleteCategory = async (id) => {
-    if (!confirm('Supprimer cette catégorie ?')) return
-    try {
-      await deleteCategory(id)
-      load()
-    } catch (err) {
-      alert(err.response?.data?.error || 'Erreur lors de la suppression')
+  // ── Confirmation de suppression centralisée ────────────────────────────
+  // { message, onConfirm } ou null
+  const [deleteConfirm, setDeleteConfirm] = useState(null)
+  const [deleteError, setDeleteError] = useState(null)
+
+  const askDelete = (message, fn) => setDeleteConfirm({ message, fn })
+
+  const runDelete = async () => {
+    const fn = deleteConfirm?.fn
+    setDeleteConfirm(null)
+    if (!fn) return
+    try { await fn() } catch (err) {
+      setDeleteError(err.response?.data?.error || 'Erreur lors de la suppression')
+      setTimeout(() => setDeleteError(null), 3000)
     }
   }
+
+  // ── Handlers catégories ────────────────────────────────────────────────
+  const handleDeleteCategory = (id) =>
+    askDelete('Supprimer cette catégorie ?', async () => { await deleteCategory(id); load() })
 
   // ── Handlers produits ──────────────────────────────────────────────────
   const handleToggleProduct = async (p) => {
@@ -595,15 +601,11 @@ function AdminPanel() {
     try { await toggleProduct(p.id, next) } catch { load() }
   }
 
-  const handleDeleteProduct = async (id) => {
-    if (!confirm('Supprimer ce produit ?')) return
-    try { await deleteProduct(id); load() } catch { alert('Erreur lors de la suppression') }
-  }
+  const handleDeleteProduct = (id) =>
+    askDelete('Supprimer ce produit ?', async () => { await deleteProduct(id); load() })
 
-  const handleDeleteOption = async (productId, optionId) => {
-    if (!confirm('Supprimer cette option ?')) return
-    try { await deleteOption(productId, optionId); load() } catch { alert('Erreur') }
-  }
+  const handleDeleteOption = (productId, optionId) =>
+    askDelete('Supprimer cette option ?', async () => { await deleteOption(productId, optionId); load() })
 
   const handleToggleOption = async (productId, option) => {
     const next = !option.available
@@ -622,10 +624,8 @@ function AdminPanel() {
     try { await toggleFormula(f.id, next) } catch { load() }
   }
 
-  const handleDeleteFormula = async (id) => {
-    if (!confirm('Supprimer cette formule ?')) return
-    try { await deleteFormula(id); load() } catch { alert('Erreur lors de la suppression') }
-  }
+  const handleDeleteFormula = (id) =>
+    askDelete('Supprimer cette formule ?', async () => { await deleteFormula(id); load() })
 
   return (
     <div className={styles.panel}>
@@ -784,48 +784,6 @@ function AdminPanel() {
         </div>
       </div>
 
-      {/* ── Codes promo ──────────────────────────────────────────────────── */}
-      <div className={styles.section}>
-        <div className={styles.sectionHeader}>
-          <div className={styles.sectionTitle}>Codes promo</div>
-          <button className={styles.addBtn} onClick={() => setPromoModal('create')}>+ Nouveau</button>
-        </div>
-        <div className={styles.list}>
-          {promoCodes.length === 0 && (
-            <div style={{ padding: '16px 20px', fontSize: 13, color: 'var(--text-muted)' }}>Aucun code promo</div>
-          )}
-          {promoCodes.map(promo => (
-            <div key={promo.id} className={styles.row}>
-              <AvailToggle available={!!promo.active} onChange={async () => {
-                await updatePromoCode(promo.id, { ...promo, active: !promo.active })
-                load()
-              }} />
-              <div className={styles.rowInfo}>
-                <div className={styles.rowName}>{promo.code}</div>
-                <div className={styles.rowMeta}>
-                  {promo.type === 'percent' ? `−${promo.value}%` : `−${promo.value} €`}
-                  {promo.starts_at && ` · Dès le ${new Date(promo.starts_at).toLocaleDateString('fr-FR')}`}
-                  {promo.expires_at && ` · Expire le ${new Date(promo.expires_at).toLocaleDateString('fr-FR')}`}
-                  {!promo.starts_at && !promo.expires_at && ' · Sans limite de durée'}
-                </div>
-              </div>
-              <div className={styles.rowActions}>
-                <button className={styles.iconBtn} onClick={() => setPromoModal(promo)}>✏</button>
-                <button
-                  className={`${styles.iconBtn} ${styles.danger}`}
-                  onClick={async () => {
-                    if (window.confirm(`Supprimer le code ${promo.code} ?`)) {
-                      await deletePromoCode(promo.id)
-                      load()
-                    }
-                  }}
-                >🗑</button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
       {/* ── Modales ───────────────────────────────────────────────────────── */}
       {categoryModal && (
         <CategoryModal
@@ -858,137 +816,22 @@ function AdminPanel() {
           onSaved={load}
         />
       )}
-      {promoModal && (
-        <PromoModal
-          promo={promoModal === 'create' ? null : promoModal}
-          onClose={() => setPromoModal(null)}
-          onSaved={load}
+
+      {/* Confirmation suppression */}
+      {deleteConfirm && (
+        <ConfirmDialog
+          message={deleteConfirm.message}
+          confirmLabel="Supprimer"
+          danger
+          onConfirm={runDelete}
+          onCancel={() => setDeleteConfirm(null)}
         />
       )}
-    </div>
-  )
-}
 
-// ── Modale code promo ─────────────────────────────────────────────────────────
-function PromoModal({ promo, onClose, onSaved }) {
-  const isEdit = !!promo
-  const [form, setForm] = useState({
-    code: promo?.code || '',
-    type: promo?.type || 'percent',
-    value: promo?.value != null ? String(promo.value) : '',
-    starts_at: promo?.starts_at ? new Date(promo.starts_at).toISOString().slice(0, 16) : '',
-    expires_at: promo?.expires_at ? new Date(promo.expires_at).toISOString().slice(0, 16) : '',
-    active: promo?.active !== undefined ? !!promo.active : true,
-  })
-  const [error, setError] = useState(null)
-  const [loading, setLoading] = useState(false)
-
-  const handleSave = async () => {
-    setError(null)
-    if (!form.code.trim()) return setError('Le code est requis')
-    if (!form.value || isNaN(parseFloat(form.value)) || parseFloat(form.value) <= 0) return setError('Valeur invalide')
-    if (form.type === 'percent' && parseFloat(form.value) > 100) return setError('Un pourcentage ne peut pas dépasser 100')
-    setLoading(true)
-    try {
-      const body = {
-        code: form.code.trim().toUpperCase(),
-        type: form.type,
-        value: parseFloat(form.value),
-        starts_at: form.starts_at || null,
-        expires_at: form.expires_at || null,
-        active: form.active,
-      }
-      if (isEdit) await updatePromoCode(promo.id, body)
-      else await createPromoCode(body)
-      onSaved()
-      onClose()
-    } catch (err) {
-      setError(err.response?.data?.error || 'Erreur lors de la sauvegarde')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  return (
-    <div className={styles.modalOverlay} onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className={styles.modal}>
-        <div className={styles.modalTitle}>{isEdit ? 'Modifier le code' : 'Nouveau code promo'}</div>
-
-        <div className={styles.fieldRow}>
-          <div className={styles.field}>
-            <label className={styles.label}>Code</label>
-            <input
-              className={styles.input}
-              value={form.code}
-              onChange={e => setForm(f => ({ ...f, code: e.target.value.toUpperCase() }))}
-              placeholder="KEKOSAN10"
-              disabled={isEdit}
-            />
-          </div>
-          <div className={styles.field}>
-            <label className={styles.label}>Type</label>
-            <select className={styles.select} value={form.type} onChange={e => setForm(f => ({ ...f, type: e.target.value }))}>
-              <option value="percent">Pourcentage (%)</option>
-              <option value="fixed">Montant fixe (€)</option>
-            </select>
-          </div>
-        </div>
-
-        <div className={styles.field}>
-          <label className={styles.label}>Valeur {form.type === 'percent' ? '(%)' : '(€)'}</label>
-          <input
-            className={styles.input}
-            type="number"
-            step="0.01"
-            min="0"
-            max={form.type === 'percent' ? '100' : undefined}
-            value={form.value}
-            onChange={e => setForm(f => ({ ...f, value: e.target.value }))}
-            placeholder={form.type === 'percent' ? '10' : '5.00'}
-          />
-        </div>
-
-        <div className={styles.fieldRow}>
-          <div className={styles.field}>
-            <label className={styles.label}>Valide à partir de <span style={{ opacity: 0.5 }}>(optionnel)</span></label>
-            <input
-              className={styles.input}
-              type="datetime-local"
-              value={form.starts_at}
-              onChange={e => setForm(f => ({ ...f, starts_at: e.target.value }))}
-            />
-          </div>
-          <div className={styles.field}>
-            <label className={styles.label}>Expire le <span style={{ opacity: 0.5 }}>(optionnel)</span></label>
-            <input
-              className={styles.input}
-              type="datetime-local"
-              value={form.expires_at}
-              onChange={e => setForm(f => ({ ...f, expires_at: e.target.value }))}
-            />
-          </div>
-        </div>
-
-        <div className={styles.field}>
-          <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 13, color: 'var(--text)' }}>
-            <input
-              type="checkbox"
-              checked={form.active}
-              onChange={e => setForm(f => ({ ...f, active: e.target.checked }))}
-            />
-            Actif
-          </label>
-        </div>
-
-        {error && <div className={styles.errorMsg}>{error}</div>}
-
-        <div className={styles.modalActions}>
-          <button className={styles.cancelBtn} onClick={onClose} disabled={loading}>Annuler</button>
-          <button className={styles.saveBtn} onClick={handleSave} disabled={loading}>
-            {loading ? 'Sauvegarde…' : 'Sauvegarder'}
-          </button>
-        </div>
-      </div>
+      {/* Toast erreur suppression */}
+      {deleteError && (
+        <div className={styles.deleteErrorToast}>{deleteError}</div>
+      )}
     </div>
   )
 }

@@ -10,7 +10,8 @@ import {
 } from "../../api/admin";
 import AdminPanel from "./AdminPanel";
 import DashboardPanel from "./DashboardPanel";
-import OrdersPanel from "./OrdersPanel";
+import SettingsPanel from "./SettingsPanel";
+import ConfirmDialog from "../../components/ConfirmDialog/ConfirmDialog";
 import styles from "./KitchenPage.module.css";
 
 const formatTime = (d) =>
@@ -158,7 +159,9 @@ function KitchenPage() {
   const [activeTab, setActiveTab] = useState("kds");
   const [serviceOpen, setServiceOpen] = useState(null);
   const [serviceLoading, setServiceLoading] = useState(false);
-  const [serviceToast, setServiceToast] = useState(null); // 'success' | 'error'
+  const [serviceToast, setServiceToast] = useState(null); // 'open' | 'closed' | 'error'
+  const [confirmClose, setConfirmClose] = useState(false);
+  const [statusError, setStatusError] = useState(null);
 
   // Référence audio pour le son de nouvelle commande
   const audioCtxRef = useRef(null);
@@ -216,16 +219,14 @@ function KitchenPage() {
     }
   }, [authenticated, loadOrders, loadService]);
 
-  const handleToggleService = async () => {
-    const next = !serviceOpen;
-    // Demander confirmation uniquement quand on ferme le service
-    if (
-      !next &&
-      !confirm(
-        "Fermer le service ? Les clients ne pourront plus passer de commande."
-      )
-    )
-      return;
+  const handleToggleService = () => {
+    // Fermeture : demande confirmation via dialog personnalisé
+    if (serviceOpen) { setConfirmClose(true); return; }
+    doToggleService(true);
+  };
+
+  const doToggleService = async (next) => {
+    setConfirmClose(false);
     setServiceOpen(next);
     setServiceLoading(true);
     try {
@@ -303,7 +304,8 @@ function KitchenPage() {
         );
       }
     } catch {
-      alert("Erreur lors du changement de statut");
+      setStatusError("Erreur lors du changement de statut");
+      setTimeout(() => setStatusError(null), 3000);
     }
   };
 
@@ -414,14 +416,6 @@ function KitchenPage() {
               }`}
               onClick={() => setActiveTab("dashboard")}
             >
-              📊 Dashboard
-            </button>
-            <button
-              className={`${styles.tab} ${
-                activeTab === "orders" ? styles.tabActive : ""
-              }`}
-              onClick={() => setActiveTab("orders")}
-            >
               📋 Historique
             </button>
             <button
@@ -431,6 +425,14 @@ function KitchenPage() {
               onClick={() => setActiveTab("admin")}
             >
               🍱 Produits
+            </button>
+            <button
+              className={`${styles.tab} ${
+                activeTab === "settings" ? styles.tabActive : ""
+              }`}
+              onClick={() => setActiveTab("settings")}
+            >
+              ⚙️ Paramètres
             </button>
           </div>
         </div>
@@ -497,24 +499,38 @@ function KitchenPage() {
       </div>
 
       <div style={{ display: activeTab === "dashboard" ? undefined : "none" }}>
-        <DashboardPanel onOrderClick={() => setActiveTab("orders")} />
-      </div>
-      <div style={{ display: activeTab === "orders" ? undefined : "none" }}>
-        <OrdersPanel />
+        <DashboardPanel />
       </div>
       <div style={{ display: activeTab === "admin" ? undefined : "none" }}>
         <AdminPanel />
+      </div>
+      <div style={{ display: activeTab === "settings" ? undefined : "none" }}>
+        <SettingsPanel />
       </div>
 
       {/* Toast feedback service */}
       {serviceToast && (
         <div className={`${styles.toast} ${styles[`toast_${serviceToast}`]}`}>
-          {serviceToast === "open" &&
-            "🟢 Service ouvert — les clients peuvent commander"}
-          {serviceToast === "closed" &&
-            "🔴 Service fermé — aucune commande possible"}
-          {serviceToast === "error" && "⚠️ Erreur lors du changement de statut"}
+          {serviceToast === "open"   && "🟢 Service ouvert — les clients peuvent commander"}
+          {serviceToast === "closed" && "🔴 Service fermé — aucune commande possible"}
+          {serviceToast === "error"  && "⚠️ Erreur lors du changement de statut"}
         </div>
+      )}
+
+      {/* Toast erreur changement de statut commande */}
+      {statusError && (
+        <div className={`${styles.toast} ${styles.toast_error}`}>{statusError}</div>
+      )}
+
+      {/* Confirmation fermeture service */}
+      {confirmClose && (
+        <ConfirmDialog
+          message="Fermer le service ? Les clients ne pourront plus passer de commande."
+          confirmLabel="Fermer le service"
+          danger
+          onConfirm={() => doToggleService(false)}
+          onCancel={() => setConfirmClose(false)}
+        />
       )}
     </div>
   );

@@ -21,6 +21,24 @@ router.post('/login', loginLimiter, adminController.login);
 // GET /api/admin/service — public (lu par le frontend pour bloquer le checkout)
 router.get('/service', c.getServiceStatus);
 
+// GET /api/admin/schedule — public (lu par le frontend pour afficher les créneaux)
+router.get('/schedule', c.getSchedule);
+
+// GET /api/admin/maintenance-message — public (lu par le frontend quand le service est fermé)
+router.get('/maintenance-message', c.getMaintenanceMessage);
+
+// GET /api/admin/delivery-settings — public (lu par le frontend pour frais livraison et min commande)
+router.get('/delivery-settings', c.getDeliverySettings);
+
+// GET /api/admin/closed-days — public (lu par le frontend pour bloquer les créneaux)
+router.get('/closed-days', c.getClosedDays);
+
+// GET /api/admin/slot-availability — public (créneaux saturés, lu par le checkout)
+router.get('/slot-availability', c.getSlotAvailability);
+
+// GET /api/admin/max-orders-per-slot — public
+router.get('/max-orders-per-slot', c.getMaxOrdersPerSlot);
+
 // Toutes les routes suivantes nécessitent un JWT valide
 router.use(authAdmin);
 
@@ -43,6 +61,21 @@ router.patch('/orders/:id/status', adminController.updateOrderStatus);
 
 // ── Service ouvert/fermé ────────────────────────────────────────────────────
 router.patch('/service', c.setServiceStatus);
+
+// ── Horaires d'ouverture ────────────────────────────────────────────────────
+router.put('/schedule', c.setSchedule);
+
+// ── Message de maintenance ──────────────────────────────────────────────────
+router.put('/maintenance-message', c.setMaintenanceMessage);
+
+// ── Paramètres livraison ────────────────────────────────────────────────────
+router.put('/delivery-settings', c.setDeliverySettings);
+
+// ── Jours de fermeture ──────────────────────────────────────────────────────
+router.put('/closed-days', c.setClosedDays);
+
+// ── Limite commandes par créneau ─────────────────────────────────────────────
+router.put('/max-orders-per-slot', c.setMaxOrdersPerSlot);
 
 // ── Catégories ──────────────────────────────────────────────────────────────
 router.get('/categories', c.getCategories);

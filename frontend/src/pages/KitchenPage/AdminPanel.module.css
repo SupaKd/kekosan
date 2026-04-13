@@ -297,6 +297,51 @@
   gap: 12px;
 }
 
+.scheduleBody {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.scheduleRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.scheduleHint {
+  font-size: 12px;
+  color: var(--text-muted, #888899);
+  margin: 0;
+}
+
+.scheduleOk  { color: #30d158; font-size: 13px; font-weight: 600; align-self: flex-end }
+.scheduleErr { color: var(--danger, #ff453a); font-size: 13px; font-weight: 600; align-self: flex-end }
+
+.closedDaysList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.closedDayRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: var(--radius-sm);
+}
+
+.closedDayLabel {
+  font-size: 13px;
+  color: var(--text);
+  text-transform: capitalize;
+}
+
 .modalActions {
   display: flex;
   gap: 10px;
@@ -338,6 +383,27 @@
   padding: 8px 12px;
   background: rgba(255,69,58,0.12);
   border-radius: var(--radius-sm);
+}
+
+.deleteErrorToast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--danger, #ff453a);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 12px 20px;
+  border-radius: 8px;
+  z-index: 500;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+  animation: toastIn 0.2s ease;
+}
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(8px) }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0) }
 }
 
 /* ── Éditeur de slots formule ── */

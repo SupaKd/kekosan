@@ -1,31 +1,29 @@
 import { useState, useRef, useEffect } from "react";
 import styles from "./CartDrawer.module.css";
-import { API_BASE } from '../../config/api'
-import { formatPrice } from '../../utils/formatting'
+import { API_BASE } from "../../config/api";
+import { formatPrice } from "../../utils/formatting";
 
 // Retourne jusqu'à `max` produits non présents dans le panier
 // Priorité : banhmi > entree > dessert > boisson
-function getSuggestions(catalog, cartItems, max = 3) {
-  if (!catalog || Object.keys(catalog).length === 0) return []
+function getSuggestions(catalog, cartItems, max = 2) {
+  if (!catalog || Object.keys(catalog).length === 0) return [];
   const cartProductIds = new Set(
-    cartItems.filter(i => i.type === 'product').map(i => i.product_id)
-  )
-  const PRIORITY = ['banhmi', 'entree', 'dessert', 'boisson']
-  const suggestions = []
+    cartItems.filter((i) => i.type === "product").map((i) => i.product_id)
+  );
+  const PRIORITY = ["banhmi", "entree", "dessert", "boisson"];
+  const suggestions = [];
   for (const cat of PRIORITY) {
-    if (!catalog[cat]) continue
+    if (!catalog[cat]) continue;
     for (const p of catalog[cat]) {
       if (!cartProductIds.has(p.id)) {
-        suggestions.push(p)
-        if (suggestions.length >= max) return suggestions
+        suggestions.push(p);
+        if (suggestions.length >= max) return suggestions;
       }
     }
   }
-  return suggestions
+  return suggestions;
 }
 
-const FREE_DELIVERY_THRESHOLD = 20;
-const DELIVERY_FEE = 5;
 
 function CartItem({ item, onUpdateQty, onRemove }) {
   const unitPrice =
@@ -94,7 +92,7 @@ function CartItem({ item, onUpdateQty, onRemove }) {
   );
 }
 
-function CartDrawer({ cart, onCheckout, catalog = {} }) {
+function CartDrawer({ cart, onCheckout, catalog = {}, deliveryConfig = { delivery_fee: 5, free_delivery_threshold: 20, min_order_amount: 20 } }) {
   const [open, setOpen] = useState(false);
   const { items, updateQuantity, removeItem, total, count } = cart;
   const itemsRef = useRef(null);
@@ -108,8 +106,10 @@ function CartDrawer({ cart, onCheckout, catalog = {} }) {
 
   const suggestions = getSuggestions(catalog, items);
 
-  const deliveryFee = total >= FREE_DELIVERY_THRESHOLD ? 0 : DELIVERY_FEE;
+  const { delivery_fee, free_delivery_threshold, min_order_amount } = deliveryConfig;
+  const deliveryFee = total >= free_delivery_threshold ? 0 : delivery_fee;
   const totalWithDelivery = total + deliveryFee;
+  const belowMinimum = total > 0 && total < min_order_amount;
 
   if (count === 0) return null;
 
@@ -162,20 +162,24 @@ function CartDrawer({ cart, onCheckout, catalog = {} }) {
             {/* Suggestions — ajout direct au panier sans ouvrir la modale */}
             {suggestions.length > 0 && (
               <div className={styles.suggestions}>
-                <div className={styles.suggestionsTitle}>Tu pourrais aussi aimer</div>
+                <div className={styles.suggestionsTitle}>
+                  Tu pourrais aussi aimer
+                </div>
                 <div className={styles.suggestionsList}>
                   {suggestions.map((p) => (
                     <button
                       key={p.id}
                       className={styles.suggestionItem}
-                      onClick={() => cart.addItem({
-                        type: 'product',
-                        product_id: p.id,
-                        name: p.name,
-                        price: p.price,
-                        image_url: p.image_url || null,
-                        options: [],
-                      })}
+                      onClick={() =>
+                        cart.addItem({
+                          type: "product",
+                          product_id: p.id,
+                          name: p.name,
+                          price: p.price,
+                          image_url: p.image_url || null,
+                          options: [],
+                        })
+                      }
                     >
                       {p.image_url && (
                         <img
@@ -188,7 +192,9 @@ function CartDrawer({ cart, onCheckout, catalog = {} }) {
                       )}
                       <div className={styles.suggestionBody}>
                         <span className={styles.suggestionName}>{p.name}</span>
-                        <span className={styles.suggestionPrice}>{formatPrice(p.price)}</span>
+                        <span className={styles.suggestionPrice}>
+                          {formatPrice(p.price)}
+                        </span>
                       </div>
                       <span className={styles.suggestionAdd}>+</span>
                     </button>
@@ -205,23 +211,40 @@ function CartDrawer({ cart, onCheckout, catalog = {} }) {
                 </div>
                 <div className={styles.totalRow}>
                   <span className={styles.totalLabel}>Livraison</span>
-                  <span style={{ color: deliveryFee === 0 ? 'var(--success, #30d158)' : undefined }}>
-                    {deliveryFee === 0 ? 'Gratuite 🎉' : formatPrice(deliveryFee)}
+                  <span
+                    style={{
+                      color:
+                        deliveryFee === 0
+                          ? "var(--success, #30d158)"
+                          : undefined,
+                    }}
+                  >
+                    {deliveryFee === 0
+                      ? "Gratuite 🎉"
+                      : formatPrice(deliveryFee)}
                   </span>
                 </div>
-                {deliveryFee > 0 && (
+                {belowMinimum && (
+                  <p className={styles.deliveryHint} style={{ color: 'var(--danger, #ff453a)' }}>
+                    Minimum de commande : {formatPrice(min_order_amount)} (encore {formatPrice(min_order_amount - total)})
+                  </p>
+                )}
+                {!belowMinimum && deliveryFee > 0 && (
                   <p className={styles.deliveryHint}>
-                    Encore {formatPrice(FREE_DELIVERY_THRESHOLD - total)} pour la livraison gratuite
+                    Encore {formatPrice(free_delivery_threshold - total)} pour
+                    la livraison gratuite
                   </p>
                 )}
                 <div className={`${styles.totalRow} ${styles.totalFinal}`}>
                   <span className={styles.totalLabel}>Total</span>
-                  <span className={styles.totalAmount}>{formatPrice(totalWithDelivery)}</span>
+                  <span className={styles.totalAmount}>
+                    {formatPrice(totalWithDelivery)}
+                  </span>
                 </div>
               </div>
               <button
                 className={styles.checkoutBtn}
-                disabled={items.length === 0}
+                disabled={items.length === 0 || belowMinimum}
                 onClick={() => {
                   setOpen(false);
                   onCheckout();

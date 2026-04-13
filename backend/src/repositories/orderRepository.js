@@ -199,4 +199,32 @@ const updatePaymentIntent = async (orderId, paymentIntentId) => {
   );
 };
 
-module.exports = { createOrder, updatePaymentIntent, findByTrackingToken, findFullOrderById, findByPaymentIntentId, updateStatus };
+// Compte les commandes confirmées/en cours pour un créneau et une date donnés
+// Exclut les commandes annulées — elles libèrent leur place
+const countOrdersBySlot = async (delivery_time, date) => {
+  const [rows] = await pool.query(
+    `SELECT COUNT(*) AS cnt FROM orders
+     WHERE delivery_time = ?
+       AND DATE(created_at) = ?
+       AND status NOT IN ('cancelled')
+       AND payment_status = 'paid'`,
+    [delivery_time, date]
+  );
+  return rows[0].cnt;
+};
+
+// Retourne le nombre de commandes par créneau pour aujourd'hui et demain
+const getSlotCounts = async () => {
+  const [rows] = await pool.query(
+    `SELECT delivery_time, DATE(created_at) AS date, COUNT(*) AS cnt
+     FROM orders
+     WHERE DATE(created_at) >= CURDATE()
+       AND DATE(created_at) <= DATE_ADD(CURDATE(), INTERVAL 1 DAY)
+       AND status NOT IN ('cancelled')
+       AND payment_status = 'paid'
+     GROUP BY delivery_time, DATE(created_at)`
+  );
+  return rows; // [{ delivery_time: '12:00', date: '2026-04-13', cnt: 3 }, ...]
+};
+
+module.exports = { createOrder, updatePaymentIntent, findByTrackingToken, findFullOrderById, findByPaymentIntentId, updateStatus, countOrdersBySlot, getSlotCounts };

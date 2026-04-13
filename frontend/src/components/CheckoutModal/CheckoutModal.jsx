@@ -8,7 +8,7 @@ import {
   useElements,
 } from "@stripe/react-stripe-js";
 import { createOrder, applyPromo } from "../../api/orders";
-import { getServiceStatus } from "../../api/admin";
+import { getServiceStatus, getSchedule, getDeliverySettings, getClosedDays, getSlotAvailability, getMaintenanceMessage } from "../../api/admin";
 import { getAvailableSlots } from "../../utils/deliverySlots";
 import styles from "./CheckoutModal.module.css";
 
@@ -65,9 +65,6 @@ function PaymentForm({
 }
 
 // ── Modal principale ─────────────────────────────────────────────────────────
-const FREE_DELIVERY_THRESHOLD = 20;
-const DELIVERY_FEE = 5;
-
 function CheckoutModal({ cart, onClose }) {
   const navigate = useNavigate();
   const { items, total, clearCart } = cart;
@@ -79,10 +76,12 @@ function CheckoutModal({ cart, onClose }) {
   const [promoLoading, setPromoLoading] = useState(false);
   const [promoFlash, setPromoFlash] = useState(false);
 
+  const [deliveryConfig, setDeliveryConfig] = useState({ delivery_fee: 5, free_delivery_threshold: 20, min_order_amount: 20 });
+
   const discountAmount = appliedPromo?.discount_amount || 0;
   const subtotalAfterDiscount = Math.max(0, total - discountAmount);
   // La livraison gratuite se base sur le panier brut — la promo ne la retire pas
-  const deliveryFee = total >= FREE_DELIVERY_THRESHOLD ? 0 : DELIVERY_FEE;
+  const deliveryFee = total >= deliveryConfig.free_delivery_threshold ? 0 : deliveryConfig.delivery_fee;
   const totalWithDelivery = subtotalAfterDiscount + deliveryFee;
 
   // Étapes : 'form' → 'payment' → 'success'
@@ -93,13 +92,30 @@ function CheckoutModal({ cart, onClose }) {
   const [globalError, setGlobalError] = useState(null);
 
   const [serviceOpen, setServiceOpen] = useState(true);
+  const [schedule, setSchedule] = useState({ opening_hour: 11, closing_hour: 15, closed_days: [], availability: {} });
+  const [maintenanceMessage, setMaintenanceMsg] = useState('Le service est momentanément fermé. Revenez bientôt !');
   useEffect(() => {
     getServiceStatus()
       .then((d) => setServiceOpen(d.service_open))
       .catch(() => {});
+    getSchedule()
+      .then((d) => setSchedule(s => ({ ...s, ...d })))
+      .catch(() => {});
+    getClosedDays()
+      .then((d) => setSchedule(s => ({ ...s, closed_days: d.closed_days })))
+      .catch(() => {});
+    getSlotAvailability()
+      .then((d) => setSchedule(s => ({ ...s, availability: d.availability })))
+      .catch(() => {});
+    getDeliverySettings()
+      .then((d) => setDeliveryConfig(d))
+      .catch(() => {});
+    getMaintenanceMessage()
+      .then((d) => setMaintenanceMsg(d.maintenance_message))
+      .catch(() => {});
   }, []);
 
-  const { available, slots, message: closedMessage } = getAvailableSlots();
+  const { available, slots, message: closedMessage } = getAvailableSlots(schedule);
   const isOpen = serviceOpen && available;
 
   const [form, setForm] = useState({
@@ -435,7 +451,7 @@ function CheckoutModal({ cart, onClose }) {
                     {!isOpen ? (
                       <div className={styles.closedMessage}>
                         {!serviceOpen
-                          ? "On prépare quelque chose de spécial 🍜 Le service est momentanément fermé, reviens bientôt !"
+                          ? maintenanceMessage
                           : closedMessage}
                       </div>
                     ) : (

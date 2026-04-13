@@ -1,7 +1,7 @@
 import { MapPin, Clock } from "lucide-react";
 import styles from "./Header.module.css";
 
-function Header() {
+function Header({ opening_hour = 11, closing_hour = 15 }) {
   return (
     <header className={styles.header}>
       {/* Gauche : ville + horaires */}
@@ -12,7 +12,7 @@ function Header() {
         </div>
         <div className={styles.hoursBadge}>
           <Clock size={11} strokeWidth={2.5} />
-          Lun–Ven · 11h–15h
+          Lun–Ven · {opening_hour}h–{closing_hour}h
         </div>
       </div>
 

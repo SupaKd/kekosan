@@ -24,8 +24,8 @@ function IngredientsStrip() {
           className={styles.icon}
           style={{
             left: `${(i / ICONS.length) * 100}%`,
-            animationDuration: `${4 + (i % 5) * 1.2}s`,
-            animationDelay: `${(i * 0.4) % 3}s`,
+            animationDuration: `${8 + (i % 5) * 2}s`,
+            animationDelay: `${(i * 0.8) % 5}s`,
             fontSize: `${24 + (i % 3) * 10}px`,
           }}
           aria-label={item.label}

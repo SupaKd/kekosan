@@ -1,15 +1,24 @@
+const settingsRepository = require('../repositories/settingsRepository');
+const orderRepository   = require('../repositories/orderRepository');
+
 const MIN_DELAY_MIN  = 30;
-const SERVICE_START  = 11; // heure d'ouverture (inclus)
-const SERVICE_END    = 15; // heure de fermeture (dernier créneau : 14h30)
 const SLOT_INTERVAL  = 30; // minutes
 
 // Vérifie qu'un créneau HH:MM est valide (plage horaire, jour ouvré, délai minimum)
-const isSlotValid = (slot) => {
+const isSlotValid = async (slot) => {
   if (!slot || !/^\d{2}:\d{2}$/.test(slot)) return false;
 
   const [h, m] = slot.split(':').map(Number);
 
-  // Le créneau doit être dans la plage 11h00–14h30 et sur une tranche de 30min
+  // Lecture des horaires et jours fermés depuis la DB (fallback sur les valeurs par défaut)
+  const openingRaw   = await settingsRepository.get('opening_hour');
+  const closingRaw   = await settingsRepository.get('closing_hour');
+  const closedRaw    = await settingsRepository.get('closed_days');
+  const SERVICE_START = parseInt(openingRaw ?? '11');
+  const SERVICE_END   = parseInt(closingRaw  ?? '15');
+  const closedDays    = closedRaw ? JSON.parse(closedRaw) : [];
+
+  // Le créneau doit être dans la plage horaire et sur une tranche de 30min
   if (h < SERVICE_START || h >= SERVICE_END) return false;
   if (m % SLOT_INTERVAL !== 0) return false;
 
@@ -31,12 +40,17 @@ const isSlotValid = (slot) => {
     }
   }
 
+  // Vérification des jours de fermeture exceptionnelle (format YYYY-MM-DD)
+  const slotDateStr = slotDate.toISOString().slice(0, 10);
+  if (closedDays.includes(slotDateStr)) return false;
+
   const diffMin = (slotDate - now) / 60000;
   return diffMin >= MIN_DELAY_MIN;
 };
 
 // Valide le body de la requête POST /api/orders
-const validateOrder = (req, res, next) => {
+const validateOrder = async (req, res, next) => {
+  try {
   const { customer, delivery_address, delivery_time, items, formula_items, notes } = req.body;
 
   // Infos client
@@ -70,8 +84,18 @@ const validateOrder = (req, res, next) => {
   if (!delivery_time) {
     return res.status(400).json({ error: 'Veuillez choisir un créneau de livraison' });
   }
-  if (!isSlotValid(delivery_time)) {
+  if (!await isSlotValid(delivery_time)) {
     return res.status(400).json({ error: 'Créneau de livraison invalide ou indisponible' });
+  }
+
+  // Vérifie que le créneau n'est pas saturé
+  const maxRaw = await settingsRepository.get('max_orders_per_slot');
+  const max = parseInt(maxRaw ?? '5');
+  const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'Europe/Paris' }));
+  const todayStr = now.toISOString().slice(0, 10);
+  const count = await orderRepository.countOrdersBySlot(delivery_time, todayStr);
+  if (count >= max) {
+    return res.status(400).json({ error: `Ce créneau est complet. Veuillez en choisir un autre.` });
   }
 
   // Le panier doit contenir au moins un élément
@@ -120,6 +144,7 @@ const validateOrder = (req, res, next) => {
   }
 
   next();
+  } catch (err) { next(err); }
 };
 
 module.exports = validateOrder;

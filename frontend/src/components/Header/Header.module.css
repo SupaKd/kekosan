@@ -40,7 +40,7 @@
 }
 
 .hoursBadge {
-  color: #888;
+  color: #fff;
 }
 
 .dot {
@@ -85,7 +85,7 @@
 }
 
 .socialLink {
-  color: #888;
+  color: #fff;
   display: flex;
   align-items: center;
   transition: color 0.2s;

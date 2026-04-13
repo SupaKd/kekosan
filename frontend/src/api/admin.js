@@ -16,6 +16,22 @@ export const setServiceStatus = (open) =>
     headers: { Authorization: `Bearer ${localStorage.getItem('admin_token')}` },
   }).then(r => r.data)
 
+export const getSchedule = () =>
+  client.get('/admin/schedule').then(r => r.data)
+
+export const getMaintenanceMessage = () =>
+  client.get('/admin/maintenance-message').then(r => r.data)
+
+export const setMaintenanceMessage = (maintenance_message) =>
+  client.put('/admin/maintenance-message', { maintenance_message }, {
+    headers: { Authorization: `Bearer ${localStorage.getItem('admin_token')}` },
+  }).then(r => r.data)
+
+export const setSchedule = (opening_hour, closing_hour) =>
+  client.put('/admin/schedule', { opening_hour, closing_hour }, {
+    headers: { Authorization: `Bearer ${localStorage.getItem('admin_token')}` },
+  }).then(r => r.data)
+
 // ── Catégories ───────────────────────────────────────────────────────────────
 export const getAdminCategories = () =>
   client.get('/admin/categories', {
@@ -153,6 +169,36 @@ export const getOrderById = (id) =>
 
 export const updateOrderStatus = (id, status) =>
   client.patch(`/admin/orders/${id}/status`, { status }, {
+    headers: { Authorization: `Bearer ${localStorage.getItem('admin_token')}` },
+  }).then(r => r.data)
+
+// ── Disponibilité créneaux ────────────────────────────────────────────────────
+export const getSlotAvailability = () =>
+  client.get('/admin/slot-availability').then(r => r.data)
+
+export const getMaxOrdersPerSlot = () =>
+  client.get('/admin/max-orders-per-slot').then(r => r.data)
+
+export const setMaxOrdersPerSlot = (max_orders_per_slot) =>
+  client.put('/admin/max-orders-per-slot', { max_orders_per_slot }, {
+    headers: { Authorization: `Bearer ${localStorage.getItem('admin_token')}` },
+  }).then(r => r.data)
+
+// ── Jours de fermeture ───────────────────────────────────────────────────────
+export const getClosedDays = () =>
+  client.get('/admin/closed-days').then(r => r.data)
+
+export const setClosedDays = (closed_days) =>
+  client.put('/admin/closed-days', { closed_days }, {
+    headers: { Authorization: `Bearer ${localStorage.getItem('admin_token')}` },
+  }).then(r => r.data)
+
+// ── Paramètres livraison ─────────────────────────────────────────────────────
+export const getDeliverySettings = () =>
+  client.get('/admin/delivery-settings').then(r => r.data)
+
+export const setDeliverySettings = (data) =>
+  client.put('/admin/delivery-settings', data, {
     headers: { Authorization: `Bearer ${localStorage.getItem('admin_token')}` },
   }).then(r => r.data)
 

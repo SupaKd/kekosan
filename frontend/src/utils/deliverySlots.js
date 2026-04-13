@@ -1,12 +1,15 @@
 const SLOT_INTERVAL = 30  // minutes entre chaque créneau
 const MIN_DELAY     = 30  // minutes minimum avant le premier créneau dispo
-const SERVICE_START = 11  // heure d'ouverture (inclus)
-const SERVICE_END   = 15  // heure de fermeture (dernier créneau possible : 14h30)
 
 // Retourne { available: bool, slots: ['11:00', '11:30', ...], message: string | null }
 // message est défini uniquement quand available = false (raison lisible par le client)
 // La disponibilité réelle est contrôlée par le toggle admin (service_open)
-export function getAvailableSlots() {
+// opening_hour, closing_hour et closed_days sont lus depuis la DB et passés en paramètre
+// availability = objet { 'YYYY-MM-DD|HH:MM': placesRestantes } retourné par /slot-availability
+export function getAvailableSlots({ opening_hour = 11, closing_hour = 15, closed_days = [], availability = {} } = {}) {
+  const SERVICE_START = opening_hour
+  const SERVICE_END   = closing_hour
+
   const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'Europe/Paris' }))
 
   // Pas de livraison le week-end (0 = dimanche, 6 = samedi)
@@ -19,11 +22,21 @@ export function getAvailableSlots() {
     }
   }
 
+  // Vérification des jours de fermeture exceptionnelle
+  const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+  if (closed_days.includes(todayStr)) {
+    return {
+      available: false,
+      slots: [],
+      message: 'Nous sommes fermés exceptionnellement aujourd\'hui. Revenez bientôt !',
+    }
+  }
+
   const earliest = new Date(now.getTime() + MIN_DELAY * 60000)
 
   const slots = []
 
-  // Génère tous les créneaux fixes de la journée dans la plage 11h-15h
+  // Génère tous les créneaux fixes de la journée dans la plage horaire
   for (let h = SERVICE_START; h < SERVICE_END; h++) {
     for (let m = 0; m < 60; m += SLOT_INTERVAL) {
       const candidate = new Date(now)
@@ -38,7 +51,12 @@ export function getAvailableSlots() {
       })()
 
       if (candidateTime >= earliest) {
-        slots.push(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`)
+        const slotStr = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`
+        const slotDateStr = `${candidateTime.getFullYear()}-${String(candidateTime.getMonth() + 1).padStart(2, '0')}-${String(candidateTime.getDate()).padStart(2, '0')}`
+        const key = `${slotDateStr}|${slotStr}`
+        // Exclut le créneau si places restantes = 0 (clé présente et vaut 0)
+        if (key in availability && availability[key] === 0) continue
+        slots.push(slotStr)
       }
     }
   }

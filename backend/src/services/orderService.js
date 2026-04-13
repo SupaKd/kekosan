@@ -4,10 +4,9 @@ const productRepository = require('../repositories/productRepository');
 const formulaRepository = require('../repositories/formulaRepository');
 const orderRepository = require('../repositories/orderRepository');
 const promoRepository = require('../repositories/promoRepository');
+const settingsRepository = require('../repositories/settingsRepository');
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-const FREE_DELIVERY_THRESHOLD = 20; // livraison gratuite à partir de ce montant
-const DELIVERY_FEE = 5;             // frais de livraison en dessous du seuil
 
 // Valide et enrichit les items à la carte depuis la DB
 // Retourne les items avec snapshots ou lève une erreur métier
@@ -182,6 +181,19 @@ const createOrder = async (body) => {
   // Validation et application du code promo
   const { discount_amount, promo_code: appliedPromoCode } = await validatePromo(promo_code, subtotal);
   const subtotalAfterDiscount = Math.max(0, subtotal - discount_amount);
+
+  // Lecture des paramètres de livraison depuis la DB (fallback sur valeurs par défaut)
+  const feeRaw       = await settingsRepository.get('delivery_fee');
+  const threshRaw    = await settingsRepository.get('free_delivery_threshold');
+  const minOrderRaw  = await settingsRepository.get('min_order_amount');
+  const DELIVERY_FEE            = parseFloat(feeRaw    ?? '5');
+  const FREE_DELIVERY_THRESHOLD = parseFloat(threshRaw ?? '20');
+  const MIN_ORDER_AMOUNT        = parseFloat(minOrderRaw ?? '20');
+
+  // Vérification du montant minimum de commande
+  if (subtotal < MIN_ORDER_AMOUNT) {
+    throw { status: 400, message: `Montant minimum de commande : ${MIN_ORDER_AMOUNT} €` };
+  }
 
   // Calcul des frais de livraison (basé sur le subtotal brut — la promo ne retire pas la livraison gratuite)
   const delivery_fee = subtotal >= FREE_DELIVERY_THRESHOLD ? 0 : DELIVERY_FEE;
