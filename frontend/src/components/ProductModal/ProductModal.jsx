@@ -1,19 +1,18 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import styles from './ProductModal.module.css'
 import { API_BASE } from '../../config/api'
 import { formatPrice } from '../../utils/formatting'
 import { useSwipeDown } from '../../hooks/useSwipeDown'
+import { useLockBodyScroll } from '../../hooks/useLockBodyScroll'
+import { useModalHistory } from '../../hooks/useModalHistory'
 
 function ProductModal({ product, onClose, onAdd }) {
   const [selectedOptions, setSelectedOptions] = useState([])
   const [quantity, setQuantity] = useState(1)
-
-  // Fermeture au clavier Escape
-  useEffect(() => {
-    const handler = (e) => e.key === 'Escape' && onClose()
-    window.addEventListener('keydown', handler)
-    return () => window.removeEventListener('keydown', handler)
-  }, [onClose])
+  const [added, setAdded] = useState(false)
+  const modalRef = useSwipeDown(onClose)
+  useLockBodyScroll()
+  useModalHistory(onClose)
 
   if (!product) return null
 
@@ -30,9 +29,6 @@ function ProductModal({ product, onClose, onAdd }) {
   const optionsDelta = selectedOptions.reduce((sum, o) => sum + o.price_delta, 0)
   const unitPrice = parseFloat(product.price) + optionsDelta
   const totalPrice = unitPrice * quantity
-
-  const [added, setAdded] = useState(false)
-  const modalRef = useSwipeDown(onClose)
 
   const handleAdd = () => {
     if (added) return

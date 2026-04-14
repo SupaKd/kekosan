@@ -376,6 +376,17 @@
   color: #c0392b;
   line-height: 1;
   flex-shrink: 0;
+  transition: color 0.2s, transform 0.2s;
+}
+
+.suggestionAddDone {
+  color: #30d158;
+  transform: scale(1.2);
+}
+
+.suggestionAdded {
+  border-color: #30d158;
+  background: rgba(48, 209, 88, 0.05);
 }
 
 /* Footer avec total */
@@ -421,6 +432,37 @@
   font-size: 11px;
   color: #888;
   text-align: center;
+}
+
+/* Barre de progression livraison gratuite */
+.progressBar {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.progressLabel {
+  font-size: 11px;
+  color: #888;
+  text-align: center;
+}
+
+.progressTrack {
+  height: 5px;
+  background: rgba(0, 0, 0, 0.08);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  border-radius: 3px;
+  background: #c0392b;
+  transition: width 0.4s cubic-bezier(0.25, 1, 0.5, 1), background 0.3s;
+}
+
+.progressFill.reached {
+  background: #30d158;
 }
 
 .minWarning {

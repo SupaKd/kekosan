@@ -26,9 +26,11 @@
   border-radius: var(--radius-lg);
   width: 100%;
   max-width: 520px;
-  max-height: 90vh;
-  overflow-y: auto;
-  padding: 28px;
+  height: 85vh;
+  max-height: 96vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   box-shadow: var(--shadow-card), 0 0 40px rgba(255, 45, 85, 0.2);
   animation: slideUp 0.2s ease;
   position: relative;
@@ -66,8 +68,8 @@
 }
 
 .header {
-  margin-bottom: 24px;
-  padding-bottom: 20px;
+  flex-shrink: 0;
+  padding: 28px 28px 20px;
   border-bottom: 1px solid var(--border);
 }
 
@@ -134,10 +136,13 @@
 }
 
 .slots {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 20px;
-  margin-bottom: 24px;
+  padding: 20px 28px;
 }
 
 .slot {
@@ -365,11 +370,12 @@
 }
 
 .footer {
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding-top: 20px;
+  padding: 20px 28px;
   border-top: 1px solid var(--border);
 }
 
@@ -480,11 +486,23 @@
 
   .modal {
     max-width: 100%;
+    width: 100%;
+    height: 92dvh;
     border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-    padding: 20px;
-    padding-bottom: calc(20px + env(safe-area-inset-bottom));
     animation: slideUpMobile 0.3s cubic-bezier(0.32, 0.72, 0, 1);
-    max-height: 92vh;
+  }
+
+  .header {
+    padding: 20px 20px 16px;
+  }
+
+  .slots {
+    padding: 16px 20px;
+  }
+
+  .footer {
+    padding: 16px 20px;
+    padding-bottom: calc(16px + env(safe-area-inset-bottom));
   }
 
   @keyframes slideUpMobile {

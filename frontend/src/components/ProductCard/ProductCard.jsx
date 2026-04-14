@@ -1,10 +1,11 @@
+import { useState } from 'react'
 import styles from './ProductCard.module.css'
 
 import { API_BASE } from '../../config/api'
 import { formatPrice } from '../../utils/formatting'
 
 function ProductCard({ product, onSelect }) {
-  const hasOptions = product.options && product.options.length > 0
+  const [imgLoaded, setImgLoaded] = useState(false)
 
   return (
     <div className={styles.card} onClick={() => onSelect(product)}>
@@ -25,10 +26,24 @@ function ProductCard({ product, onSelect }) {
         </div>
       </div>
       <div className={styles.imageWrap}>
-        {product.image_url
-          ? <img src={`${API_BASE}${product.image_url}`} alt={product.name} width={110} height={110} className={styles.image} loading="lazy" decoding="async" />
-          : <div className={styles.imagePlaceholder}>🥖</div>
-        }
+        {product.image_url ? (
+          <>
+            {!imgLoaded && <div className={styles.imageSkeleton} />}
+            <img
+              src={`${API_BASE}${product.image_url}`}
+              alt={product.name}
+              width={110}
+              height={110}
+              className={styles.image}
+              style={{ opacity: imgLoaded ? 1 : 0 }}
+              loading="lazy"
+              decoding="async"
+              onLoad={() => setImgLoaded(true)}
+            />
+          </>
+        ) : (
+          <div className={styles.imagePlaceholder}>🥖</div>
+        )}
         {product.badge && <span className={styles.badge}>{product.badge}</span>}
       </div>
     </div>

@@ -12,6 +12,7 @@ import { createOrder, applyPromo, getActivePromos } from "../../api/orders";
 import { getServiceStatus, getSchedule, getSlotSettings, getDeliverySettings, getClosedDays, getSlotAvailability, getMaintenanceMessage } from "../../api/admin";
 import { getAvailableSlots } from "../../utils/deliverySlots";
 import styles from "./CheckoutModal.module.css";
+import { useModalHistory } from "../../hooks/useModalHistory";
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
 
@@ -85,6 +86,13 @@ function PaymentForm({
 }
 
 // ── Modal principale ─────────────────────────────────────────────────────────
+// Sur iOS le clavier pousse le viewport — on scrolle le champ dans la vue
+const scrollToField = (e) => {
+  setTimeout(() => {
+    e.target.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  }, 300)
+}
+
 function CheckoutModal({ cart, onClose }) {
   const navigate = useNavigate();
   const { items, total, clearCart } = cart;
@@ -156,11 +164,7 @@ function CheckoutModal({ cart, onClose }) {
   });
   const [fieldErrors, setFieldErrors] = useState({});
 
-  useEffect(() => {
-    const handler = (e) => e.key === "Escape" && !loading && onClose();
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [onClose, loading]);
+  useModalHistory(onClose);
 
   const handleApplyPromo = async () => {
     setPromoError(null);
@@ -413,6 +417,7 @@ function CheckoutModal({ cart, onClose }) {
                         onChange={(e) =>
                           setForm((f) => ({ ...f, name: e.target.value }))
                         }
+                        onFocus={scrollToField}
                         autoComplete="name"
                         inputMode="text"
                       />
@@ -433,6 +438,7 @@ function CheckoutModal({ cart, onClose }) {
                         onChange={(e) =>
                           setForm((f) => ({ ...f, phone: e.target.value }))
                         }
+                        onFocus={scrollToField}
                         type="tel"
                         autoComplete="tel"
                         inputMode="tel"
@@ -456,6 +462,7 @@ function CheckoutModal({ cart, onClose }) {
                       onChange={(e) =>
                         setForm((f) => ({ ...f, email: e.target.value }))
                       }
+                      onFocus={scrollToField}
                       autoComplete="email"
                       inputMode="email"
                     />
@@ -477,6 +484,7 @@ function CheckoutModal({ cart, onClose }) {
                         onChange={(e) =>
                           setForm((f) => ({ ...f, street: e.target.value }))
                         }
+                        onFocus={scrollToField}
                         autoComplete="street-address"
                         inputMode="text"
                       />

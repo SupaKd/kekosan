@@ -1,8 +1,10 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import styles from './FormulaModal.module.css'
 import { API_BASE } from '../../config/api'
 import { formatPrice } from '../../utils/formatting'
 import { useSwipeDown } from '../../hooks/useSwipeDown'
+import { useLockBodyScroll } from '../../hooks/useLockBodyScroll'
+import { useModalHistory } from '../../hooks/useModalHistory'
 
 const CATEGORY_LABELS = {
   entree: 'Entrée',
@@ -17,12 +19,8 @@ function FormulaModal({ formula, catalog, onClose, onAdd }) {
   const [quantity, setQuantity] = useState(1)
   const [added, setAdded] = useState(false)
   const modalRef = useSwipeDown(onClose)
-
-  useEffect(() => {
-    const handler = (e) => e.key === 'Escape' && onClose()
-    window.addEventListener('keydown', handler)
-    return () => window.removeEventListener('keydown', handler)
-  }, [onClose])
+  useLockBodyScroll()
+  useModalHistory(onClose)
 
   if (!formula) return null
 

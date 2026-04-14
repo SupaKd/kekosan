@@ -137,6 +137,20 @@
   aspect-ratio: 1 / 1;
 }
 
+.imageSkeleton {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, #e0d8cc 25%, #ede6da 50%, #e0d8cc 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  z-index: 1;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
 .image {
   width: 100%;
   height: 100%;

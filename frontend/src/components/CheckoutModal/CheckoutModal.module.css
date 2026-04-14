@@ -302,6 +302,7 @@
 }
 
 .payBtn {
+  width: 100%;
   background: #ffd60a;
   color: #1a1a1a;
   border: none;

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { getCatalog, getFormulas } from '../api/products'
 
 export function useCatalog() {
@@ -7,15 +7,19 @@ export function useCatalog() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
-  useEffect(() => {
-    Promise.all([getCatalog(), getFormulas()])
-      .then(([catalogData, formulasData]) => {
-        setCatalog(catalogData)
-        setFormulas(formulasData)
-      })
-      .catch(() => setError('Impossible de charger le menu.'))
-      .finally(() => setLoading(false))
+  const load = useCallback(async () => {
+    const [catalogData, formulasData] = await Promise.all([getCatalog(), getFormulas()])
+    setCatalog(catalogData)
+    setFormulas(formulasData)
   }, [])
 
-  return { catalog, formulas, loading, error }
+  useEffect(() => {
+    load()
+      .catch(() => setError('Impossible de charger le menu.'))
+      .finally(() => setLoading(false))
+  }, [load])
+
+  const refresh = useCallback(() => load().catch(() => {}), [load])
+
+  return { catalog, formulas, loading, error, refresh }
 }

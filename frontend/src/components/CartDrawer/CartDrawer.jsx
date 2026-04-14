@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import styles from "./CartDrawer.module.css";
 import { API_BASE } from "../../config/api";
 import { formatPrice } from "../../utils/formatting";
+import { useLockBodyScroll } from "../../hooks/useLockBodyScroll";
 
 // Retourne jusqu'à `max` produits non présents dans le panier
 // Priorité : banhmi > entree > dessert > boisson
@@ -92,6 +93,49 @@ function CartItem({ item, onUpdateQty, onRemove }) {
   );
 }
 
+function SuggestionButton({ p, onAdd }) {
+  const [added, setAdded] = useState(false)
+  const timerRef = useRef(null)
+
+  const handleClick = () => {
+    if (added) return
+    onAdd()
+    setAdded(true)
+    if (navigator.vibrate) navigator.vibrate(30)
+    timerRef.current = setTimeout(() => setAdded(false), 1500)
+  }
+
+  useEffect(() => () => clearTimeout(timerRef.current), [])
+
+  return (
+    <button
+      className={`${styles.suggestionItem} ${added ? styles.suggestionAdded : ''}`}
+      onClick={handleClick}
+    >
+      {p.image_url && (
+        <img
+          src={`${API_BASE}${p.image_url}`}
+          alt={p.name}
+          width={40}
+          height={40}
+          className={styles.suggestionImg}
+          loading="lazy"
+          decoding="async"
+        />
+      )}
+      <div className={styles.suggestionBody}>
+        <span className={styles.suggestionName}>{p.name}</span>
+        <span className={styles.suggestionPrice}>
+          {formatPrice(p.price)}
+        </span>
+      </div>
+      <span className={`${styles.suggestionAdd} ${added ? styles.suggestionAddDone : ''}`}>
+        {added ? '✓' : '+'}
+      </span>
+    </button>
+  )
+}
+
 function CartDrawer({
   cart,
   onCheckout,
@@ -105,6 +149,7 @@ function CartDrawer({
   const [open, setOpen] = useState(false);
   const { items, updateQuantity, removeItem, total, count } = cart;
   const itemsRef = useRef(null);
+  useLockBodyScroll(open);
 
   // Scroll en haut de la liste à chaque ouverture
   useEffect(() => {
@@ -181,10 +226,10 @@ function CartDrawer({
                   </div>
                   <div className={styles.suggestionsList}>
                     {suggestions.map((p) => (
-                      <button
+                      <SuggestionButton
                         key={p.id}
-                        className={styles.suggestionItem}
-                        onClick={() =>
+                        p={p}
+                        onAdd={() =>
                           cart.addItem({
                             type: "product",
                             product_id: p.id,
@@ -194,26 +239,7 @@ function CartDrawer({
                             options: [],
                           })
                         }
-                      >
-                        {p.image_url && (
-                          <img
-                            src={`${API_BASE}${p.image_url}`}
-                            alt={p.name}
-                            width={40}
-                            height={40}
-                            className={styles.suggestionImg}
-                            loading="lazy"
-                            decoding="async"
-                          />
-                        )}
-                        <div className={styles.suggestionBody}>
-                          <span className={styles.suggestionName}>{p.name}</span>
-                          <span className={styles.suggestionPrice}>
-                            {formatPrice(p.price)}
-                          </span>
-                        </div>
-                        <span className={styles.suggestionAdd}>+</span>
-                      </button>
+                      />
                     ))}
                   </div>
                 </div>
@@ -228,33 +254,45 @@ function CartDrawer({
                 </div>
                 <div className={styles.totalRow}>
                   <span className={styles.totalLabel}>Livraison</span>
-                  <span
-                    style={{
-                      color:
-                        deliveryFee === 0
-                          ? "var(--success, #30d158)"
-                          : undefined,
-                    }}
-                  >
-                    {deliveryFee === 0
-                      ? "Gratuite 🎉"
-                      : formatPrice(deliveryFee)}
+                  <span style={{ color: deliveryFee === 0 ? "var(--success, #30d158)" : undefined }}>
+                    {deliveryFee === 0 ? "Gratuite" : formatPrice(deliveryFee)}
                   </span>
                 </div>
                 {belowMinimum && (
-                  <p
-                    className={styles.deliveryHint}
-                    style={{ color: "var(--danger, #ff453a)" }}
-                  >
-                    Minimum de commande : {formatPrice(min_order_amount)}{" "}
-                    (encore {formatPrice(min_order_amount - total)})
-                  </p>
+                  <div className={styles.progressBar}>
+                    <div className={styles.progressLabel} style={{ color: "var(--danger, #ff453a)" }}>
+                      Minimum {formatPrice(min_order_amount)} — encore {formatPrice(min_order_amount - total)}
+                    </div>
+                    <div className={styles.progressTrack}>
+                      <div
+                        className={styles.progressFill}
+                        style={{ width: `${Math.min(100, (total / min_order_amount) * 100)}%`, background: '#ff453a' }}
+                      />
+                    </div>
+                  </div>
                 )}
                 {!belowMinimum && deliveryFee > 0 && (
-                  <p className={styles.deliveryHint}>
-                    Encore {formatPrice(free_delivery_threshold - total)} pour
-                    la livraison gratuite
-                  </p>
+                  <div className={styles.progressBar}>
+                    <div className={styles.progressLabel}>
+                      Encore {formatPrice(free_delivery_threshold - total)} pour la livraison gratuite 🛵
+                    </div>
+                    <div className={styles.progressTrack}>
+                      <div
+                        className={styles.progressFill}
+                        style={{ width: `${Math.min(100, (total / free_delivery_threshold) * 100)}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
+                {!belowMinimum && deliveryFee === 0 && (
+                  <div className={styles.progressBar}>
+                    <div className={styles.progressLabel} style={{ color: '#30d158' }}>
+                      🎉 Livraison gratuite débloquée !
+                    </div>
+                    <div className={styles.progressTrack}>
+                      <div className={`${styles.progressFill} ${styles.reached}`} style={{ width: '100%' }} />
+                    </div>
+                  </div>
                 )}
                 <div className={`${styles.totalRow} ${styles.totalFinal}`}>
                   <span className={styles.totalLabel}>Total</span>
