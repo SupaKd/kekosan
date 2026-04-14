@@ -137,35 +137,36 @@ function PromoModal({ promo, onClose, onSaved }) {
 
 // ── Panneau Paramètres ────────────────────────────────────────────────────────
 function SettingsPanel() {
+  // Toast centralisé : { msg: string, ok: bool }
+  const [toast, setToast] = useState(null)
+  const showToast = (ok, msg) => {
+    setToast({ ok, msg })
+    setTimeout(() => setToast(null), 3000)
+  }
+
   // Message de maintenance
   const [maintMsg, setMaintMsg] = useState('Le service est momentanément fermé. Revenez bientôt !')
   const [maintLoading, setMaintLoading] = useState(false)
-  const [maintSaveMsg, setMaintSaveMsg] = useState(null)
 
   // Horaires
   const [scheduleForm, setScheduleForm] = useState({ opening_hour: 11, closing_hour: 15 })
   const [scheduleLoading, setScheduleLoading] = useState(false)
-  const [scheduleMsg, setScheduleMsg] = useState(null) // 'ok' | 'error'
 
   // Créneaux
   const [slotForm, setSlotForm] = useState({ slot_interval: 30, min_delivery_delay: 30 })
   const [slotLoading, setSlotLoading] = useState(false)
-  const [slotMsg, setSlotMsg] = useState(null)
 
   // Jours de fermeture
   const [closedDays, setClosedDaysState] = useState([])
   const [newClosedDay, setNewClosedDay] = useState('')
-  const [closedDaysMsg, setClosedDaysMsg] = useState(null) // 'ok' | 'error'
 
   // Livraison
   const [deliveryForm, setDeliveryForm] = useState({ delivery_fee: 5, free_delivery_threshold: 20, min_order_amount: 20 })
   const [deliveryLoading, setDeliveryLoading] = useState(false)
-  const [deliveryMsg, setDeliveryMsg] = useState(null) // 'ok' | 'error'
 
   // Limite commandes par créneau
   const [maxPerSlot, setMaxPerSlot] = useState(5)
   const [maxPerSlotLoading, setMaxPerSlotLoading] = useState(false)
-  const [maxPerSlotMsg, setMaxPerSlotMsg] = useState(null)
 
   // Codes promo
   const [promoCodes, setPromoCodes] = useState([])
@@ -191,15 +192,13 @@ function SettingsPanel() {
 
   const handleSaveSchedule = async () => {
     setScheduleLoading(true)
-    setScheduleMsg(null)
     try {
       await setSchedule(scheduleForm.opening_hour, scheduleForm.closing_hour)
-      setScheduleMsg('ok')
+      showToast(true, '✓ Horaires sauvegardés')
     } catch {
-      setScheduleMsg('error')
+      showToast(false, '⚠️ Erreur lors de la sauvegarde')
     } finally {
       setScheduleLoading(false)
-      setTimeout(() => setScheduleMsg(null), 3000)
     }
   }
 
@@ -210,9 +209,10 @@ function SettingsPanel() {
       await setClosedDays(updated)
       setClosedDaysState(updated)
       setNewClosedDay('')
-      setClosedDaysMsg('ok')
-    } catch { setClosedDaysMsg('error') }
-    finally { setTimeout(() => setClosedDaysMsg(null), 3000) }
+      showToast(true, '✓ Jour de fermeture ajouté')
+    } catch {
+      showToast(false, '⚠️ Erreur lors de la sauvegarde')
+    }
   }
 
   const handleRemoveClosedDay = async (day) => {
@@ -220,67 +220,69 @@ function SettingsPanel() {
     try {
       await setClosedDays(updated)
       setClosedDaysState(updated)
-    } catch { setClosedDaysMsg('error') }
+      showToast(true, '✓ Jour supprimé')
+    } catch {
+      showToast(false, '⚠️ Erreur lors de la suppression')
+    }
   }
 
   const handleSaveSlots = async () => {
     setSlotLoading(true)
-    setSlotMsg(null)
     try {
       await setSlotSettings(slotForm)
-      setSlotMsg('ok')
+      showToast(true, '✓ Créneaux sauvegardés')
     } catch {
-      setSlotMsg('error')
+      showToast(false, '⚠️ Erreur lors de la sauvegarde')
     } finally {
       setSlotLoading(false)
-      setTimeout(() => setSlotMsg(null), 3000)
     }
   }
 
   const handleSaveMaintMsg = async () => {
     setMaintLoading(true)
-    setMaintSaveMsg(null)
     try {
       await setMaintenanceMessage(maintMsg)
-      setMaintSaveMsg('ok')
+      showToast(true, '✓ Message sauvegardé')
     } catch {
-      setMaintSaveMsg('error')
+      showToast(false, '⚠️ Erreur lors de la sauvegarde')
     } finally {
       setMaintLoading(false)
-      setTimeout(() => setMaintSaveMsg(null), 3000)
     }
   }
 
   const handleSaveMaxPerSlot = async () => {
     setMaxPerSlotLoading(true)
-    setMaxPerSlotMsg(null)
     try {
       await setMaxOrdersPerSlot(maxPerSlot)
-      setMaxPerSlotMsg('ok')
+      showToast(true, '✓ Limite sauvegardée')
     } catch {
-      setMaxPerSlotMsg('error')
+      showToast(false, '⚠️ Erreur lors de la sauvegarde')
     } finally {
       setMaxPerSlotLoading(false)
-      setTimeout(() => setMaxPerSlotMsg(null), 3000)
     }
   }
 
   const handleSaveDelivery = async () => {
     setDeliveryLoading(true)
-    setDeliveryMsg(null)
     try {
       await setDeliverySettings(deliveryForm)
-      setDeliveryMsg('ok')
+      showToast(true, '✓ Paramètres de livraison sauvegardés')
     } catch {
-      setDeliveryMsg('error')
+      showToast(false, '⚠️ Erreur lors de la sauvegarde')
     } finally {
       setDeliveryLoading(false)
-      setTimeout(() => setDeliveryMsg(null), 3000)
     }
   }
 
   return (
     <div className={styles.panel}>
+
+      {/* Toast centralisé */}
+      {toast && (
+        <div className={`${styles.settingsToast} ${toast.ok ? styles.settingsToastOk : styles.settingsToastErr}`}>
+          {toast.msg}
+        </div>
+      )}
 
       {/* ── Horaires d'ouverture ──────────────────────────────────────────── */}
       <div className={styles.section}>
@@ -319,8 +321,6 @@ function SettingsPanel() {
             >
               {scheduleLoading ? 'Sauvegarde…' : 'Enregistrer'}
             </button>
-            {scheduleMsg === 'ok' && <span className={styles.scheduleOk}>✓ Sauvegardé</span>}
-            {scheduleMsg === 'error' && <span className={styles.scheduleErr}>⚠️ Erreur</span>}
           </div>
           <p className={styles.scheduleHint}>
             Dernier créneau disponible : {scheduleForm.closing_hour - 1}h{String(60 - slotForm.slot_interval).padStart(2, '0')}. Les clients ne pourront commander que dans cette plage.
@@ -360,8 +360,6 @@ function SettingsPanel() {
             >
               {slotLoading ? 'Sauvegarde…' : 'Enregistrer'}
             </button>
-            {slotMsg === 'ok'    && <span className={styles.scheduleOk}>✓ Sauvegardé</span>}
-            {slotMsg === 'error' && <span className={styles.scheduleErr}>⚠️ Erreur</span>}
           </div>
           <p className={styles.scheduleHint}>
             Créneaux toutes les {slotForm.slot_interval} min. Premier créneau disponible {slotForm.min_delivery_delay} min après la commande.
@@ -393,8 +391,6 @@ function SettingsPanel() {
             >
               {maintLoading ? 'Sauvegarde…' : 'Enregistrer'}
             </button>
-            {maintSaveMsg === 'ok'    && <span className={styles.scheduleOk}>✓ Sauvegardé</span>}
-            {maintSaveMsg === 'error' && <span className={styles.scheduleErr}>⚠️ Erreur</span>}
           </div>
         </div>
       </div>
@@ -423,8 +419,6 @@ function SettingsPanel() {
             >
               Ajouter
             </button>
-            {closedDaysMsg === 'ok'    && <span className={styles.scheduleOk}>✓ Sauvegardé</span>}
-            {closedDaysMsg === 'error' && <span className={styles.scheduleErr}>⚠️ Erreur</span>}
           </div>
 
           {closedDays.length === 0 ? (
@@ -495,8 +489,6 @@ function SettingsPanel() {
             >
               {deliveryLoading ? 'Sauvegarde…' : 'Enregistrer'}
             </button>
-            {deliveryMsg === 'ok'    && <span className={styles.scheduleOk}>✓ Sauvegardé</span>}
-            {deliveryMsg === 'error' && <span className={styles.scheduleErr}>⚠️ Erreur</span>}
           </div>
           <p className={styles.scheduleHint}>
             Livraison gratuite à partir de {deliveryForm.free_delivery_threshold} €. Minimum de commande : {deliveryForm.min_order_amount} €.
@@ -523,8 +515,6 @@ function SettingsPanel() {
             >
               {maxPerSlotLoading ? 'Sauvegarde…' : 'Enregistrer'}
             </button>
-            {maxPerSlotMsg === 'ok'    && <span className={styles.scheduleOk}>✓ Sauvegardé</span>}
-            {maxPerSlotMsg === 'error' && <span className={styles.scheduleErr}>⚠️ Erreur</span>}
           </div>
           <p className={styles.scheduleHint}>
             Au-delà de {maxPerSlot} commande{maxPerSlot > 1 ? 's' : ''}, le créneau est masqué dans le checkout client.

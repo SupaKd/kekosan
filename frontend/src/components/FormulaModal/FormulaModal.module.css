@@ -416,9 +416,25 @@
   box-shadow: none;
 }
 
-.addBtn:not(:disabled):hover {
-  opacity: 0.9;
-  box-shadow: 0 0 28px rgba(255, 214, 10, 0.5);
+@media (hover: hover) {
+  .addBtn:not(:disabled):hover {
+    opacity: 0.9;
+    box-shadow: 0 0 28px rgba(255, 214, 10, 0.5);
+  }
+}
+
+.addBtnSuccess {
+  background: var(--success, #30d158) !important;
+  color: #fff !important;
+  box-shadow: 0 0 20px rgba(48, 209, 88, 0.4) !important;
+  cursor: default;
+  animation: addPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes addPop {
+  0%   { transform: scale(0.96) }
+  60%  { transform: scale(1.03) }
+  100% { transform: scale(1) }
 }
 
 /* ── Responsive mobile ── */

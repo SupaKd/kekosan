@@ -373,8 +373,35 @@
   margin: 0;
 }
 
-.scheduleOk  { color: #30d158; font-size: 13px; font-weight: 600; align-self: flex-end }
-.scheduleErr { color: var(--danger, #ff453a); font-size: 13px; font-weight: 600; align-self: flex-end }
+/* Toast centralisé SettingsPanel */
+.settingsToast {
+  position: sticky;
+  top: 8px;
+  z-index: 10;
+  padding: 12px 20px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+  animation: toastIn 0.2s ease;
+}
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateY(-6px) }
+  to   { opacity: 1; transform: translateY(0) }
+}
+
+.settingsToastOk  {
+  background: rgba(48, 209, 88, 0.12);
+  border: 1px solid rgba(48, 209, 88, 0.3);
+  color: #30d158;
+}
+
+.settingsToastErr {
+  background: rgba(255, 69, 58, 0.1);
+  border: 1px solid rgba(255, 69, 58, 0.3);
+  color: var(--danger, #ff453a);
+}
 
 .closedDaysList {
   display: flex;

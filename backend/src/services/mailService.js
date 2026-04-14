@@ -174,8 +174,8 @@ const sendOrderConfirmation = async (order) => {
     html,
     attachments: [
       {
-        filename: 'kekosan.png',
-        path: path.join(__dirname, '../../public/kekosan.png'),
+        filename: 'logokekosan.png',
+        path: path.join(__dirname, '../../public/logokekosan.png'),
         cid: 'kekosanlogo',
       },
     ],

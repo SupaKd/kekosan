@@ -18,7 +18,7 @@ function ClosedModal({ message }) {
           <X size={15} />
         </button>
 
-        <img src="/kekosanlogo.png" alt="Kekosan" className={styles.logo} />
+        <img src="/logokekosan.png" alt="Kekosan" className={styles.logo} />
 
         <div className={styles.divider} />
 

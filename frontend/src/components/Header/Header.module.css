@@ -1,26 +1,46 @@
+/* ── Desktop : logo gauche | horaires + réseaux droite ── */
 .header {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   z-index: 10;
-  height: 64px;
+  height: 80px;
   padding: 0 24px;
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  display: flex;
   align-items: center;
+  justify-content: space-between;
   background: linear-gradient(
     to bottom,
     rgba(0, 0, 0, 0.6) 0%,
     transparent 100%
   );
-  border-bottom: none;
 }
 
-/* ── Gauche ── */
-.left {
+/* Logo à gauche */
+.logoWrap {
+  display: flex;
+  align-items: center;
+}
+
+.logo {
+  height: 100px;
+  width: auto;
+  object-fit: contain;
+  border-radius: 30px;
+}
+
+/* Droite : horaires + réseaux sociaux */
+.right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.infos {
   display: flex;
   flex-direction: column;
+  align-items: flex-end;
   gap: 4px;
 }
 
@@ -43,44 +63,9 @@
   color: #fff;
 }
 
-.dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #c0392b;
-  flex-shrink: 0;
-  animation: pulse 2s ease-in-out infinite;
-}
-
-@keyframes pulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.4;
-  }
-}
-
-/* ── Centre : logo ── */
-.logoWrap {
+.socials {
   display: flex;
   align-items: center;
-  justify-content: center;
-}
-
-.logo {
-  height: 52px;
-  width: auto;
-  object-fit: contain;
-  border-radius: 30px;
-}
-
-/* ── Droite : réseaux ── */
-.right {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
   gap: 14px;
 }
 
@@ -95,19 +80,27 @@
   color: #ffd60a;
 }
 
-/* ── Mobile ── */
+/* ── Mobile : logo gauche | horaires centre | réseaux droite ── */
 @media (max-width: 480px) {
   .header {
-    height: 56px;
+    height: 82px;
     padding: 0 14px;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 8px;
   }
 
   .logo {
-    height: 32px;
+    height: 70px;
   }
 
-  .logoWrap {
-    padding: 3px 8px;
+  .right {
+    display: contents;
+  }
+
+  .infos {
+    align-items: center;
+    gap: 2px;
   }
 
   .infoBadge,
@@ -117,7 +110,7 @@
     gap: 4px;
   }
 
-  .right {
+  .socials {
     gap: 10px;
   }
 }

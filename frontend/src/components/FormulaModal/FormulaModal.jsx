@@ -14,6 +14,7 @@ const CATEGORY_LABELS = {
 function FormulaModal({ formula, catalog, onClose, onAdd }) {
   const [slotChoices, setSlotChoices] = useState({})
   const [quantity, setQuantity] = useState(1)
+  const [added, setAdded] = useState(false)
 
   useEffect(() => {
     const handler = (e) => e.key === 'Escape' && onClose()
@@ -40,7 +41,8 @@ function FormulaModal({ formula, catalog, onClose, onAdd }) {
   }
 
   const handleAdd = () => {
-    if (!allSlotsFilled) return
+    if (!allSlotsFilled || added) return
+    setAdded(true)
     onAdd({
       type: 'formula',
       formula_id: formula.id,
@@ -54,7 +56,8 @@ function FormulaModal({ formula, catalog, onClose, onAdd }) {
       })),
       quantity,
     })
-    onClose()
+    if (navigator.vibrate) navigator.vibrate(40)
+    setTimeout(onClose, 800)
   }
 
   return (
@@ -170,10 +173,12 @@ function FormulaModal({ formula, catalog, onClose, onAdd }) {
             <span className={styles.qty}>{quantity}</span>
             <button className={styles.qtyBtn} onClick={() => setQuantity(q => q + 1)}>+</button>
           </div>
-          <button className={styles.addBtn} onClick={handleAdd} disabled={!allSlotsFilled}>
-            {allSlotsFilled
-              ? `Ajouter · ${formatPrice(totalPrice)}`
-              : 'Complétez la formule'}
+          <button
+            className={`${styles.addBtn} ${added ? styles.addBtnSuccess : ''}`}
+            onClick={handleAdd}
+            disabled={!allSlotsFilled || added}
+          >
+            {added ? '✓ Ajouté !' : allSlotsFilled ? `Ajouter · ${formatPrice(totalPrice)}` : 'Complétez la formule'}
           </button>
         </div>
       </div>
