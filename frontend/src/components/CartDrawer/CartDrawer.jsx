@@ -172,53 +172,53 @@ function CartDrawer({
                   />
                 ))
               )}
-            </div>
 
-            {/* Suggestions — ajout direct au panier sans ouvrir la modale */}
-            {suggestions.length > 0 && (
-              <div className={styles.suggestions}>
-                <div className={styles.suggestionsTitle}>
-                  Tu pourrais aussi aimer
+              {/* Suggestions intégrées dans le scroll, après les items */}
+              {suggestions.length > 0 && (
+                <div className={styles.suggestions}>
+                  <div className={styles.suggestionsTitle}>
+                    Tu pourrais aussi aimer
+                  </div>
+                  <div className={styles.suggestionsList}>
+                    {suggestions.map((p) => (
+                      <button
+                        key={p.id}
+                        className={styles.suggestionItem}
+                        onClick={() =>
+                          cart.addItem({
+                            type: "product",
+                            product_id: p.id,
+                            name: p.name,
+                            price: p.price,
+                            image_url: p.image_url || null,
+                            options: [],
+                          })
+                        }
+                      >
+                        {p.image_url && (
+                          <img
+                            src={`${API_BASE}${p.image_url}`}
+                            alt={p.name}
+                            width={40}
+                            height={40}
+                            className={styles.suggestionImg}
+                            loading="lazy"
+                            decoding="async"
+                          />
+                        )}
+                        <div className={styles.suggestionBody}>
+                          <span className={styles.suggestionName}>{p.name}</span>
+                          <span className={styles.suggestionPrice}>
+                            {formatPrice(p.price)}
+                          </span>
+                        </div>
+                        <span className={styles.suggestionAdd}>+</span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
-                <div className={styles.suggestionsList}>
-                  {suggestions.map((p) => (
-                    <button
-                      key={p.id}
-                      className={styles.suggestionItem}
-                      onClick={() =>
-                        cart.addItem({
-                          type: "product",
-                          product_id: p.id,
-                          name: p.name,
-                          price: p.price,
-                          image_url: p.image_url || null,
-                          options: [],
-                        })
-                      }
-                    >
-                      {p.image_url && (
-                        <img
-                          src={`${API_BASE}${p.image_url}`}
-                          alt={p.name}
-                          width={40}
-                          height={40}
-                          className={styles.suggestionImg}
-                          loading="lazy"
-                          decoding="async"
-                        />
-                      )}
-                      <div className={styles.suggestionBody}>
-                        <span className={styles.suggestionName}>{p.name}</span>
-                        <span className={styles.suggestionPrice}>
-                          {formatPrice(p.price)}
-                        </span>
-                      </div>
-                      <span className={styles.suggestionAdd}>+</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
+              )}
+            </div>
 
             <div className={styles.drawerFooter}>
               <div className={styles.footerTop}>

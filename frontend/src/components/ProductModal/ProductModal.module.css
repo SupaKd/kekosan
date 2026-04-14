@@ -271,7 +271,24 @@
 }
 
 /* ── Responsive mobile ── */
+.dragHandle {
+  display: none;
+}
+
 @media (max-width: 480px) {
+  .dragHandle {
+    display: block;
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 36px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.35);
+    border-radius: 2px;
+    z-index: 2;
+  }
+
   .overlay {
     padding: 0;
     align-items: flex-end;
@@ -281,6 +298,7 @@
     max-width: 100%;
     border-radius: var(--radius-lg) var(--radius-lg) 0 0;
     padding: 20px;
+    padding-bottom: calc(20px + env(safe-area-inset-bottom));
     animation: slideUpMobile 0.3s cubic-bezier(0.32, 0.72, 0, 1);
     max-height: 92vh;
     overflow-y: auto;

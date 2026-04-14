@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import styles from './FormulaModal.module.css'
 import { API_BASE } from '../../config/api'
 import { formatPrice } from '../../utils/formatting'
+import { useSwipeDown } from '../../hooks/useSwipeDown'
 
 const CATEGORY_LABELS = {
   entree: 'Entrée',
@@ -15,6 +16,7 @@ function FormulaModal({ formula, catalog, onClose, onAdd }) {
   const [slotChoices, setSlotChoices] = useState({})
   const [quantity, setQuantity] = useState(1)
   const [added, setAdded] = useState(false)
+  const modalRef = useSwipeDown(onClose)
 
   useEffect(() => {
     const handler = (e) => e.key === 'Escape' && onClose()
@@ -62,7 +64,8 @@ function FormulaModal({ formula, catalog, onClose, onAdd }) {
 
   return (
     <div className={styles.overlay} onClick={onClose}>
-      <div className={styles.modal} onClick={e => e.stopPropagation()}>
+      <div className={styles.modal} ref={modalRef} onClick={e => e.stopPropagation()}>
+        <div className={styles.dragHandle} />
         <div className={styles.header}>
           <div className={styles.headerTop}>
             <div className={styles.name}>{formula.name}</div>

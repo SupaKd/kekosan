@@ -607,6 +607,7 @@
     max-height: 96vh;
     border-radius: 16px 16px 0 0;
     animation: slideUpMobile 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+    padding-bottom: env(safe-area-inset-bottom);
   }
 
   @keyframes slideUpMobile {

@@ -18,7 +18,7 @@ function LegalModal({ onClose }) {
         <div className={styles.body}>
 
           <h3>1. Identification</h3>
-          <p>Kekosan — Dark Kitchen — Saint-Genis-Pouilly (01630). Livraison exclusivement sur la commune de Saint-Genis-Pouilly.</p>
+          <p>Kekosan — Saint-Genis-Pouilly (01630). Livraison exclusivement sur la commune de Saint-Genis-Pouilly.</p>
 
           <h3>2. Commandes</h3>
           <p>Toute commande passée sur ce site est ferme et définitive après confirmation du paiement. Vous recevez un email de confirmation avec un lien de suivi unique.</p>

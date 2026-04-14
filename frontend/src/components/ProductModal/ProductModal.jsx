@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import styles from './ProductModal.module.css'
 import { API_BASE } from '../../config/api'
 import { formatPrice } from '../../utils/formatting'
+import { useSwipeDown } from '../../hooks/useSwipeDown'
 
 function ProductModal({ product, onClose, onAdd }) {
   const [selectedOptions, setSelectedOptions] = useState([])
@@ -31,6 +32,7 @@ function ProductModal({ product, onClose, onAdd }) {
   const totalPrice = unitPrice * quantity
 
   const [added, setAdded] = useState(false)
+  const modalRef = useSwipeDown(onClose)
 
   const handleAdd = () => {
     if (added) return
@@ -53,7 +55,8 @@ function ProductModal({ product, onClose, onAdd }) {
 
   return (
     <div className={styles.overlay} onClick={onClose}>
-      <div className={styles.modal} onClick={e => e.stopPropagation()}>
+      <div className={styles.modal} ref={modalRef} onClick={e => e.stopPropagation()}>
+        <div className={styles.dragHandle} />
         <button className={styles.closeBtn} onClick={onClose} aria-label="Fermer">✕</button>
 
         {product.image_url && (
