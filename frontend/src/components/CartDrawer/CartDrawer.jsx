@@ -24,7 +24,6 @@ function getSuggestions(catalog, cartItems, max = 2) {
   return suggestions;
 }
 
-
 function CartItem({ item, onUpdateQty, onRemove }) {
   const unitPrice =
     item.type === "formula"
@@ -48,8 +47,7 @@ function CartItem({ item, onUpdateQty, onRemove }) {
         <img
           src={`${API_BASE}${item.image_url}`}
           alt={item.name}
-          width={80}
-          height={80}
+          width={96}
           loading="lazy"
           decoding="async"
           className={styles.itemImage}
@@ -94,7 +92,16 @@ function CartItem({ item, onUpdateQty, onRemove }) {
   );
 }
 
-function CartDrawer({ cart, onCheckout, catalog = {}, deliveryConfig = { delivery_fee: 5, free_delivery_threshold: 20, min_order_amount: 20 } }) {
+function CartDrawer({
+  cart,
+  onCheckout,
+  catalog = {},
+  deliveryConfig = {
+    delivery_fee: 5,
+    free_delivery_threshold: 20,
+    min_order_amount: 20,
+  },
+}) {
   const [open, setOpen] = useState(false);
   const { items, updateQuantity, removeItem, total, count } = cart;
   const itemsRef = useRef(null);
@@ -108,7 +115,8 @@ function CartDrawer({ cart, onCheckout, catalog = {}, deliveryConfig = { deliver
 
   const suggestions = getSuggestions(catalog, items);
 
-  const { delivery_fee, free_delivery_threshold, min_order_amount } = deliveryConfig;
+  const { delivery_fee, free_delivery_threshold, min_order_amount } =
+    deliveryConfig;
   const deliveryFee = total >= free_delivery_threshold ? 0 : delivery_fee;
   const totalWithDelivery = total + deliveryFee;
   const belowMinimum = total > 0 && total < min_order_amount;
@@ -132,7 +140,12 @@ function CartDrawer({ cart, onCheckout, catalog = {}, deliveryConfig = { deliver
       {open && (
         <>
           <div className={styles.overlay} onClick={() => setOpen(false)} />
-          <div className={styles.drawer} role="dialog" aria-modal="true" aria-label="Panier">
+          <div
+            className={styles.drawer}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Panier"
+          >
             <div className={styles.drawerHeader}>
               <div className={styles.drawerTitle}>Mon panier</div>
               <button
@@ -229,8 +242,12 @@ function CartDrawer({ cart, onCheckout, catalog = {}, deliveryConfig = { deliver
                   </span>
                 </div>
                 {belowMinimum && (
-                  <p className={styles.deliveryHint} style={{ color: 'var(--danger, #ff453a)' }}>
-                    Minimum de commande : {formatPrice(min_order_amount)} (encore {formatPrice(min_order_amount - total)})
+                  <p
+                    className={styles.deliveryHint}
+                    style={{ color: "var(--danger, #ff453a)" }}
+                  >
+                    Minimum de commande : {formatPrice(min_order_amount)}{" "}
+                    (encore {formatPrice(min_order_amount - total)})
                   </p>
                 )}
                 {!belowMinimum && deliveryFee > 0 && (

@@ -379,6 +379,13 @@
   border-color: rgba(255, 214, 10, 0.5);
 }
 
+.copyBtnSuccess {
+  background: rgba(48, 209, 88, 0.1);
+  border-color: rgba(48, 209, 88, 0.4);
+  color: var(--success, #30d158);
+  cursor: default;
+}
+
 /* ── Page d'erreur enrichie ── */
 .errorCard {
   background: var(--bg-elevated);

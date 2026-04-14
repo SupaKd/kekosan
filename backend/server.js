@@ -45,6 +45,11 @@ app.use('/uploads', express.static(path.join(__dirname, 'public/uploads'), {
   immutable: true,
 }));
 
+// Logo public (utilisé dans les emails)
+app.use('/public', express.static(path.join(__dirname, 'public'), {
+  maxAge: '30d',
+}));
+
 // Vérification de la connexion DB au démarrage
 const pool = require('./src/config/db');
 pool.query('SELECT 1')

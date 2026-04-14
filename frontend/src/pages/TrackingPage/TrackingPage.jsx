@@ -37,6 +37,7 @@ function TrackingPage() {
   const [error, setError] = useState(null)
   const [refreshing, setRefreshing] = useState(false)
   const [socketConnected, setSocketConnected] = useState(false)
+  const [copied, setCopied] = useState(false)
 
   const fetchOrder = (showSpinner = false) => {
     if (showSpinner) setRefreshing(true)
@@ -235,14 +236,17 @@ function TrackingPage() {
 
         <div className={styles.footerActions}>
           <button
-            className={styles.copyBtn}
+            className={`${styles.copyBtn} ${copied ? styles.copyBtnSuccess : ''}`}
             onClick={() => {
               navigator.clipboard.writeText(window.location.href)
-                .then(() => alert('Lien copié !'))
+                .then(() => {
+                  setCopied(true)
+                  setTimeout(() => setCopied(false), 2000)
+                })
                 .catch(() => {})
             }}
           >
-            🔗 Copier le lien de suivi
+            {copied ? '✓ Lien copié !' : '🔗 Copier le lien de suivi'}
           </button>
           <button className={styles.backBtn} onClick={() => navigate('/')}>
             ← Retour au menu
