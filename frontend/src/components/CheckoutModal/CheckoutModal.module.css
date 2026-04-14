@@ -35,6 +35,11 @@
   to   { transform: translateY(0);    opacity: 1 }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .overlay { animation: none; }
+  .modal   { animation: none; }
+}
+
 .modalHeader {
   display: flex;
   align-items: center;
@@ -71,7 +76,7 @@
   cursor: pointer;
   transition: color 0.15s;
 }
-.closeBtn:hover { color: #1a1a1a }
+@media (hover: hover) { .closeBtn:hover { color: #1a1a1a } }
 
 .body {
   padding: 24px 28px;
@@ -227,9 +232,11 @@
   transition: border-color 0.15s, color 0.15s;
 }
 
-.promoBtn:hover:not(:disabled) {
-  border-color: #c0392b;
-  color: #c0392b;
+@media (hover: hover) {
+  .promoBtn:hover:not(:disabled) {
+    border-color: #c0392b;
+    color: #c0392b;
+  }
 }
 
 .promoBtn:disabled {
@@ -317,9 +324,11 @@
   box-shadow: none;
 }
 
-.payBtn:not(:disabled):hover {
-  opacity: 0.9;
-  box-shadow: 0 4px 20px rgba(255, 214, 10, 0.5);
+@media (hover: hover) {
+  .payBtn:not(:disabled):hover {
+    opacity: 0.9;
+    box-shadow: 0 4px 20px rgba(255, 214, 10, 0.5);
+  }
 }
 
 .secureNote {
@@ -351,7 +360,7 @@
   font-family: inherit;
   transition: color 0.15s;
 }
-.legalLink:hover { color: #c0392b }
+@media (hover: hover) { .legalLink:hover { color: #c0392b } }
 
 /* ── Modale CGV (kept for backward compat, not used — LegalModal is shared) ── */
 .legalOverlay {
@@ -401,7 +410,7 @@
   cursor: pointer;
   line-height: 1;
 }
-.legalCloseBtn:hover { color: #ffffff }
+@media (hover: hover) { .legalCloseBtn:hover { color: #ffffff } }
 
 .legalBody {
   padding: 24px;
@@ -579,9 +588,11 @@
   transition: background 0.15s, color 0.15s;
 }
 
-.trackingBtn:hover {
-  background: #c0392b;
-  color: #fff;
+@media (hover: hover) {
+  .trackingBtn:hover {
+    background: #c0392b;
+    color: #fff;
+  }
 }
 
 /* ── Responsive mobile ── */
@@ -621,7 +632,7 @@
   }
 
   .footer {
-    padding: 0 16px 24px;
+    padding: 0 16px calc(24px + env(safe-area-inset-bottom));
   }
 
   .payBtn {

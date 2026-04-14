@@ -47,6 +47,7 @@
   cursor: pointer;
   font-family: var(--font-sans);
   white-space: nowrap;
+  touch-action: manipulation;
 }
 
 .filterSelect {
@@ -199,12 +200,14 @@
   color: #e0e0f0;
   border-radius: var(--radius-sm);
   padding: 8px 16px;
+  min-height: 40px;
   cursor: pointer;
   font-size: 13px;
   font-weight: 600;
   font-family: var(--font-sans);
   transition: all 0.15s;
   white-space: nowrap;
+  touch-action: manipulation;
 }
 .pageBtn:hover:not(:disabled) { border-color: var(--neon-cyan); color: var(--neon-cyan) }
 .pageBtn:disabled { opacity: 0.3; cursor: default }
@@ -456,6 +459,42 @@
 /* ════════════════════════════════════════════
    RESPONSIVE
    ════════════════════════════════════════════ */
+
+/* ── iPad paysage (768px – 1180px, orientation landscape) ── */
+@media (min-width: 768px) and (max-width: 1180px) and (orientation: landscape) {
+  .panel { padding: 16px; gap: 12px; max-width: 100% }
+
+  /* Filtres : toutes les options tiennent sur une ligne en paysage */
+  .filtersBar { flex-wrap: nowrap; gap: 8px }
+  .searchGroup { min-width: 160px; flex: 1 }
+
+  /* Tableau : toutes les colonnes visibles */
+  .tdDate { display: table-cell }
+  .tdSlot { display: table-cell }
+
+  .table th { font-size: 11px; padding: 10px 12px }
+  .table td { font-size: 13px; padding: 11px 12px }
+
+  /* Touch targets sur les boutons de tableau */
+  .detailBtn {
+    padding: 8px 14px;
+    min-height: 36px;
+    touch-action: manipulation;
+  }
+
+  /* Modal plus large — profite de la largeur iPad */
+  .modal { max-width: 720px }
+
+  /* infoGrid 3 colonnes en paysage */
+  .infoGrid { grid-template-columns: repeat(3, 1fr) }
+
+  /* Pagination : boutons plus faciles à tapper */
+  .pageBtn {
+    padding: 10px 20px;
+    min-height: 44px;
+    touch-action: manipulation;
+  }
+}
 
 /* ── Tablette (640px – 1024px) ── */
 @media (max-width: 1024px) {

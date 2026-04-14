@@ -41,7 +41,26 @@ function PaymentForm({
     });
 
     if (error) {
-      onError(error.message);
+      // Messages adaptés selon le type d'erreur Stripe
+      let message = error.message;
+      if (error.type === 'card_error') {
+        if (error.code === 'card_declined') {
+          message = "Carte refusée. Vérifiez vos informations ou essayez une autre carte.";
+        } else if (error.code === 'insufficient_funds') {
+          message = "Fonds insuffisants sur cette carte.";
+        } else if (error.code === 'expired_card') {
+          message = "Cette carte est expirée.";
+        } else if (error.code === 'incorrect_cvc') {
+          message = "Le code de sécurité (CVV) est incorrect.";
+        }
+      } else if (error.type === 'validation_error') {
+        message = "Informations de paiement incomplètes. Vérifiez les champs.";
+      } else if (error.type === 'api_connection_error' || error.type === 'api_error') {
+        message = "Erreur de connexion. Vérifiez votre réseau et réessayez.";
+      } else if (error.code === 'payment_intent_authentication_failure') {
+        message = "Authentification 3D Secure échouée. Réessayez et validez dans votre application bancaire.";
+      }
+      onError(message);
       setLoading(false);
       setSubmitted(false);
     } else {
@@ -191,6 +210,19 @@ function CheckoutModal({ cart, onClose }) {
     setLoading(true);
     setGlobalError(null);
 
+    // Re-vérification en temps réel : le service a pu fermer pendant la saisie
+    try {
+      const statusNow = await getServiceStatus();
+      if (!statusNow.service_open) {
+        setServiceOpen(false);
+        setGlobalError("Le service vient de fermer. Votre commande n'a pas pu être passée.");
+        setLoading(false);
+        return;
+      }
+    } catch {
+      // Si la vérification échoue, on laisse passer — le serveur rejettera si fermé
+    }
+
     try {
       const orderBody = {
         customer: { name: form.name, phone: form.phone, email: form.email },
@@ -257,7 +289,7 @@ function CheckoutModal({ cart, onClose }) {
       className={styles.overlay}
       onClick={(e) => e.target === e.currentTarget && !loading && onClose()}
     >
-      <div className={styles.modal}>
+      <div className={styles.modal} role="dialog" aria-modal="true" aria-label="Commander">
         {/* Header */}
         <div className={styles.modalHeader}>
           <div className={styles.title}>
@@ -381,6 +413,8 @@ function CheckoutModal({ cart, onClose }) {
                         onChange={(e) =>
                           setForm((f) => ({ ...f, name: e.target.value }))
                         }
+                        autoComplete="name"
+                        inputMode="text"
                       />
                       {fieldErrors.name && (
                         <span className={styles.fieldError}>
@@ -399,6 +433,9 @@ function CheckoutModal({ cart, onClose }) {
                         onChange={(e) =>
                           setForm((f) => ({ ...f, phone: e.target.value }))
                         }
+                        type="tel"
+                        autoComplete="tel"
+                        inputMode="tel"
                       />
                       {fieldErrors.phone && (
                         <span className={styles.fieldError}>
@@ -419,6 +456,8 @@ function CheckoutModal({ cart, onClose }) {
                       onChange={(e) =>
                         setForm((f) => ({ ...f, email: e.target.value }))
                       }
+                      autoComplete="email"
+                      inputMode="email"
                     />
                     {fieldErrors.email && (
                       <span className={styles.fieldError}>
@@ -438,6 +477,8 @@ function CheckoutModal({ cart, onClose }) {
                         onChange={(e) =>
                           setForm((f) => ({ ...f, street: e.target.value }))
                         }
+                        autoComplete="street-address"
+                        inputMode="text"
                       />
                       {fieldErrors.street && (
                         <span className={styles.fieldError}>
@@ -559,6 +600,8 @@ function CheckoutModal({ cart, onClose }) {
                       onChange={(e) =>
                         setForm((f) => ({ ...f, notes: e.target.value }))
                       }
+                      autoComplete="off"
+                      inputMode="text"
                     />
                   </div>
                 </div>

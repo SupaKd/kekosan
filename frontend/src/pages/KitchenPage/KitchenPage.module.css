@@ -38,6 +38,7 @@
   align-items: center;
   gap: 6px;
   padding: 6px 14px;
+  min-height: 36px;
   border-radius: 6px;
   font-size: 13px;
   font-weight: 600;
@@ -46,6 +47,7 @@
   border: none;
   cursor: pointer;
   transition: all 0.2s;
+  touch-action: manipulation;
 }
 
 .tab:hover {
@@ -124,6 +126,7 @@
   align-items: center;
   gap: 8px;
   padding: 6px 14px;
+  min-height: 36px;
   border-radius: 20px;
   font-size: 13px;
   font-weight: 700;
@@ -131,6 +134,7 @@
   font-family: var(--font-sans);
   border: 1px solid;
   transition: all 0.2s;
+  touch-action: manipulation;
 }
 .serviceBtn:disabled { opacity: 0.6; cursor: default }
 
@@ -402,6 +406,7 @@
 .actionBtn {
   flex: 1;
   padding: 10px;
+  min-height: 44px;
   border-radius: var(--radius-sm);
   border: 1px solid;
   font-size: 14px;
@@ -409,6 +414,7 @@
   cursor: pointer;
   font-family: var(--font-sans);
   transition: background 0.15s, box-shadow 0.15s;
+  touch-action: manipulation;
 }
 
 .actionBtn.next {
@@ -649,6 +655,65 @@
 
   .clock { font-size: 14px }
   .logoutBtn { font-size: 11px; padding: 5px 8px }
+}
+
+/* ── iPad paysage (768px – 1180px, orientation landscape) ── */
+@media (min-width: 768px) and (max-width: 1180px) and (orientation: landscape) {
+  .header {
+    padding: 8px 20px;
+    gap: 8px;
+  }
+
+  .headerLeft { gap: 10px }
+
+  /* Tabs plus compacts mais restent lisibles */
+  .tab {
+    padding: 6px 10px;
+    font-size: 12px;
+    gap: 4px;
+  }
+
+  /* Bouton service plus compact */
+  .serviceBtn {
+    padding: 5px 10px;
+    font-size: 12px;
+  }
+
+  .clock { font-size: 15px }
+
+  /* Board : 3 colonnes bien espacées, utilise tout l'espace horizontal */
+  .board {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    padding: 14px;
+  }
+
+  /* Cards KDS : taille réduite pour tenir plus de contenu à l'écran */
+  .cardHeader { padding: 10px 12px 8px }
+  .orderId    { font-size: 15px }
+  .orderTime  { font-size: 11px }
+
+  .customerInfo { padding: 8px 12px }
+  .customerName  { font-size: 13px }
+  .customerPhone { font-size: 11px }
+
+  .address { font-size: 11px; padding: 6px 12px }
+
+  .items { padding: 10px 12px; gap: 6px }
+  .itemQty  { font-size: 13px }
+  .itemName { font-size: 13px }
+  .itemMeta { font-size: 11px; padding-left: 28px }
+
+  .notes { font-size: 12px; margin: 4px 12px 8px; padding: 8px 10px }
+
+  .cardActions { padding: 10px 12px; gap: 6px }
+
+  /* Touch targets maintenus à 44px min */
+  .actionBtn {
+    font-size: 12px;
+    padding: 10px 6px;
+    min-height: 44px;
+  }
 }
 
 /* ── Grand écran (> 1400px) ── */

@@ -185,8 +185,8 @@
 }
 
 .iconBtn {
-  width: 30px;
-  height: 30px;
+  width: 36px;
+  height: 36px;
   border-radius: var(--radius-sm);
   border: 1px solid rgba(255,255,255,0.18);
   background: rgba(255,255,255,0.04);
@@ -197,6 +197,7 @@
   align-items: center;
   justify-content: center;
   transition: all 0.15s;
+  touch-action: manipulation;
 }
 
 .iconBtn:hover { border-color: rgba(255,255,255,0.35); color: #ffffff }
@@ -239,6 +240,7 @@
   align-items: center;
   gap: 6px;
   padding: 8px 16px;
+  min-height: 36px;
   background: transparent;
   border: 1px solid var(--neon-cyan);
   color: var(--neon-cyan);
@@ -248,6 +250,7 @@
   cursor: pointer;
   font-family: var(--font-sans);
   transition: background 0.15s;
+  touch-action: manipulation;
 }
 .addBtn:hover { background: var(--accent-glow) }
 
@@ -742,6 +745,53 @@
 /* ════════════════════════════════════════════
    RESPONSIVE
    ════════════════════════════════════════════ */
+
+/* ── iPad paysage (768px – 1180px, orientation landscape) ── */
+@media (min-width: 768px) and (max-width: 1180px) and (orientation: landscape) {
+  .panel { padding: 16px; gap: 20px; max-width: 100% }
+
+  .sectionHeader { padding: 12px 16px }
+
+  .row { padding: 12px 16px; gap: 12px }
+
+  /* Modal produit plus large — profite de la largeur iPad */
+  .modalOverlay { padding: 16px }
+  .modal {
+    max-width: 640px;
+    padding: 24px;
+    max-height: 88vh;
+  }
+
+  /* fieldRow reste sur 2 colonnes en paysage */
+  .fieldRow { grid-template-columns: 1fr 1fr }
+
+  /* Boutons d'action inline plus faciles à tapper */
+  .iconBtn {
+    width: 40px;
+    height: 40px;
+    font-size: 15px;
+    touch-action: manipulation;
+  }
+
+  /* Boutons save/cancel en ligne */
+  .modalActions { flex-direction: row }
+  .saveBtn, .cancelBtn {
+    padding: 12px;
+    min-height: 44px;
+    touch-action: manipulation;
+  }
+
+  /* Toggle disponibilité plus facile à tapper */
+  .availToggleTrack {
+    width: 52px;
+    height: 28px;
+  }
+  .availToggleThumb {
+    width: 20px;
+    height: 20px;
+  }
+  .availToggleTrack.on  .availToggleThumb { left: 28px }
+}
 
 /* ── Tablette (640px – 1024px) ── */
 @media (max-width: 1024px) {

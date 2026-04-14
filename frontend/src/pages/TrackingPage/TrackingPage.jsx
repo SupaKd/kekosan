@@ -35,11 +35,20 @@ function TrackingPage() {
   const [order, setOrder] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [refreshing, setRefreshing] = useState(false)
+  const [socketConnected, setSocketConnected] = useState(false)
 
-  useEffect(() => {
-    getOrderByToken(token)
+  const fetchOrder = (showSpinner = false) => {
+    if (showSpinner) setRefreshing(true)
+    return getOrderByToken(token)
       .then(data => setOrder(data))
       .catch(() => setError('Commande introuvable.'))
+      .finally(() => { if (showSpinner) setRefreshing(false) })
+  }
+
+  useEffect(() => {
+    setLoading(true)
+    fetchOrder()
       .finally(() => setLoading(false))
   }, [token])
 
@@ -48,6 +57,8 @@ function TrackingPage() {
   useEffect(() => {
     if (!order) return
     const socket = io('/', { path: '/socket.io' })
+    socket.on('connect', () => setSocketConnected(true))
+    socket.on('disconnect', () => setSocketConnected(false))
     socket.emit('track_order', token)
     socket.on('order_status_updated', (data) => {
       setOrder(prev => ({ ...prev, status: data.status, payment_status: data.payment_status }))
@@ -69,7 +80,12 @@ function TrackingPage() {
   if (error || !order) {
     return (
       <div className={styles.page}>
-        <div className={styles.error}>{error || 'Commande introuvable.'}</div>
+        <div className={styles.errorCard}>
+          <div className={styles.errorIcon}>📭</div>
+          <div className={styles.errorMsg}>{error || 'Commande introuvable.'}</div>
+          <p className={styles.errorHint}>Vérifiez le lien reçu par email ou contactez-nous.</p>
+          <button className={styles.backBtn} onClick={() => navigate('/')}>← Retour au menu</button>
+        </div>
       </div>
     )
   }
@@ -85,6 +101,23 @@ function TrackingPage() {
         <div className={styles.header}>
           <div className={styles.logo}>Kekosan</div>
           <div className={styles.logoJp}>SUIVI DE COMMANDE</div>
+          <div className={styles.headerActions}>
+            {/* Indicateur connexion temps réel */}
+            <div className={styles.socketStatus} title={socketConnected ? 'Temps réel actif' : 'Temps réel déconnecté'}>
+              <span className={`${styles.socketDot} ${socketConnected ? styles.socketOn : styles.socketOff}`} />
+              <span className={styles.socketLabel}>{socketConnected ? 'En direct' : 'Déconnecté'}</span>
+            </div>
+            {/* Bouton actualiser manuel */}
+            <button
+              className={styles.refreshBtn}
+              onClick={() => fetchOrder(true)}
+              disabled={refreshing}
+              aria-label="Actualiser le statut"
+            >
+              <span className={refreshing ? styles.refreshSpinning : ''}>↻</span>
+              {refreshing ? 'Actualisation…' : 'Actualiser'}
+            </button>
+          </div>
         </div>
 
         {/* Bandeau annulation / remboursement */}
@@ -200,9 +233,21 @@ function TrackingPage() {
           </div>
         </div>
 
-        <button className={styles.backBtn} onClick={() => navigate('/')}>
-          ← Retour au menu
-        </button>
+        <div className={styles.footerActions}>
+          <button
+            className={styles.copyBtn}
+            onClick={() => {
+              navigator.clipboard.writeText(window.location.href)
+                .then(() => alert('Lien copié !'))
+                .catch(() => {})
+            }}
+          >
+            🔗 Copier le lien de suivi
+          </button>
+          <button className={styles.backBtn} onClick={() => navigate('/')}>
+            ← Retour au menu
+          </button>
+        </div>
       </div>
     </div>
   )

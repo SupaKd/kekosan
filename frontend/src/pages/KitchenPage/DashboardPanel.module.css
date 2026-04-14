@@ -327,6 +327,30 @@
    RESPONSIVE
    ════════════════════════════════════════════ */
 
+/* ── iPad paysage (768px – 1180px, orientation landscape) ── */
+@media (min-width: 768px) and (max-width: 1180px) and (orientation: landscape) {
+  .panel { padding: 16px; gap: 16px; max-width: 100% }
+
+  /* 3 stats tiennent bien en paysage iPad */
+  .statsGrid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+
+  .statCard { padding: 16px 14px }
+  .statRevenue { font-size: 22px }
+
+  /* statsDetail : 3 colonnes côte à côte — profite de la largeur */
+  .statsDetail { grid-template-columns: 1fr 1fr 1fr }
+  .statDetailCard { border-right: 1px solid rgba(255,255,255,0.08) }
+  .statDetailCard:last-child { border-right: none }
+  .statDetailValue { font-size: 26px }
+
+  .orderRow { padding: 10px 14px; gap: 10px }
+  /* La colonne date reste visible en paysage iPad — assez de largeur */
+  .orderDate { display: table-cell }
+}
+
 /* ── Tablette (640px – 1024px) ── */
 @media (max-width: 1024px) {
   .panel { padding: 16px; gap: 20px }

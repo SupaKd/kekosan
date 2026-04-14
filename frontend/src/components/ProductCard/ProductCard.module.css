@@ -13,9 +13,11 @@
   border: 2px solid #1a1a1a;
 }
 
-.card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.2);
+@media (hover: hover) {
+  .card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 32px rgba(0, 0, 0, 0.2);
+  }
 }
 
 .card:active {
@@ -96,13 +98,13 @@
 }
 
 .addBtn {
-  width: 30px;
-  height: 30px;
+  width: 44px;
+  height: 44px;
   border-radius: 2px;
   background: #1a1a1a;
   color: #ffd60a;
   border: none;
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 700;
   line-height: 1;
   cursor: pointer;
@@ -112,10 +114,13 @@
   transition: background 0.15s;
   font-family: var(--font-sans);
   flex-shrink: 0;
+  touch-action: manipulation;
 }
 
-.addBtn:hover {
-  background: #c0392b;
+@media (hover: hover) {
+  .addBtn:hover {
+    background: #c0392b;
+  }
 }
 
 .addBtn:active {
@@ -128,6 +133,8 @@
   width: 110px;
   flex-shrink: 0;
   overflow: hidden;
+  /* Réserve l'espace pour éviter les sauts de layout (CLS) */
+  aspect-ratio: 1 / 1;
 }
 
 .image {
@@ -138,8 +145,10 @@
   transition: transform 0.3s ease;
 }
 
-.card:hover .image {
-  transform: scale(1.06);
+@media (hover: hover) {
+  .card:hover .image {
+    transform: scale(1.06);
+  }
 }
 
 .imagePlaceholder {
@@ -150,4 +159,32 @@
   align-items: center;
   justify-content: center;
   font-size: 28px;
+}
+
+/* ── Mobile compact ── */
+@media (max-width: 400px) {
+  .card {
+    min-height: 96px;
+  }
+
+  .info {
+    padding: 12px 14px;
+  }
+
+  .name {
+    font-size: 17px;
+  }
+
+  .description {
+    font-size: 11px;
+    -webkit-line-clamp: 1;
+  }
+
+  .price {
+    font-size: 15px;
+  }
+
+  .imageWrap {
+    width: 88px;
+  }
 }

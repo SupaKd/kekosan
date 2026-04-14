@@ -309,6 +309,8 @@ function MenuPage({ cart, onCheckout }) {
                         <img
                           src={`${API_BASE}${formula.image_url}`}
                           alt={formula.name}
+                          width={400}
+                          height={180}
                           className={styles.formulaImage}
                           loading="lazy"
                           decoding="async"

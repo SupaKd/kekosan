@@ -48,6 +48,8 @@ function CartItem({ item, onUpdateQty, onRemove }) {
         <img
           src={`${API_BASE}${item.image_url}`}
           alt={item.name}
+          width={80}
+          height={80}
           loading="lazy"
           decoding="async"
           className={styles.itemImage}
@@ -130,7 +132,7 @@ function CartDrawer({ cart, onCheckout, catalog = {}, deliveryConfig = { deliver
       {open && (
         <>
           <div className={styles.overlay} onClick={() => setOpen(false)} />
-          <div className={styles.drawer}>
+          <div className={styles.drawer} role="dialog" aria-modal="true" aria-label="Panier">
             <div className={styles.drawerHeader}>
               <div className={styles.drawerTitle}>Mon panier</div>
               <button
@@ -185,6 +187,8 @@ function CartDrawer({ cart, onCheckout, catalog = {}, deliveryConfig = { deliver
                         <img
                           src={`${API_BASE}${p.image_url}`}
                           alt={p.name}
+                          width={40}
+                          height={40}
                           className={styles.suggestionImg}
                           loading="lazy"
                           decoding="async"

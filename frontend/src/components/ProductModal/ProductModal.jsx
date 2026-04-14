@@ -30,7 +30,11 @@ function ProductModal({ product, onClose, onAdd }) {
   const unitPrice = parseFloat(product.price) + optionsDelta
   const totalPrice = unitPrice * quantity
 
+  const [added, setAdded] = useState(false)
+
   const handleAdd = () => {
+    if (added) return
+    setAdded(true)
     onAdd({
       type: 'product',
       product_id: product.id,
@@ -40,7 +44,10 @@ function ProductModal({ product, onClose, onAdd }) {
       options: selectedOptions,
       quantity,
     })
-    onClose()
+    // Vibration haptique légère sur mobile si supportée
+    if (navigator.vibrate) navigator.vibrate(40)
+    // Laisse le feedback visible 800ms avant de fermer
+    setTimeout(onClose, 800)
   }
 
 
@@ -105,8 +112,12 @@ function ProductModal({ product, onClose, onAdd }) {
             <span className={styles.qty}>{quantity}</span>
             <button className={styles.qtyBtn} onClick={() => setQuantity(q => q + 1)}>+</button>
           </div>
-          <button className={styles.addBtn} onClick={handleAdd}>
-            Ajouter · {formatPrice(totalPrice)}
+          <button
+            className={`${styles.addBtn} ${added ? styles.addBtnSuccess : ''}`}
+            onClick={handleAdd}
+            disabled={added}
+          >
+            {added ? '✓ Ajouté !' : `Ajouter · ${formatPrice(totalPrice)}`}
           </button>
         </div>
       </div>

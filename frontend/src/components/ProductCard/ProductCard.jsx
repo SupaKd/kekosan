@@ -26,7 +26,7 @@ function ProductCard({ product, onSelect }) {
       </div>
       <div className={styles.imageWrap}>
         {product.image_url
-          ? <img src={`${API_BASE}${product.image_url}`} alt={product.name} className={styles.image} loading="lazy" decoding="async" />
+          ? <img src={`${API_BASE}${product.image_url}`} alt={product.name} width={110} height={110} className={styles.image} loading="lazy" decoding="async" />
           : <div className={styles.imagePlaceholder}>🥖</div>
         }
         {product.badge && <span className={styles.badge}>{product.badge}</span>}

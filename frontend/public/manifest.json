@@ -1,0 +1,24 @@
+{
+  "name": "Kekosan — Bánh Mì",
+  "short_name": "Kekosan",
+  "description": "Commande en ligne de Bánh Mì, livraison sur Saint-Genis-Pouilly",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#080808",
+  "theme_color": "#ffd60a",
+  "lang": "fr",
+  "icons": [
+    {
+      "src": "/kekosanlogo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/kekosanlogo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
