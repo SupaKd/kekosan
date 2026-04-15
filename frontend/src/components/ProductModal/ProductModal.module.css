@@ -289,6 +289,16 @@
     z-index: 2;
   }
 
+  /* Zone de touch élargie via pseudo-élément — sans impact visuel */
+  .dragHandle::after {
+    content: '';
+    position: absolute;
+    top: -16px;
+    left: -60px;
+    right: -60px;
+    bottom: -16px;
+  }
+
   .overlay {
     padding: 0;
     align-items: flex-end;

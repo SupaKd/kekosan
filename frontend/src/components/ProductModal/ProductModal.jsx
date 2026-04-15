@@ -10,7 +10,7 @@ function ProductModal({ product, onClose, onAdd }) {
   const [selectedOptions, setSelectedOptions] = useState([])
   const [quantity, setQuantity] = useState(1)
   const [added, setAdded] = useState(false)
-  const modalRef = useSwipeDown(onClose)
+  const dragRef = useSwipeDown(onClose)
   useLockBodyScroll()
   useModalHistory(onClose)
 
@@ -51,8 +51,8 @@ function ProductModal({ product, onClose, onAdd }) {
 
   return (
     <div className={styles.overlay} onClick={onClose}>
-      <div className={styles.modal} ref={modalRef} onClick={e => e.stopPropagation()}>
-        <div className={styles.dragHandle} />
+      <div className={styles.modal} onClick={e => e.stopPropagation()}>
+        <div className={styles.dragHandle} ref={dragRef} />
         <button className={styles.closeBtn} onClick={onClose} aria-label="Fermer">✕</button>
 
         {product.image_url && (

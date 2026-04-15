@@ -253,6 +253,7 @@
 }
 
 .productCard {
+  width: 100%;
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -367,6 +368,68 @@
   height: 7px;
   border-radius: 50%;
   background: #000;
+}
+
+/* ── Options du produit sélectionné dans un slot ── */
+.slotProductOptions {
+  margin-top: 6px;
+  padding: 10px 12px;
+  background: rgba(255, 214, 10, 0.06);
+  border: 1px solid rgba(255, 214, 10, 0.2);
+  border-radius: var(--radius-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.slotProductOptionsTitle {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  margin-bottom: 2px;
+}
+
+.slotOptionRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.slotOptionRow:hover {
+  border-color: rgba(255, 214, 10, 0.4);
+}
+
+.slotOptionChecked {
+  border-color: var(--neon-cyan);
+  background: rgba(255, 214, 10, 0.08);
+}
+
+.slotOptionRow input[type="checkbox"] {
+  accent-color: #ffd60a;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.slotOptionName {
+  flex: 1;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-heading);
+}
+
+.slotOptionDelta {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--neon-pink, #ff2d55);
 }
 
 .footer {

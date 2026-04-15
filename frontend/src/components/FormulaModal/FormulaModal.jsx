@@ -13,23 +13,23 @@ const CATEGORY_LABELS = {
   boisson: 'Boisson',
 }
 
-
 function FormulaModal({ formula, catalog, onClose, onAdd }) {
+  // slotChoices : { [slot_name]: product }
+  // slotOptions : { [slot_name]: [option, ...] } — options cochées pour le produit choisi dans ce slot
   const [slotChoices, setSlotChoices] = useState({})
+  const [slotOptions, setSlotOptions] = useState({})
   const [quantity, setQuantity] = useState(1)
   const [added, setAdded] = useState(false)
-  const modalRef = useSwipeDown(onClose)
+  const dragRef = useSwipeDown(onClose)
   useLockBodyScroll()
   useModalHistory(onClose)
 
   if (!formula) return null
 
-  // Seuls les slots obligatoires doivent être remplis
   const allSlotsFilled = formula.slots
     .filter(s => s.required !== false)
     .every(s => slotChoices[s.slot_name])
 
-  // Supplément total basé sur les choix actuels
   const supplementTotal = Object.values(slotChoices).reduce(
     (sum, p) => sum + (parseFloat(p.price_supplement) || 0),
     0
@@ -38,6 +38,21 @@ function FormulaModal({ formula, catalog, onClose, onAdd }) {
 
   const selectSlotProduct = (slotName, product) => {
     setSlotChoices(prev => ({ ...prev, [slotName]: product }))
+    // Réinitialise les options si on change de produit
+    setSlotOptions(prev => ({ ...prev, [slotName]: [] }))
+  }
+
+  const toggleSlotOption = (slotName, opt) => {
+    setSlotOptions(prev => {
+      const current = prev[slotName] || []
+      const exists = current.find(o => o.id === opt.id)
+      return {
+        ...prev,
+        [slotName]: exists
+          ? current.filter(o => o.id !== opt.id)
+          : [...current, opt],
+      }
+    })
   }
 
   const handleAdd = () => {
@@ -49,11 +64,17 @@ function FormulaModal({ formula, catalog, onClose, onAdd }) {
       name: formula.name,
       price: parseFloat(formula.price) + supplementTotal,
       image_url: formula.image_url || null,
-      slots: formula.slots.map(s => ({
-        slot_name: s.slot_name,
-        product_id: slotChoices[s.slot_name].id,
-        product_name: slotChoices[s.slot_name].name,
-      })),
+      slots: formula.slots.map(s => {
+        const product = slotChoices[s.slot_name]
+        if (!product) return { slot_name: s.slot_name, product_id: null, product_name: null }
+        const opts = slotOptions[s.slot_name] || []
+        const optLabel = opts.length > 0 ? ` (${opts.map(o => o.name).join(', ')})` : ''
+        return {
+          slot_name: s.slot_name,
+          product_id: product.id,
+          product_name: product.name + optLabel,
+        }
+      }),
       quantity,
     })
     if (navigator.vibrate) navigator.vibrate(40)
@@ -62,9 +83,9 @@ function FormulaModal({ formula, catalog, onClose, onAdd }) {
 
   return (
     <div className={styles.overlay} onClick={onClose}>
-      <div className={styles.modal} ref={modalRef} onClick={e => e.stopPropagation()}>
+      <div className={styles.modal} onClick={e => e.stopPropagation()}>
         <div className={styles.dragHandle} />
-        <div className={styles.header}>
+        <div className={styles.header} ref={dragRef}>
           <div className={styles.headerTop}>
             <div className={styles.name}>{formula.name}</div>
             <div className={styles.headerRight}>
@@ -95,7 +116,7 @@ function FormulaModal({ formula, catalog, onClose, onAdd }) {
         <div className={styles.slots}>
           {formula.slots.map((slot, slotIndex) => {
             const chosen = slotChoices[slot.slot_name]
-            // Produits groupés par catégorie — on ne mélange pas
+            const chosenOptions = slotOptions[slot.slot_name] || []
             const groups = slot.allowed_categories.map(cat => ({
               cat,
               label: CATEGORY_LABELS[cat] || cat,
@@ -132,33 +153,60 @@ function FormulaModal({ formula, catalog, onClose, onAdd }) {
                     )}
                     <div className={styles.productOptions}>
                       {group.products.map(product => (
-                        <button
-                          key={product.id}
-                          className={`${styles.productCard} ${chosen?.id === product.id ? styles.selected : ''}`}
-                          onClick={() => selectSlotProduct(slot.slot_name, product)}
-                        >
-                          <div className={styles.productCardImage}>
-                            {product.image_url
-                              ? <img src={`${API_BASE}${product.image_url}`} alt={product.name} loading="lazy" decoding="async" />
-                              : <span>🥖</span>
-                            }
-                            {chosen?.id === product.id && (
-                              <div className={styles.productCardCheck}>✓</div>
-                            )}
-                          </div>
-                          <div className={styles.productCardName}>
-                            {product.name}
-                            {product.formula_quantity > 1 && (
-                              <span className={styles.productCardQty}>×{product.formula_quantity}</span>
-                            )}
-                            {product.price_supplement > 0 && (
-                              <span className={styles.productCardSupplement}>+{formatPrice(product.price_supplement)}</span>
-                            )}
-                          </div>
-                          <div className={styles.productCardRadio}>
-                            {chosen?.id === product.id && <div className={styles.productCardRadioDot} />}
-                          </div>
-                        </button>
+                        <div key={product.id}>
+                          <button
+                            className={`${styles.productCard} ${chosen?.id === product.id ? styles.selected : ''}`}
+                            onClick={() => selectSlotProduct(slot.slot_name, product)}
+                          >
+                            <div className={styles.productCardImage}>
+                              {product.image_url
+                                ? <img src={`${API_BASE}${product.image_url}`} alt={product.name} loading="lazy" decoding="async" />
+                                : <span>🥖</span>
+                              }
+                              {chosen?.id === product.id && (
+                                <div className={styles.productCardCheck}>✓</div>
+                              )}
+                            </div>
+                            <div className={styles.productCardName}>
+                              {product.name}
+                              {product.formula_quantity > 1 && (
+                                <span className={styles.productCardQty}>×{product.formula_quantity}</span>
+                              )}
+                              {product.price_supplement > 0 && (
+                                <span className={styles.productCardSupplement}>+{formatPrice(product.price_supplement)}</span>
+                              )}
+                            </div>
+                            <div className={styles.productCardRadio}>
+                              {chosen?.id === product.id && <div className={styles.productCardRadioDot} />}
+                            </div>
+                          </button>
+
+                          {/* Options du produit — affichées seulement si ce produit est sélectionné */}
+                          {chosen?.id === product.id && product.options?.length > 0 && (
+                            <div className={styles.slotProductOptions}>
+                              <div className={styles.slotProductOptionsTitle}>Options</div>
+                              {product.options.map(opt => {
+                                const isChecked = !!chosenOptions.find(o => o.id === opt.id)
+                                return (
+                                  <label
+                                    key={opt.id}
+                                    className={`${styles.slotOptionRow} ${isChecked ? styles.slotOptionChecked : ''}`}
+                                  >
+                                    <input
+                                      type="checkbox"
+                                      checked={isChecked}
+                                      onChange={() => toggleSlotOption(slot.slot_name, opt)}
+                                    />
+                                    <span className={styles.slotOptionName}>{opt.name}</span>
+                                    {opt.price_delta > 0 && (
+                                      <span className={styles.slotOptionDelta}>+{formatPrice(opt.price_delta)}</span>
+                                    )}
+                                  </label>
+                                )
+                              })}
+                            </div>
+                          )}
+                        </div>
                       ))}
                     </div>
                   </div>

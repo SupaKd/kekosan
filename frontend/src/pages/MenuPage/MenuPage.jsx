@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from "react";
 import { useCatalog } from "../../hooks/useCatalog";
-import { usePullToRefresh } from "../../hooks/usePullToRefresh";
 import ProductCard from "../../components/ProductCard/ProductCard";
 import ProductModal from "../../components/ProductModal/ProductModal";
 import FormulaModal from "../../components/FormulaModal/FormulaModal";
@@ -58,8 +57,7 @@ const HERO_SLIDES = [
 ];
 
 function MenuPage({ cart, onCheckout }) {
-  const { catalog, formulas, loading, error, refresh } = useCatalog();
-  const { pulling, pullY, refreshing } = usePullToRefresh(refresh);
+  const { catalog, formulas, loading, error } = useCatalog();
 
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [selectedFormula, setSelectedFormula] = useState(null);
@@ -194,16 +192,6 @@ function MenuPage({ cart, onCheckout }) {
 
   return (
     <div className={styles.page}>
-      {/* Indicateur pull-to-refresh */}
-      {(pulling || refreshing) && (
-        <div
-          className={`${styles.pullIndicator} ${refreshing ? styles.pullRefreshing : ''}`}
-          style={!refreshing ? { transform: `translateY(${pullY}px)` } : undefined}
-        >
-          <div className={styles.pullSpinner} />
-        </div>
-      )}
-
       {/* Hero slider */}
       <PromoBanner />
 
