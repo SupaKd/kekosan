@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import LegalModal from "../LegalModal/LegalModal";
 import { loadStripe } from "@stripe/stripe-js";
@@ -96,6 +96,13 @@ const scrollToField = (e) => {
 function CheckoutModal({ cart, onClose }) {
   const navigate = useNavigate();
   const { items, total, clearCart } = cart;
+  const modalRef = useRef(null);
+
+  // Bloque le scroll du body pendant que la modal est ouverte
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = ''; };
+  }, []);
 
   // État code promo
   const [promoInput, setPromoInput] = useState("");
@@ -115,6 +122,8 @@ function CheckoutModal({ cart, onClose }) {
 
   // Étapes : 'form' → 'payment' → 'success'
   const [step, setStep] = useState("form");
+
+  const swipeHandleRef = useRef(null); // swipe-down désactivé sur le checkout
   const [clientSecret, setClientSecret] = useState(null);
   const [trackingToken, setTrackingToken] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -293,9 +302,9 @@ function CheckoutModal({ cart, onClose }) {
       className={styles.overlay}
       onClick={(e) => e.target === e.currentTarget && !loading && onClose()}
     >
-      <div className={styles.modal} role="dialog" aria-modal="true" aria-label="Commander">
-        {/* Header */}
-        <div className={styles.modalHeader}>
+      <div className={styles.modal} role="dialog" aria-modal="true" aria-label="Commander" ref={modalRef}>
+        {/* Header — zone de swipe-down pour fermer sur mobile */}
+        <div className={styles.modalHeader} ref={swipeHandleRef}>
           <div className={styles.title}>
             {step === "success" ? "Commande confirmée" : "Commander"}
           </div>
@@ -508,9 +517,7 @@ function CheckoutModal({ cart, onClose }) {
                     <label className={styles.label}>Créneau de livraison</label>
                     {!isOpen ? (
                       <div className={styles.closedMessage}>
-                        {!serviceOpen
-                          ? maintenanceMessage
-                          : closedMessage}
+                        {maintenanceMessage}
                       </div>
                     ) : (
                       <>

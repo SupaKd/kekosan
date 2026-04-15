@@ -62,6 +62,12 @@
   cursor: pointer;
   transition: color 0.15s;
   line-height: 1;
+  touch-action: manipulation;
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .closeBtn:hover {
   color: var(--text-heading);
@@ -461,6 +467,7 @@
   align-items: center;
   justify-content: center;
   transition: border-color 0.15s, color 0.15s;
+  touch-action: manipulation;
 }
 .qtyBtn:hover {
   border-color: var(--neon-cyan);
@@ -488,6 +495,7 @@
   font-family: var(--font-sans);
   transition: opacity 0.15s, box-shadow 0.15s;
   box-shadow: 0 0 20px rgba(255, 214, 10, 0.3);
+  touch-action: manipulation;
 }
 
 .addBtn:disabled {

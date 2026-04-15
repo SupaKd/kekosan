@@ -43,22 +43,15 @@ export function getAvailableSlots({
       const candidate = new Date(now)
       candidate.setHours(h, m, 0, 0)
 
-      // Le créneau doit être suffisamment dans le futur
-      // Si le créneau est déjà passé aujourd'hui, on vérifie si c'est demain (cas minuit)
-      const candidateTime = candidate >= earliest ? candidate : (() => {
-        const next = new Date(candidate)
-        next.setDate(next.getDate() + 1)
-        return next
-      })()
+      // Le créneau doit être suffisamment dans le futur (aujourd'hui uniquement)
+      // Un créneau passé est simplement ignoré — pas de report au lendemain
+      if (candidate < earliest) continue
 
-      if (candidateTime >= earliest) {
-        const slotStr = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`
-        const slotDateStr = `${candidateTime.getFullYear()}-${String(candidateTime.getMonth() + 1).padStart(2, '0')}-${String(candidateTime.getDate()).padStart(2, '0')}`
-        const key = `${slotDateStr}|${slotStr}`
-        // Exclut le créneau si places restantes = 0 (clé présente et vaut 0)
-        if (key in availability && availability[key] === 0) continue
-        slots.push(slotStr)
-      }
+      const slotStr = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`
+      const key = `${todayStr}|${slotStr}`
+      // Exclut le créneau si places restantes = 0 (clé présente et vaut 0)
+      if (key in availability && availability[key] === 0) continue
+      slots.push(slotStr)
     }
   }
 

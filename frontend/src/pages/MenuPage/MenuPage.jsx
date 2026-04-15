@@ -197,7 +197,7 @@ function MenuPage({ cart, onCheckout }) {
 
       {/* Modal service fermé */}
       {isClosed && (
-        <ClosedModal message={!serviceOpen ? maintenanceMessage : closedMessage} />
+        <ClosedModal message={maintenanceMessage} />
       )}
 
       <div

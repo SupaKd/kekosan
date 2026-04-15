@@ -99,17 +99,75 @@
 }
 
 @keyframes slideIn {
-  from {
-    transform: translateX(100%);
-  }
-  to {
-    transform: translateX(0);
-  }
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .overlay { animation: none; }
   .drawer  { animation: none; }
+}
+
+/* ── Bottom sheet — mobile uniquement ── */
+@media (max-width: 480px) {
+  .fab {
+    /* Masqué quand le sheet est ouvert — géré via classe .fabHidden */
+  }
+
+  .fabHidden {
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .drawer {
+    top: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    max-width: 100%;
+    height: 92dvh;
+    border-left: none;
+    border-radius: 20px 20px 0 0;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.18);
+    animation: slideUp 0.32s cubic-bezier(0.32, 0.72, 0, 1);
+    will-change: transform;
+  }
+
+  @keyframes slideUp {
+    from { transform: translateY(100%); }
+    to   { transform: translateY(0); }
+  }
+
+  /* Drag handle — visible uniquement mobile */
+  .dragHandle {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 12px 0 6px;
+    flex-shrink: 0;
+    cursor: grab;
+    touch-action: none;
+  }
+
+  .dragHandleBar {
+    width: 40px;
+    height: 4px;
+    border-radius: 2px;
+    background: rgba(0, 0, 0, 0.18);
+  }
+}
+
+/* Caché sur desktop */
+.dragHandle {
+  display: none;
+}
+
+@media (max-width: 480px) {
+  .dragHandle {
+    display: flex;
+  }
 }
 
 .drawerHeader {
@@ -180,6 +238,33 @@
   opacity: 0.3;
 }
 
+/* Wrapper relatif pour le swipe-to-delete */
+.itemWrap {
+  position: relative;
+  flex-shrink: 0;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+/* Fond rouge révélé par le swipe */
+.itemDeleteBg {
+  position: absolute;
+  inset: 0;
+  background: #ff3b30;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 20px;
+  border-radius: 10px;
+}
+
+.itemDeleteBg span {
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
 .item {
   flex-shrink: 0;
   background: #fff;
@@ -190,6 +275,9 @@
   flex-direction: row;
   gap: 0;
   min-height: 110px;
+  position: relative;
+  z-index: 1;
+  will-change: transform;
 }
 
 .itemImage {
@@ -497,5 +585,82 @@
   .checkoutBtn:not(:disabled):hover {
     opacity: 0.9;
     box-shadow: 0 -2px 20px rgba(255, 214, 10, 0.5);
+  }
+}
+
+/* ── Compacité mobile ── */
+@media (max-width: 480px) {
+  /* Header plus serré */
+  .drawerHeader {
+    padding: 10px 16px;
+  }
+
+  .drawerTitle {
+    font-size: 15px;
+  }
+
+  /* Items plus compacts */
+  .items {
+    padding: 10px 12px;
+    gap: 8px;
+  }
+
+  .item {
+    min-height: 80px;
+  }
+
+  .itemImage {
+    width: 72px;
+  }
+
+  .itemBody {
+    padding: 8px 10px;
+    gap: 4px;
+  }
+
+  .itemName {
+    font-size: 13px;
+  }
+
+  .itemPrice {
+    font-size: 13px;
+  }
+
+  .itemMeta {
+    font-size: 11px;
+  }
+
+  .qtyBtn {
+    width: 34px;
+    height: 34px;
+    font-size: 16px;
+  }
+
+  .qty {
+    font-size: 13px;
+  }
+
+  /* Footer condensé */
+  .footerTop {
+    padding: 10px 16px 8px;
+    gap: 6px;
+  }
+
+  .totalLabel {
+    font-size: 12px;
+  }
+
+  .totalAmount {
+    font-size: 18px;
+  }
+
+  .progressLabel {
+    font-size: 10px;
+  }
+
+  .checkoutBtn {
+    padding: 14px 16px;
+    padding-bottom: calc(14px + env(safe-area-inset-bottom));
+    font-size: 15px;
   }
 }

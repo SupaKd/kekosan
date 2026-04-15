@@ -66,6 +66,12 @@
   cursor: pointer;
   line-height: 1;
   transition: color 0.15s;
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: manipulation;
 }
 .closeBtn:hover {
   color: var(--text-heading);

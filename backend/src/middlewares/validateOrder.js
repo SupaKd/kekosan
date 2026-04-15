@@ -34,21 +34,14 @@ const isSlotValid = async (slot) => {
   slotDate.setHours(h, m, 0, 0);
   const earliest = new Date(now.getTime() + MIN_DELAY_MIN * 60000);
 
-  // Si le créneau est déjà passé aujourd'hui, on essaie le lendemain ouvré
-  if (slotDate <= now) {
-    slotDate.setDate(slotDate.getDate() + 1);
-    // Passer le week-end si nécessaire
-    while (slotDate.getDay() === 0 || slotDate.getDay() === 6) {
-      slotDate.setDate(slotDate.getDate() + 1);
-    }
-  }
+  // Un créneau passé ou trop proche est refusé — pas de report au lendemain
+  if (slotDate < earliest) return false;
 
   // Vérification des jours de fermeture exceptionnelle (format YYYY-MM-DD)
-  const slotDateStr = slotDate.toISOString().slice(0, 10);
-  if (closedDays.includes(slotDateStr)) return false;
+  const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  if (closedDays.includes(todayStr)) return false;
 
-  const diffMin = (slotDate - earliest) / 60000;
-  return diffMin >= 0;
+  return true;
 };
 
 // Valide le body de la requête POST /api/orders
