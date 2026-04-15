@@ -68,13 +68,14 @@ function FormulaModal({ formula, catalog, onClose, onAdd }) {
       image_url: formula.image_url || null,
       slots: formula.slots.map(s => {
         const product = slotChoices[s.slot_name]
-        if (!product) return { slot_name: s.slot_name, product_id: null, product_name: null }
+        if (!product) return { slot_name: s.slot_name, product_id: null, product_name: null, options: [] }
         const opts = slotOptions[s.slot_name] || []
         const optLabel = opts.length > 0 ? ` (${opts.map(o => o.name).join(', ')})` : ''
         return {
           slot_name: s.slot_name,
           product_id: product.id,
           product_name: product.name + optLabel,
+          options: opts.map(o => ({ product_option_id: o.id })),
         }
       }),
       quantity,
@@ -176,6 +177,9 @@ function FormulaModal({ formula, catalog, onClose, onAdd }) {
                               )}
                               {product.price_supplement > 0 && (
                                 <span className={styles.productCardSupplement}>+{formatPrice(product.price_supplement)}</span>
+                              )}
+                              {product.badge && (
+                                <span className={styles.productCardBadge}>{product.badge}</span>
                               )}
                             </div>
                             <div className={styles.productCardRadio}>

@@ -11,6 +11,7 @@ import Marquee from "../../components/Marquee/Marquee";
 import PromoBanner from "../../components/PromoBanner/PromoBanner";
 import IngredientsStrip from "../../components/IngredientsStrip/IngredientsStrip";
 import ClosedModal from "../../components/ClosedModal/ClosedModal";
+import LazySection from "../../components/LazySection/LazySection";
 import styles from "./MenuPage.module.css";
 
 import { API_BASE } from "../../config/api";
@@ -289,9 +290,10 @@ function MenuPage({ cart, onCheckout }) {
         <Marquee />
         {/* Section formules */}
         {formulas.length > 0 && (
-          <section
+          <LazySection
             id="section-formules"
             className={`${styles.section} ${styles.sectionFormulas}`}
+            minHeight={500}
           >
             <div className={styles.sectionInner}>
               <div className={styles.sectionHeader}>
@@ -352,7 +354,7 @@ function MenuPage({ cart, onCheckout }) {
                 ))}
               </div>
             </div>
-          </section>
+          </LazySection>
         )}
 
         {/* Barre de filtres sticky */}
@@ -392,10 +394,10 @@ function MenuPage({ cart, onCheckout }) {
               className={cat === "dessert" ? styles.dessertWrapper : undefined}
             >
               {cat === "dessert" && <IngredientsStrip />}
-              <section
-                key={cat}
+              <LazySection
                 id={`section-${cat}`}
                 className={`${styles.section} ${sectionCls}`}
+                minHeight={400}
               >
                 <div className={styles.sectionInner}>
                   <div className={styles.sectionHeader}>
@@ -411,7 +413,7 @@ function MenuPage({ cart, onCheckout }) {
                     ))}
                   </div>
                 </div>
-              </section>
+              </LazySection>
             </div>
           );
         })}

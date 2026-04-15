@@ -58,9 +58,13 @@ function TrackingPage() {
   useEffect(() => {
     if (!order) return
     const socket = io('/', { path: '/socket.io' })
-    socket.on('connect', () => setSocketConnected(true))
+    socket.on('connect', () => {
+      // Émettre dans le handler connect garantit que le socket est prêt
+      // (évite le cas où emit est perdu sur connexion lente ou reconnexion)
+      socket.emit('track_order', token)
+      setSocketConnected(true)
+    })
     socket.on('disconnect', () => setSocketConnected(false))
-    socket.emit('track_order', token)
     socket.on('order_status_updated', (data) => {
       setOrder(prev => ({ ...prev, status: data.status, payment_status: data.payment_status }))
     })

@@ -7,11 +7,18 @@
       name="description"
       content="Kekosan — Bánh Mì. Commande en ligne, livraison sur Saint-Genis-Pouilly."
     />
-    <meta name="theme-color" content="#080808" />
-    <link rel="icon" type="image/png" href="/logokekosan.png" />
-    <link rel="apple-touch-icon" href="/logokekosan.png" />
+    <meta name="theme-color" content="#ffd60a" />
+    <link rel="icon" type="image/png" href="/icon-192.png" />
+    <link rel="apple-touch-icon" href="/icon-192.png" />
+    <link rel="apple-touch-icon" sizes="192x192" href="/icon-192.png" />
+    <link rel="apple-touch-icon" sizes="512x512" href="/icon-512.png" />
+    <!-- iOS PWA -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Kekosan" />
+    <meta name="mobile-web-app-capable" content="yes" />
     <link rel="manifest" href="/manifest.json" />
-    <title>Kekosan — Saint-Genis-Pouilly</title>
+    <title>Kekosan — Bánh Mì Saint-Genis-Pouilly</title>
     <!-- Open Graph — aperçu WhatsApp / iMessage / réseaux sociaux -->
     <meta property="og:type" content="website" />
     <meta property="og:title" content="Kekosan — Bánh Mì Saint-Genis-Pouilly" />
@@ -26,6 +33,55 @@
     <meta name="twitter:title" content="Kekosan — Bánh Mì Saint-Genis-Pouilly" />
     <meta name="twitter:description" content="Commandez vos Bánh Mì en ligne. Livraison uniquement sur Saint-Genis-Pouilly (01630)." />
     <meta name="twitter:image" content="https://kekosan.com/logokekosan.png" />
+    <!-- SEO -->
+    <meta name="keywords" content="bánh mì, sandwich vietnamien, commande en ligne, livraison Saint-Genis-Pouilly, Kekosan, dark kitchen, 01630" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://kekosan.com/" />
+    <!-- JSON-LD LocalBusiness -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FoodEstablishment",
+      "name": "Kekosan",
+      "description": "Dark kitchen spécialisée dans les Bánh Mì maison. Commande et livraison en ligne sur Saint-Genis-Pouilly.",
+      "url": "https://kekosan.com",
+      "logo": "https://kekosan.com/icon-512.png",
+      "image": "https://kekosan.com/icon-512.png",
+      "email": "kekosan01630@gmail.com",
+      "servesCuisine": "Vietnamienne",
+      "priceRange": "€€",
+      "hasMap": "https://www.google.com/maps/search/Saint-Genis-Pouilly+01630",
+      "areaServed": {
+        "@type": "City",
+        "name": "Saint-Genis-Pouilly",
+        "postalCode": "01630"
+      },
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Saint-Genis-Pouilly",
+        "postalCode": "01630",
+        "addressCountry": "FR"
+      },
+      "openingHoursSpecification": [
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"],
+          "opens": "11:00",
+          "closes": "15:00"
+        }
+      ],
+      "hasOfferCatalog": {
+        "@type": "OfferCatalog",
+        "name": "Menu Kekosan",
+        "itemListElement": [
+          { "@type": "OfferCatalog", "name": "Bánh Mì" },
+          { "@type": "OfferCatalog", "name": "Entrées" },
+          { "@type": "OfferCatalog", "name": "Desserts" },
+          { "@type": "OfferCatalog", "name": "Boissons" }
+        ]
+      }
+    }
+    </script>
     <!-- Preconnect fonts Google -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />

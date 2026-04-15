@@ -110,7 +110,7 @@ function CategoryModal({ category, onClose, onSaved }) {
 // ── Modale produit ──────────────────────────────────────────────────────────
 function ProductModal({ product, categories, onClose, onSaved }) {
   const isEdit = !!product
-  const BADGES = ['', 'Nouveau', 'Populaire', 'Spécial', 'Épicé 🌶', 'Végan 🌿', 'Sans gluten']
+  const BADGES = ['', 'Nouveau', 'Populaire', 'Spécial', 'Halal ✓', 'Épicé 🌶', 'Végan 🌿', 'Sans gluten']
   const ALLERGENS = ['gluten', 'crustacés', 'oeufs', 'poisson', 'arachides', 'soja', 'lait', 'fruits à coque', 'céleri', 'moutarde', 'sésame', 'sulfites', 'lupin', 'mollusques']
 
   const [form, setForm] = useState({

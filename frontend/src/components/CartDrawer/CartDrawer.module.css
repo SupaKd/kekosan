@@ -501,6 +501,47 @@
   background: rgba(48, 209, 88, 0.05);
 }
 
+/* ── Snackbar undo suppression ── */
+.snackbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 16px 8px;
+  padding: 12px 16px;
+  background: #1a1a1a;
+  border-radius: 10px;
+  animation: snackbarIn 0.2s cubic-bezier(0.32, 0.72, 0, 1);
+  flex-shrink: 0;
+}
+
+@keyframes snackbarIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.snackbarText {
+  font-size: 13px;
+  color: #e0e0e0;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.snackbarUndo {
+  background: none;
+  border: none;
+  color: #ffd60a;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 4px 8px;
+  min-height: 36px;
+  flex-shrink: 0;
+  touch-action: manipulation;
+}
+
 /* Footer avec total */
 .drawerFooter {
   flex-shrink: 0;

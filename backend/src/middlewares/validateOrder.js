@@ -1,5 +1,4 @@
 const settingsRepository = require('../repositories/settingsRepository');
-const orderRepository   = require('../repositories/orderRepository');
 
 
 // Vérifie qu'un créneau HH:MM est valide (plage horaire, jour ouvré, délai minimum)
@@ -84,15 +83,8 @@ const validateOrder = async (req, res, next) => {
     return res.status(400).json({ error: 'Créneau de livraison invalide ou indisponible' });
   }
 
-  // Vérifie que le créneau n'est pas saturé
-  const maxRaw = await settingsRepository.get('max_orders_per_slot');
-  const max = parseInt(maxRaw ?? '5');
-  const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'Europe/Paris' }));
-  const todayStr = now.toISOString().slice(0, 10);
-  const count = await orderRepository.countOrdersBySlot(delivery_time, todayStr);
-  if (count >= max) {
-    return res.status(400).json({ error: `Ce créneau est complet. Veuillez en choisir un autre.` });
-  }
+  // Note : la vérification de capacité du créneau est faite atomiquement dans la transaction DB
+  // (orderRepository.createOrder) pour éviter toute race condition entre deux requêtes simultanées.
 
   // Le panier doit contenir au moins un élément
   const hasItems = Array.isArray(items) && items.length > 0;

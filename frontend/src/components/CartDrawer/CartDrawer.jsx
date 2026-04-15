@@ -82,7 +82,7 @@ function CartItem({ item, onUpdateQty, onRemove }) {
       if (swipeRef.current) {
         swipeRef.current.style.transform = `translateX(-100%)`;
       }
-      setTimeout(() => onRemove(item._key), 220);
+      setTimeout(() => onRemove(), 220);
     } else if (dx < -THRESHOLD) {
       // Révèle le bouton delete
       haptic(10);
@@ -161,7 +161,7 @@ function CartItem({ item, onUpdateQty, onRemove }) {
             </div>
             <button
               className={styles.deleteBtn}
-              onClick={() => { haptic(30); onRemove(item._key); }}
+              onClick={() => { haptic(30); onRemove(); }}
               aria-label="Supprimer"
             >
               ✕
@@ -227,7 +227,38 @@ function CartDrawer({
   },
 }) {
   const [open, setOpen] = useState(false);
+  const [pendingDelete, setPendingDelete] = useState(null); // { item, timer }
   const { items, updateQuantity, removeItem, total, count } = cart;
+
+  // Suppression différée avec undo
+  const handleRemoveWithUndo = (item) => {
+    // Annule une suppression en cours si elle existe
+    if (pendingDelete) {
+      clearTimeout(pendingDelete.timer);
+      removeItem(pendingDelete.item._key);
+    }
+    const timer = setTimeout(() => {
+      removeItem(item._key);
+      setPendingDelete(null);
+    }, 3000);
+    setPendingDelete({ item, timer });
+  };
+
+  const handleUndoDelete = () => {
+    if (!pendingDelete) return;
+    clearTimeout(pendingDelete.timer);
+    setPendingDelete(null);
+    haptic(10);
+  };
+
+  // Nettoyage si le drawer se ferme avec une suppression en attente
+  useEffect(() => {
+    if (!open && pendingDelete) {
+      clearTimeout(pendingDelete.timer);
+      removeItem(pendingDelete.item._key);
+      setPendingDelete(null);
+    }
+  }, [open, pendingDelete, removeItem]);
   const itemsRef = useRef(null);
   const drawerRef = useRef(null);
   const dragStartY = useRef(null);
@@ -369,18 +400,20 @@ function CartDrawer({
             </div>
 
             <div className={styles.items} ref={itemsRef}>
-              {items.length === 0 ? (
+              {items.filter((item) => !pendingDelete || item._key !== pendingDelete.item._key).length === 0 && !pendingDelete ? (
                 <div className={styles.emptyState}>
                   <div className={styles.emptyIcon}>🥡</div>
                   <p>Votre panier est vide</p>
                 </div>
               ) : (
-                items.map((item) => (
+                items
+                  .filter((item) => !pendingDelete || item._key !== pendingDelete.item._key)
+                  .map((item) => (
                   <CartItem
                     key={item._key}
                     item={item}
                     onUpdateQty={updateQuantity}
-                    onRemove={removeItem}
+                    onRemove={() => handleRemoveWithUndo(item)}
                   />
                 ))
               )}
@@ -412,6 +445,18 @@ function CartDrawer({
                 </div>
               )}
             </div>
+
+            {/* Snackbar undo suppression */}
+            {pendingDelete && (
+              <div className={styles.snackbar}>
+                <span className={styles.snackbarText}>
+                  « {pendingDelete.item.name} » supprimé
+                </span>
+                <button className={styles.snackbarUndo} onClick={handleUndoDelete}>
+                  Annuler
+                </button>
+              </div>
+            )}
 
             <div className={styles.drawerFooter}>
               <div className={styles.footerTop}>

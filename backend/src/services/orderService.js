@@ -87,7 +87,7 @@ const resolveFormulaItems = async (rawFormulaItems) => {
         throw { status: 400, message: `Slot inconnu : ${rawSlot.slot_name}` };
       }
 
-      const product = await productRepository.findById(rawSlot.product_id);
+      const product = await productRepository.findByIdWithOptions(rawSlot.product_id);
       if (!product) {
         throw { status: 400, message: `Produit de slot introuvable : id ${rawSlot.product_id}` };
       }
@@ -103,11 +103,30 @@ const resolveFormulaItems = async (rawFormulaItems) => {
         };
       }
 
+      // Résolution des options du slot (même logique que les items à la carte)
+      const resolvedSlotOptions = [];
+      if (rawSlot.options && rawSlot.options.length > 0) {
+        const availableOptions = product.options || [];
+        for (const rawOpt of rawSlot.options) {
+          const opt = availableOptions.find(o => o.id === rawOpt.product_option_id);
+          if (!opt) {
+            throw { status: 400, message: `Option de slot introuvable : id ${rawOpt.product_option_id}` };
+          }
+          resolvedSlotOptions.push({
+            product_option_id: opt.id,
+            option_name_snapshot: opt.name,
+            price_delta_snapshot: opt.price_delta,
+          });
+        }
+      }
+      const slotOptionsDelta = resolvedSlotOptions.reduce((sum, o) => sum + o.price_delta_snapshot, 0);
+
       resolvedSlots.push({
         slot_name: rawSlot.slot_name,
         product_id: product.id,
         product_name_snapshot: product.name,
-        price_supplement_snapshot: parseFloat(product.price_supplement) || 0,
+        price_supplement_snapshot: (parseFloat(product.price_supplement) || 0) + slotOptionsDelta,
+        options: resolvedSlotOptions,
       });
     }
 
@@ -202,7 +221,19 @@ const createOrder = async (body) => {
   // Génération du tracking token UUID v4
   const tracking_token = uuidv4();
 
-  // Insertion en DB dans une transaction (avant Stripe pour éviter l'encaissement sans commande)
+  // Lecture de la capacité max par créneau (nécessaire pour la vérification atomique en DB)
+  const maxRaw = await settingsRepository.get('max_orders_per_slot');
+  const max_orders_per_slot = parseInt(maxRaw ?? '5');
+
+  // Création du PaymentIntent Stripe AVANT l'INSERT en DB
+  // → si Stripe échoue, aucune commande orpheline n'est créée
+  const paymentIntent = await stripe.paymentIntents.create({
+    amount: Math.round(total * 100),
+    currency: 'eur',
+    metadata: { customer_email: customer.email, customer_name: customer.name, tracking_token },
+  });
+
+  // Insertion en DB avec le PI déjà connu + vérification atomique du créneau dans la transaction
   const orderId = await orderRepository.createOrder({
     tracking_token,
     customer_name: customer.name.trim(),
@@ -216,19 +247,11 @@ const createOrder = async (body) => {
     promo_code: appliedPromoCode || null,
     discount_amount,
     notes: notes || null,
+    stripe_payment_intent_id: paymentIntent.id,
+    max_orders_per_slot,
     items: resolvedItems,
     formula_items: resolvedFormulaItems,
   });
-
-  // Création du PaymentIntent Stripe après l'INSERT (montant en centimes, livraison incluse)
-  const paymentIntent = await stripe.paymentIntents.create({
-    amount: Math.round(total * 100),
-    currency: 'eur',
-    metadata: { customer_email: customer.email, customer_name: customer.name, order_id: String(orderId) },
-  });
-
-  // Mise à jour de la commande avec le payment intent id
-  await orderRepository.updatePaymentIntent(orderId, paymentIntent.id);
 
   return {
     order_id: orderId,

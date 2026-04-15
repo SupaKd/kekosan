@@ -1,24 +1,48 @@
 {
   "name": "Kekosan — Bánh Mì",
   "short_name": "Kekosan",
-  "description": "Commande en ligne de Bánh Mì, livraison sur Saint-Genis-Pouilly",
+  "description": "Commande en ligne de Bánh Mì, livraison sur Saint-Genis-Pouilly (01630)",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#080808",
   "theme_color": "#ffd60a",
   "lang": "fr",
+  "categories": ["food", "shopping"],
+  "shortcuts": [
+    {
+      "name": "Commander",
+      "short_name": "Commander",
+      "description": "Accéder directement au menu",
+      "url": "/#menu",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ],
   "icons": [
     {
-      "src": "/logokekosan.png",
+      "src": "/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
-      "src": "/logokekosan.png",
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }

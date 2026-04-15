@@ -14,6 +14,7 @@ import { getAvailableSlots } from "../../utils/deliverySlots";
 import styles from "./CheckoutModal.module.css";
 import { useModalHistory } from "../../hooks/useModalHistory";
 import { useCloseAnimation } from "../../hooks/useCloseAnimation";
+import { useLockBodyScroll } from "../../hooks/useLockBodyScroll";
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
 
@@ -99,12 +100,7 @@ function CheckoutModal({ cart, onClose }) {
   const { items, total, clearCart } = cart;
   const modalRef = useRef(null);
   const { closing, triggerClose } = useCloseAnimation(onClose);
-
-  // Bloque le scroll du body pendant que la modal est ouverte
-  useEffect(() => {
-    document.body.style.overflow = 'hidden';
-    return () => { document.body.style.overflow = ''; };
-  }, []);
+  useLockBodyScroll();
 
   // État code promo
   const [promoInput, setPromoInput] = useState("");
@@ -165,15 +161,30 @@ function CheckoutModal({ cart, onClose }) {
   const { available, slots, message: closedMessage } = getAvailableSlots(schedule);
   const isOpen = serviceOpen && available;
 
-  const [form, setForm] = useState({
-    name: "",
-    phone: "",
-    email: "",
-    street: "",
-    delivery_time: "",
-    notes: "",
+  // Invalide le créneau sauvegardé s'il n'est plus disponible
+  useEffect(() => {
+    if (slots.length > 0 && form.delivery_time && !slots.includes(form.delivery_time)) {
+      setForm(f => ({ ...f, delivery_time: "" }));
+    }
+  }, [slots.join(",")]);
+
+  const FORM_KEY = "kekosan_checkout_form";
+
+  const [form, setForm] = useState(() => {
+    try {
+      const saved = sessionStorage.getItem(FORM_KEY);
+      if (saved) return { ...{ name: "", phone: "", email: "", street: "", delivery_time: "", notes: "" }, ...JSON.parse(saved) };
+    } catch {}
+    return { name: "", phone: "", email: "", street: "", delivery_time: "", notes: "" };
   });
   const [fieldErrors, setFieldErrors] = useState({});
+
+  // Persiste le formulaire dans sessionStorage à chaque changement
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(FORM_KEY, JSON.stringify(form));
+    } catch {}
+  }, [form]);
 
   useModalHistory(onClose);
 
@@ -265,6 +276,7 @@ function CheckoutModal({ cart, onClose }) {
             slots: i.slots.map((s) => ({
               slot_name: s.slot_name,
               product_id: s.product_id,
+              options: s.options || [],
             })),
           })),
       };
@@ -282,6 +294,7 @@ function CheckoutModal({ cart, onClose }) {
 
   const handlePaymentSuccess = () => {
     clearCart();
+    try { sessionStorage.removeItem(FORM_KEY); } catch {}
     setStep("success");
   };
 

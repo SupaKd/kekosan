@@ -47,7 +47,7 @@ function ProductModal({ product, onClose, onAdd }) {
     // Vibration haptique légère sur mobile si supportée
     if (navigator.vibrate) navigator.vibrate(40)
     // Laisse le feedback visible 800ms avant de fermer
-    setTimeout(onClose, 800)
+    setTimeout(triggerClose, 800)
   }
 
 

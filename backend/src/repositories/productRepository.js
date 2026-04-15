@@ -59,4 +59,22 @@ const findById = async (id) => {
   return rows[0] || null;
 };
 
-module.exports = { findAllAvailable, findById };
+// Récupère un produit par son id avec ses options (pour les slots de formule)
+const findByIdWithOptions = async (id) => {
+  const [rows] = await pool.query(
+    `SELECT id, category, name, price, price_supplement, available
+     FROM products WHERE id = ?`,
+    [id]
+  );
+  if (!rows[0]) return null;
+  const product = rows[0];
+  const [options] = await pool.query(
+    `SELECT id, name, price_delta FROM product_options
+     WHERE product_id = ? AND available = 1 ORDER BY name`,
+    [id]
+  );
+  product.options = options.map(o => ({ id: o.id, name: o.name, price_delta: parseFloat(o.price_delta) }));
+  return product;
+};
+
+module.exports = { findAllAvailable, findById, findByIdWithOptions };

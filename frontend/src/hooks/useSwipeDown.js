@@ -15,6 +15,9 @@ export function useSwipeDown(onClose, {
   const velocity = useRef(0)
   const lastTime = useRef(null)
   const animTargetRef = useRef(null)
+  // Ref pour toujours capturer la dernière version de onClose sans re-inscrire les listeners
+  const onCloseRef = useRef(onClose)
+  useEffect(() => { onCloseRef.current = onClose }, [onClose])
 
   useEffect(() => {
     if (!enabled) return
@@ -60,7 +63,7 @@ export function useSwipeDown(onClose, {
         if (target) target.style.transform = 'translateY(100%)'
         setTimeout(() => {
           if (target) { target.style.transform = ''; target.style.transition = '' }
-          onClose()
+          onCloseRef.current()
         }, 280)
       } else {
         // Rebond
@@ -81,7 +84,7 @@ export function useSwipeDown(onClose, {
       handle.removeEventListener('touchmove', onTouchMove)
       handle.removeEventListener('touchend', onTouchEnd)
     }
-  }, [onClose, threshold, velocityThreshold, enabled])
+  }, [threshold, velocityThreshold, enabled])
 
   return handleRef
 }

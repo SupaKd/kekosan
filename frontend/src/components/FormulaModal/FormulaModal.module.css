@@ -101,7 +101,7 @@
 .headerTop {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   gap: 12px;
   margin-bottom: 8px;
 }
@@ -348,6 +348,19 @@
 
 .productCard.selected .productCardName {
   color: var(--neon-cyan);
+}
+
+.productCardBadge {
+  display: inline-block;
+  margin-left: 4px;
+  padding: 1px 6px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 700;
+  background: rgba(255, 214, 10, 0.12);
+  color: #ffd60a;
+  white-space: nowrap;
+  vertical-align: middle;
 }
 
 .productCardQty {

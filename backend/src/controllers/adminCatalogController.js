@@ -117,7 +117,7 @@ const getProducts = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
-const VALID_BADGES = ['Nouveau', 'Populaire', 'Spécial', 'Épicé 🌶', 'Végan 🌿', 'Sans gluten'];
+const VALID_BADGES = ['Nouveau', 'Populaire', 'Spécial', 'Halal ✓', 'Épicé 🌶', 'Végan 🌿', 'Sans gluten'];
 const VALID_ALLERGENS = ['gluten', 'crustacés', 'oeufs', 'poisson', 'arachides', 'soja', 'lait', 'fruits à coque', 'céleri', 'moutarde', 'sésame', 'sulfites', 'lupin', 'mollusques'];
 
 const createProduct = async (req, res, next) => {

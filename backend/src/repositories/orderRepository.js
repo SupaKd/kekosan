@@ -14,13 +14,34 @@ const createOrder = async (orderData) => {
   try {
     await conn.beginTransaction();
 
-    // 1. Insertion de la commande principale (sans payment intent — créé après)
+    // 0. Vérifie atomiquement que le créneau n'est pas saturé (dans la transaction)
+    //    SELECT ... FOR UPDATE verrouille les lignes lues — empêche la race condition
+    //    si deux requêtes arrivent simultanément pour le même créneau plein
+    const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'Europe/Paris' }));
+    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    const [countRows] = await conn.query(
+      `SELECT COUNT(*) AS cnt FROM orders
+       WHERE delivery_time = ?
+         AND DATE(created_at) = ?
+         AND status NOT IN ('cancelled')
+         AND payment_status = 'paid'
+       FOR UPDATE`,
+      [orderData.delivery_time, todayStr]
+    );
+    if (countRows[0].cnt >= orderData.max_orders_per_slot) {
+      await conn.rollback();
+      const err = new Error('Ce créneau est complet. Veuillez en choisir un autre.');
+      err.status = 409;
+      throw err;
+    }
+
+    // 1. Insertion de la commande principale (avec stripe_payment_intent_id déjà connu)
     const [orderResult] = await conn.query(
       `INSERT INTO orders
         (tracking_token, customer_name, customer_phone, customer_email,
          delivery_address, delivery_time, subtotal, delivery_fee, total,
-         promo_code, discount_amount, notes)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+         promo_code, discount_amount, notes, stripe_payment_intent_id)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         orderData.tracking_token,
         orderData.customer_name,
@@ -34,6 +55,7 @@ const createOrder = async (orderData) => {
         orderData.promo_code || null,
         orderData.discount_amount || 0,
         orderData.notes || null,
+        orderData.stripe_payment_intent_id,
       ]
     );
     const orderId = orderResult.insertId;
