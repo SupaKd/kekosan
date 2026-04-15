@@ -161,10 +161,15 @@ function CheckoutModal({ cart, onClose }) {
   const { available, slots, message: closedMessage } = getAvailableSlots(schedule);
   const isOpen = serviceOpen && available;
 
-  // Invalide le créneau sauvegardé s'il n'est plus disponible
+  // C — Auto-sélection du premier créneau + invalidation si plus disponible
   useEffect(() => {
-    if (slots.length > 0 && form.delivery_time && !slots.includes(form.delivery_time)) {
-      setForm(f => ({ ...f, delivery_time: "" }));
+    if (slots.length === 0) return;
+    if (!form.delivery_time) {
+      // Pré-sélectionne le premier créneau dispo si rien n'est encore choisi
+      setForm(f => ({ ...f, delivery_time: slots[0] }));
+    } else if (!slots.includes(form.delivery_time)) {
+      // Invalide le créneau sauvegardé s'il n'est plus disponible
+      setForm(f => ({ ...f, delivery_time: slots[0] || "" }));
     }
   }, [slots.join(",")]);
 
@@ -212,17 +217,30 @@ function CheckoutModal({ cart, onClose }) {
     setPromoInput("");
   };
 
+  // Valide un champ individuel — utilisé au blur et au submit
+  const validateField = (name, value) => {
+    switch (name) {
+      case "name":    return (!value.trim() || value.trim().length < 2) ? "Nom requis" : null;
+      case "phone":   return (!value.trim() || value.trim().length < 8) ? "Téléphone invalide" : null;
+      case "email":   return (!value.trim() || !value.includes("@")) ? "Email invalide" : null;
+      case "street":  return (!value.trim() || value.trim().length < 3) ? "Numéro et rue requis" : null;
+      case "delivery_time": return !value ? "Choisissez un créneau" : null;
+      default: return null;
+    }
+  };
+
+  const handleBlur = (e) => {
+    const { name, value } = e.target;
+    const error = validateField(name, value);
+    setFieldErrors(prev => ({ ...prev, [name]: error || undefined }));
+  };
+
   const validate = () => {
     const errors = {};
-    if (!form.name.trim() || form.name.trim().length < 2)
-      errors.name = "Nom requis";
-    if (!form.phone.trim() || form.phone.trim().length < 8)
-      errors.phone = "Téléphone invalide";
-    if (!form.email.trim() || !form.email.includes("@"))
-      errors.email = "Email invalide";
-    if (!form.street.trim() || form.street.trim().length < 3)
-      errors.street = "Numéro et rue requis";
-    if (!form.delivery_time) errors.delivery_time = "Choisissez un créneau";
+    ["name", "phone", "email", "street", "delivery_time"].forEach(field => {
+      const error = validateField(field, form[field]);
+      if (error) errors[field] = error;
+    });
     return errors;
   };
 
@@ -365,67 +383,29 @@ function CheckoutModal({ cart, onClose }) {
         {step === "form" && !loading && (
           <>
             <div className={styles.body}>
-              {/* Récap */}
-              <div className={styles.recap}>
-                {items.map((item) => {
-                  const unitPrice =
-                    item.type === "formula"
-                      ? item.price
-                      : item.price +
-                        (item.options || []).reduce(
-                          (s, o) => s + o.price_delta,
-                          0
-                        );
-                  return (
-                    <div key={item._key} className={styles.recapItem}>
-                      <span className={styles.recapItemName}>{item.name}</span>
-                      <span className={styles.recapItemQty}>
-                        ×{item.quantity}
-                      </span>
-                      <span className={styles.recapItemPrice}>
-                        {formatPrice(unitPrice * item.quantity)}
-                      </span>
-                    </div>
-                  );
-                })}
-                <hr className={styles.recapDivider} />
-
-                {/* Ligne remise promo */}
-                {appliedPromo && (
-                  <div
-                    className={styles.recapRow}
-                    style={{ color: "var(--success, #30d158)" }}
-                  >
-                    <span>Code promo ({appliedPromo.promo_code})</span>
-                    <span>− {formatPrice(discountAmount)}</span>
+              {/* A — Créneau en premier : le client voit immédiatement si c'est possible */}
+              <div>
+                <div className={styles.sectionTitle}>Créneau de livraison</div>
+                {!isOpen ? (
+                  <div className={styles.closedMessage}>{maintenanceMessage}</div>
+                ) : (
+                  <div className={styles.field}>
+                    <select
+                      name="delivery_time"
+                      className={`${styles.select} ${fieldErrors.delivery_time ? styles.error : ""}`}
+                      value={form.delivery_time}
+                      onChange={(e) => setForm((f) => ({ ...f, delivery_time: e.target.value }))}
+                      onBlur={handleBlur}
+                    >
+                      {slots.map((slot) => (
+                        <option key={slot} value={slot}>{slot}</option>
+                      ))}
+                    </select>
+                    {fieldErrors.delivery_time && (
+                      <span className={styles.fieldError}>{fieldErrors.delivery_time}</span>
+                    )}
                   </div>
                 )}
-
-                <div className={styles.recapRow}>
-                  <span>Sous-total</span>
-                  <span>{formatPrice(subtotalAfterDiscount)}</span>
-                </div>
-                <div className={styles.recapRow}>
-                  <span>Livraison</span>
-                  <span
-                    style={{
-                      color:
-                        deliveryFee === 0
-                          ? "var(--success, #30d158)"
-                          : undefined,
-                    }}
-                  >
-                    {deliveryFee === 0
-                      ? "Gratuite 🎉"
-                      : formatPrice(deliveryFee)}
-                  </span>
-                </div>
-                <div className={styles.recapTotal}>
-                  <span>Total</span>
-                  <span className={styles.recapTotalAmount}>
-                    {formatPrice(totalWithDelivery)}
-                  </span>
-                </div>
               </div>
 
               {/* Infos client */}
@@ -436,89 +416,73 @@ function CheckoutModal({ cart, onClose }) {
                     <div className={styles.field}>
                       <label className={styles.label}>Prénom et nom</label>
                       <input
-                        className={`${styles.input} ${
-                          fieldErrors.name ? styles.error : ""
-                        }`}
+                        name="name"
+                        className={`${styles.input} ${fieldErrors.name ? styles.error : ""}`}
                         placeholder="Jean Dupont"
                         value={form.name}
-                        onChange={(e) =>
-                          setForm((f) => ({ ...f, name: e.target.value }))
-                        }
+                        onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+                        onBlur={handleBlur}
                         onFocus={scrollToField}
                         autoComplete="name"
                         inputMode="text"
                       />
                       {fieldErrors.name && (
-                        <span className={styles.fieldError}>
-                          {fieldErrors.name}
-                        </span>
+                        <span className={styles.fieldError}>{fieldErrors.name}</span>
                       )}
                     </div>
                     <div className={styles.field}>
                       <label className={styles.label}>Téléphone</label>
                       <input
-                        className={`${styles.input} ${
-                          fieldErrors.phone ? styles.error : ""
-                        }`}
+                        name="phone"
+                        className={`${styles.input} ${fieldErrors.phone ? styles.error : ""}`}
                         placeholder="06 12 34 56 78"
                         value={form.phone}
-                        onChange={(e) =>
-                          setForm((f) => ({ ...f, phone: e.target.value }))
-                        }
+                        onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
+                        onBlur={handleBlur}
                         onFocus={scrollToField}
                         type="tel"
                         autoComplete="tel"
                         inputMode="tel"
                       />
                       {fieldErrors.phone && (
-                        <span className={styles.fieldError}>
-                          {fieldErrors.phone}
-                        </span>
+                        <span className={styles.fieldError}>{fieldErrors.phone}</span>
                       )}
                     </div>
                   </div>
                   <div className={styles.field}>
                     <label className={styles.label}>Email</label>
                     <input
-                      className={`${styles.input} ${
-                        fieldErrors.email ? styles.error : ""
-                      }`}
+                      name="email"
+                      className={`${styles.input} ${fieldErrors.email ? styles.error : ""}`}
                       type="email"
                       placeholder="jean@exemple.fr"
                       value={form.email}
-                      onChange={(e) =>
-                        setForm((f) => ({ ...f, email: e.target.value }))
-                      }
+                      onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+                      onBlur={handleBlur}
                       onFocus={scrollToField}
                       autoComplete="email"
                       inputMode="email"
                     />
                     {fieldErrors.email && (
-                      <span className={styles.fieldError}>
-                        {fieldErrors.email}
-                      </span>
+                      <span className={styles.fieldError}>{fieldErrors.email}</span>
                     )}
                   </div>
                   <div className={styles.fieldRow}>
                     <div className={styles.field}>
                       <label className={styles.label}>Numéro et rue</label>
                       <input
-                        className={`${styles.input} ${
-                          fieldErrors.street ? styles.error : ""
-                        }`}
+                        name="street"
+                        className={`${styles.input} ${fieldErrors.street ? styles.error : ""}`}
                         placeholder="12 rue des Fleurs"
                         value={form.street}
-                        onChange={(e) =>
-                          setForm((f) => ({ ...f, street: e.target.value }))
-                        }
+                        onChange={(e) => setForm((f) => ({ ...f, street: e.target.value }))}
+                        onBlur={handleBlur}
                         onFocus={scrollToField}
                         autoComplete="street-address"
                         inputMode="text"
                       />
                       {fieldErrors.street && (
-                        <span className={styles.fieldError}>
-                          {fieldErrors.street}
-                        </span>
+                        <span className={styles.fieldError}>{fieldErrors.street}</span>
                       )}
                     </div>
                     <div className={styles.field}>
@@ -531,50 +495,13 @@ function CheckoutModal({ cart, onClose }) {
                       />
                     </div>
                   </div>
-                  <div className={styles.field}>
-                    <label className={styles.label}>Créneau de livraison</label>
-                    {!isOpen ? (
-                      <div className={styles.closedMessage}>
-                        {maintenanceMessage}
-                      </div>
-                    ) : (
-                      <>
-                        <select
-                          className={`${styles.select} ${
-                            fieldErrors.delivery_time ? styles.error : ""
-                          }`}
-                          value={form.delivery_time}
-                          onChange={(e) =>
-                            setForm((f) => ({
-                              ...f,
-                              delivery_time: e.target.value,
-                            }))
-                          }
-                        >
-                          <option value="">-- Choisir une heure --</option>
-                          {slots.map((slot) => (
-                            <option key={slot} value={slot}>
-                              {slot}
-                            </option>
-                          ))}
-                        </select>
-                        {fieldErrors.delivery_time && (
-                          <span className={styles.fieldError}>
-                            {fieldErrors.delivery_time}
-                          </span>
-                        )}
-                      </>
-                    )}
-                  </div>
 
                   {/* Code promo — affiché uniquement si des promos sont actives */}
                   {activePromos.length > 0 && (
                     <div className={styles.field}>
                       <label className={styles.label}>
                         Code promo{" "}
-                        <span style={{ color: "var(--text-muted)" }}>
-                          (optionnel)
-                        </span>
+                        <span style={{ color: "var(--text-muted)" }}>(optionnel)</span>
                       </label>
                       {!appliedPromo ? (
                         <div className={styles.promoRow}>
@@ -582,13 +509,8 @@ function CheckoutModal({ cart, onClose }) {
                             className={styles.input}
                             placeholder="BIENVENUE10"
                             value={promoInput}
-                            onChange={(e) => {
-                              setPromoInput(e.target.value.toUpperCase());
-                              setPromoError(null);
-                            }}
-                            onKeyDown={(e) =>
-                              e.key === "Enter" && handleApplyPromo()
-                            }
+                            onChange={(e) => { setPromoInput(e.target.value.toUpperCase()); setPromoError(null); }}
+                            onKeyDown={(e) => e.key === "Enter" && handleApplyPromo()}
                             disabled={promoLoading}
                           />
                           <button
@@ -602,41 +524,70 @@ function CheckoutModal({ cart, onClose }) {
                       ) : (
                         <div className={`${styles.promoApplied}${promoFlash ? ` ${styles.promoFlash}` : ''}`}>
                           <span className={styles.promoAppliedLabel}>
-                            ✓ <strong>{appliedPromo.promo_code}</strong> — −{" "}
-                            {formatPrice(discountAmount)}
+                            ✓ <strong>{appliedPromo.promo_code}</strong> — − {formatPrice(discountAmount)}
                           </span>
-                          <button
-                            className={styles.promoRemoveBtn}
-                            onClick={handleRemovePromo}
-                          >
-                            ✕
-                          </button>
+                          <button className={styles.promoRemoveBtn} onClick={handleRemovePromo}>✕</button>
                         </div>
                       )}
-                      {promoError && (
-                        <span className={styles.fieldError}>{promoError}</span>
-                      )}
+                      {promoError && <span className={styles.fieldError}>{promoError}</span>}
                     </div>
                   )}
 
+                  {/* D — Notes en dernier, visuellement déprioritisées */}
                   <div className={styles.field}>
-                    <label className={styles.label}>
+                    <label className={styles.label} style={{ color: "#aaa" }}>
                       Note pour la cuisine{" "}
-                      <span style={{ color: "var(--text-muted)" }}>
-                        (optionnel)
-                      </span>
+                      <span style={{ color: "var(--text-muted)" }}>(optionnel)</span>
                     </label>
                     <input
                       className={styles.input}
                       placeholder="Allergie, instruction particulière…"
                       value={form.notes}
-                      onChange={(e) =>
-                        setForm((f) => ({ ...f, notes: e.target.value }))
-                      }
+                      onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
+                      onFocus={scrollToField}
                       autoComplete="off"
                       inputMode="text"
+                      style={{ opacity: 0.7 }}
                     />
                   </div>
+                </div>
+              </div>
+
+              {/* B — Récap en bas, juste avant le bouton */}
+              <div className={styles.recap}>
+                {items.map((item) => {
+                  const unitPrice =
+                    item.type === "formula"
+                      ? item.price
+                      : item.price + (item.options || []).reduce((s, o) => s + o.price_delta, 0);
+                  return (
+                    <div key={item._key} className={styles.recapItem}>
+                      <span className={styles.recapItemName}>{item.name}</span>
+                      <span className={styles.recapItemQty}>×{item.quantity}</span>
+                      <span className={styles.recapItemPrice}>{formatPrice(unitPrice * item.quantity)}</span>
+                    </div>
+                  );
+                })}
+                <hr className={styles.recapDivider} />
+                {appliedPromo && (
+                  <div className={styles.recapRow} style={{ color: "var(--success, #30d158)" }}>
+                    <span>Code promo ({appliedPromo.promo_code})</span>
+                    <span>− {formatPrice(discountAmount)}</span>
+                  </div>
+                )}
+                <div className={styles.recapRow}>
+                  <span>Sous-total</span>
+                  <span>{formatPrice(subtotalAfterDiscount)}</span>
+                </div>
+                <div className={styles.recapRow}>
+                  <span>Livraison</span>
+                  <span style={{ color: deliveryFee === 0 ? "var(--success, #30d158)" : undefined }}>
+                    {deliveryFee === 0 ? "Gratuite 🎉" : formatPrice(deliveryFee)}
+                  </span>
+                </div>
+                <div className={styles.recapTotal}>
+                  <span>Total</span>
+                  <span className={styles.recapTotalAmount}>{formatPrice(totalWithDelivery)}</span>
                 </div>
               </div>
 
