@@ -5,6 +5,7 @@ import { loadStripe } from "@stripe/stripe-js";
 import {
   Elements,
   PaymentElement,
+  PaymentRequestButtonElement,
   useStripe,
   useElements,
 } from "@stripe/react-stripe-js";
@@ -20,9 +21,24 @@ const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
 
 import { formatPrice } from "../../utils/formatting";
 
+// ── Traduit une erreur Stripe en message lisible ────────────────────────────
+function stripeErrorMessage(error) {
+  if (error.type === 'card_error') {
+    if (error.code === 'card_declined')   return "Carte refusée. Vérifiez vos informations ou essayez une autre carte.";
+    if (error.code === 'insufficient_funds') return "Fonds insuffisants sur cette carte.";
+    if (error.code === 'expired_card')    return "Cette carte est expirée.";
+    if (error.code === 'incorrect_cvc')   return "Le code de sécurité (CVV) est incorrect.";
+  }
+  if (error.type === 'validation_error') return "Informations de paiement incomplètes. Vérifiez les champs.";
+  if (error.type === 'api_connection_error' || error.type === 'api_error') return "Erreur de connexion. Vérifiez votre réseau et réessayez.";
+  if (error.code === 'payment_intent_authentication_failure') return "Authentification 3D Secure échouée. Réessayez et validez dans votre application bancaire.";
+  return error.message;
+}
+
 // ── Formulaire interne (doit être dans <Elements>) ──────────────────────────
 function PaymentForm({
   clientSecret,
+  totalWithDelivery,
   onSuccess,
   onError,
   loading,
@@ -31,6 +47,42 @@ function PaymentForm({
   const stripe = useStripe();
   const elements = useElements();
   const [submitted, setSubmitted] = useState(false);
+  const [paymentRequest, setPaymentRequest] = useState(null);
+
+  // Initialise Apple Pay / Google Pay dès que Stripe est prêt
+  useEffect(() => {
+    if (!stripe || !clientSecret) return;
+    const pr = stripe.paymentRequest({
+      country: 'FR',
+      currency: 'eur',
+      total: {
+        label: 'Kekosan',
+        amount: Math.round(totalWithDelivery * 100),
+      },
+      requestPayerName: false,
+      requestPayerEmail: false,
+    });
+    pr.canMakePayment().then((result) => {
+      if (result) setPaymentRequest(pr);
+    });
+    pr.on('paymentmethod', async (ev) => {
+      setLoading(true);
+      onError(null);
+      const { error: confirmError } = await stripe.confirmCardPayment(
+        clientSecret,
+        { payment_method: ev.paymentMethod.id },
+        { handleActions: false }
+      );
+      if (confirmError) {
+        ev.complete('fail');
+        onError(stripeErrorMessage(confirmError));
+        setLoading(false);
+      } else {
+        ev.complete('success');
+        onSuccess();
+      }
+    });
+  }, [stripe, clientSecret]);
 
   const handlePay = async () => {
     if (!stripe || !elements || submitted) return;
@@ -44,26 +96,7 @@ function PaymentForm({
     });
 
     if (error) {
-      // Messages adaptés selon le type d'erreur Stripe
-      let message = error.message;
-      if (error.type === 'card_error') {
-        if (error.code === 'card_declined') {
-          message = "Carte refusée. Vérifiez vos informations ou essayez une autre carte.";
-        } else if (error.code === 'insufficient_funds') {
-          message = "Fonds insuffisants sur cette carte.";
-        } else if (error.code === 'expired_card') {
-          message = "Cette carte est expirée.";
-        } else if (error.code === 'incorrect_cvc') {
-          message = "Le code de sécurité (CVV) est incorrect.";
-        }
-      } else if (error.type === 'validation_error') {
-        message = "Informations de paiement incomplètes. Vérifiez les champs.";
-      } else if (error.type === 'api_connection_error' || error.type === 'api_error') {
-        message = "Erreur de connexion. Vérifiez votre réseau et réessayez.";
-      } else if (error.code === 'payment_intent_authentication_failure') {
-        message = "Authentification 3D Secure échouée. Réessayez et validez dans votre application bancaire.";
-      }
-      onError(message);
+      onError(stripeErrorMessage(error));
       setLoading(false);
       setSubmitted(false);
     } else {
@@ -72,16 +105,42 @@ function PaymentForm({
   };
 
   return (
-    <div className={styles.stripeBox}>
-      <PaymentElement />
-      <div style={{ marginTop: 20 }}>
-        <button
-          className={styles.payBtn}
-          onClick={handlePay}
-          disabled={!stripe || loading || submitted}
-        >
-          {loading ? "Traitement…" : `Payer`}
-        </button>
+    <div>
+      {/* Bouton Apple Pay / Google Pay — affiché uniquement si disponible */}
+      {paymentRequest && (
+        <>
+          <div className={styles.stripeBox}>
+            <PaymentRequestButtonElement
+              options={{
+                paymentRequest,
+                style: {
+                  paymentRequestButton: {
+                    type: 'buy',
+                    theme: 'dark',
+                    height: '48px',
+                  },
+                },
+              }}
+            />
+          </div>
+          <div className={styles.orDivider}>
+            <span>ou</span>
+          </div>
+        </>
+      )}
+
+      {/* Formulaire carte classique */}
+      <div className={styles.stripeBox}>
+        <PaymentElement />
+        <div style={{ marginTop: 20 }}>
+          <button
+            className={styles.payBtn}
+            onClick={handlePay}
+            disabled={!stripe || loading || submitted}
+          >
+            {loading ? "Traitement…" : "Payer par carte"}
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -320,11 +379,11 @@ function CheckoutModal({ cart, onClose }) {
     ? {
         clientSecret,
         appearance: {
-          theme: "night",
+          theme: "stripe",
           variables: {
-            colorPrimary: "#ffd60a",
-            colorBackground: "#16161f",
-            colorText: "#f0f0f8",
+            colorPrimary: "#c0392b",
+            colorBackground: "#ffffff",
+            colorText: "#1a1a1a",
             colorDanger: "#ff453a",
             borderRadius: "6px",
             fontFamily: "Space Grotesk, system-ui, sans-serif",
@@ -639,6 +698,7 @@ function CheckoutModal({ cart, onClose }) {
               <Elements stripe={stripePromise} options={stripeOptions}>
                 <PaymentForm
                   clientSecret={clientSecret}
+                  totalWithDelivery={totalWithDelivery}
                   onSuccess={handlePaymentSuccess}
                   onError={setGlobalError}
                   loading={loading}
