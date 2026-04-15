@@ -120,14 +120,18 @@ function CartItem({ item, onUpdateQty, onRemove }) {
         onTouchEnd={onTouchEnd}
       >
         {item.image_url && (
-          <img
-            src={`${API_BASE}${item.image_url}`}
-            alt={item.name}
-            width={96}
-            loading="lazy"
-            decoding="async"
-            className={styles.itemImage}
-          />
+          <div className={styles.itemImageWrap}>
+            <div className={styles.itemImageSkeleton} />
+            <img
+              src={`${API_BASE}${item.image_url}`}
+              alt={item.name}
+              width={96}
+              loading="lazy"
+              decoding="async"
+              className={styles.itemImage}
+              onLoad={e => e.currentTarget.previousSibling.style.display = 'none'}
+            />
+          </div>
         )}
         <div className={styles.itemBody}>
           <div className={styles.itemHeader}>

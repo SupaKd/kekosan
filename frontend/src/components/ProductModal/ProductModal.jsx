@@ -5,14 +5,16 @@ import { formatPrice } from '../../utils/formatting'
 import { useSwipeDown } from '../../hooks/useSwipeDown'
 import { useLockBodyScroll } from '../../hooks/useLockBodyScroll'
 import { useModalHistory } from '../../hooks/useModalHistory'
+import { useCloseAnimation } from '../../hooks/useCloseAnimation'
 
 function ProductModal({ product, onClose, onAdd }) {
   const [selectedOptions, setSelectedOptions] = useState([])
   const [quantity, setQuantity] = useState(1)
   const [added, setAdded] = useState(false)
-  const dragRef = useSwipeDown(onClose)
+  const { closing, triggerClose } = useCloseAnimation(onClose)
+  const dragRef = useSwipeDown(triggerClose)
   useLockBodyScroll()
-  useModalHistory(onClose)
+  useModalHistory(triggerClose)
 
   if (!product) return null
 
@@ -50,10 +52,10 @@ function ProductModal({ product, onClose, onAdd }) {
 
 
   return (
-    <div className={styles.overlay} onClick={onClose}>
-      <div className={styles.modal} onClick={e => e.stopPropagation()}>
+    <div className={`${styles.overlay} ${closing ? styles.overlayClosing : ''}`} onClick={triggerClose}>
+      <div className={`${styles.modal} ${closing ? styles.modalClosing : ''}`} onClick={e => e.stopPropagation()}>
         <div className={styles.dragHandle} ref={dragRef} />
-        <button className={styles.closeBtn} onClick={onClose} aria-label="Fermer">✕</button>
+        <button className={styles.closeBtn} onClick={triggerClose} aria-label="Fermer">✕</button>
 
         {product.image_url && (
           <div className={styles.imageWrap}>

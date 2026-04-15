@@ -124,3 +124,19 @@ a {
   clip: rect(0 0 0 0);
   white-space: nowrap;
 }
+
+/* ── Mobile natif ── */
+
+/* Supprime le flash bleu/gris au tap sur Android */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Empêche la sélection de texte sur les éléments interactifs */
+button,
+a,
+label,
+[role="button"] {
+  user-select: none;
+  -webkit-user-select: none;
+}

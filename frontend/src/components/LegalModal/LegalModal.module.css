@@ -50,6 +50,7 @@
 .body {
   padding: 24px;
   overflow-y: auto;
+  overscroll-behavior: contain;
   font-size: 13px;
   color: #c0c0d8;
   line-height: 1.7;

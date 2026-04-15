@@ -5,6 +5,7 @@ import { formatPrice } from '../../utils/formatting'
 import { useSwipeDown } from '../../hooks/useSwipeDown'
 import { useLockBodyScroll } from '../../hooks/useLockBodyScroll'
 import { useModalHistory } from '../../hooks/useModalHistory'
+import { useCloseAnimation } from '../../hooks/useCloseAnimation'
 
 const CATEGORY_LABELS = {
   entree: 'Entrée',
@@ -20,9 +21,10 @@ function FormulaModal({ formula, catalog, onClose, onAdd }) {
   const [slotOptions, setSlotOptions] = useState({})
   const [quantity, setQuantity] = useState(1)
   const [added, setAdded] = useState(false)
-  const dragRef = useSwipeDown(onClose)
+  const { closing, triggerClose } = useCloseAnimation(onClose)
+  const dragRef = useSwipeDown(triggerClose)
   useLockBodyScroll()
-  useModalHistory(onClose)
+  useModalHistory(triggerClose)
 
   if (!formula) return null
 
@@ -82,7 +84,7 @@ function FormulaModal({ formula, catalog, onClose, onAdd }) {
   }
 
   return (
-    <div className={styles.overlay} onClick={onClose}>
+    <div className={`${styles.overlay} ${closing ? styles.overlayClosing : ''}`} onClick={triggerClose}>
       <div className={styles.modal} onClick={e => e.stopPropagation()}>
         <div className={styles.dragHandle} />
         <div className={styles.header} ref={dragRef}>
@@ -90,7 +92,7 @@ function FormulaModal({ formula, catalog, onClose, onAdd }) {
             <div className={styles.name}>{formula.name}</div>
             <div className={styles.headerRight}>
               <div className={styles.price}>{formatPrice(totalPrice)}</div>
-              <button className={styles.closeBtn} onClick={onClose} aria-label="Fermer">✕</button>
+              <button className={styles.closeBtn} onClick={triggerClose} aria-label="Fermer">✕</button>
             </div>
           </div>
           {formula.description && (

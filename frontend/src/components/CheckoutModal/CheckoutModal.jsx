@@ -13,6 +13,7 @@ import { getServiceStatus, getSchedule, getSlotSettings, getDeliverySettings, ge
 import { getAvailableSlots } from "../../utils/deliverySlots";
 import styles from "./CheckoutModal.module.css";
 import { useModalHistory } from "../../hooks/useModalHistory";
+import { useCloseAnimation } from "../../hooks/useCloseAnimation";
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
 
@@ -97,6 +98,7 @@ function CheckoutModal({ cart, onClose }) {
   const navigate = useNavigate();
   const { items, total, clearCart } = cart;
   const modalRef = useRef(null);
+  const { closing, triggerClose } = useCloseAnimation(onClose);
 
   // Bloque le scroll du body pendant que la modal est ouverte
   useEffect(() => {
@@ -214,6 +216,9 @@ function CheckoutModal({ cart, onClose }) {
   };
 
   const handleSubmitForm = async () => {
+    // Ferme le clavier virtuel iOS avant de soumettre
+    if (document.activeElement) document.activeElement.blur();
+
     const errors = validate();
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
@@ -299,10 +304,10 @@ function CheckoutModal({ cart, onClose }) {
 
   return (
     <div
-      className={styles.overlay}
-      onClick={(e) => e.target === e.currentTarget && !loading && onClose()}
+      className={`${styles.overlay} ${closing ? styles.overlayClosing : ''}`}
+      onClick={(e) => e.target === e.currentTarget && !loading && triggerClose()}
     >
-      <div className={styles.modal} role="dialog" aria-modal="true" aria-label="Commander" ref={modalRef}>
+      <div className={`${styles.modal} ${closing ? styles.modalClosing : ''}`} role="dialog" aria-modal="true" aria-label="Commander" ref={modalRef}>
         {/* Header — zone de swipe-down pour fermer sur mobile */}
         <div className={styles.modalHeader} ref={swipeHandleRef}>
           <div className={styles.title}>
@@ -311,7 +316,7 @@ function CheckoutModal({ cart, onClose }) {
           {step !== "success" && (
             <button
               className={styles.closeBtn}
-              onClick={onClose}
+              onClick={triggerClose}
               disabled={loading}
             >
               ✕
