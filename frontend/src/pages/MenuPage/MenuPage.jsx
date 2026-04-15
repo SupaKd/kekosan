@@ -444,7 +444,7 @@ function MenuPage({ cart, onCheckout }) {
       )}
 
       <InstagramSection />
-      <Footer />
+      <Footer opening_hour={schedule.opening_hour} closing_hour={schedule.closing_hour} />
 
       {/* Panier flottant */}
       <CartDrawer
