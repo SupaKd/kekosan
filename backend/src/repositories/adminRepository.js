@@ -227,4 +227,50 @@ const getStats = async () => {
   };
 };
 
-module.exports = { findOrders, findOrderById, getStats };
+// Exporte toutes les commandes filtrées (sans pagination) pour le CSV
+const findOrdersForExport = async ({ status, search, date_from, date_to }) => {
+  const params = [];
+  const conditions = [];
+
+  if (status) {
+    conditions.push('o.status = ?');
+    params.push(status);
+  }
+  if (search) {
+    const idMatch = search.replace(/^#/, '').trim();
+    if (/^\d+$/.test(idMatch)) {
+      conditions.push('(o.id = ? OR o.customer_name LIKE ? OR o.customer_email LIKE ? OR o.customer_phone LIKE ?)');
+      const like = `%${search}%`;
+      params.push(parseInt(idMatch), like, like, like);
+    } else {
+      conditions.push('(o.customer_name LIKE ? OR o.customer_email LIKE ? OR o.customer_phone LIKE ?)');
+      const like = `%${search}%`;
+      params.push(like, like, like);
+    }
+  }
+  if (date_from) {
+    conditions.push('DATE(o.created_at) >= ?');
+    params.push(date_from);
+  }
+  if (date_to) {
+    conditions.push('DATE(o.created_at) <= ?');
+    params.push(date_to);
+  }
+
+  const whereClause = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+
+  const [orders] = await pool.query(
+    `SELECT o.id, o.customer_name, o.customer_email, o.customer_phone,
+            o.delivery_address, o.delivery_time, o.status, o.payment_status,
+            o.subtotal, o.delivery_fee, o.discount_amount, o.total,
+            o.notes, o.created_at
+     FROM orders o
+     ${whereClause}
+     ORDER BY o.created_at DESC`,
+    params
+  );
+
+  return orders;
+};
+
+module.exports = { findOrders, findOrderById, getStats, findOrdersForExport };

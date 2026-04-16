@@ -170,6 +170,13 @@ export const getOrders = (params) =>
     headers: { Authorization: `Bearer ${localStorage.getItem('admin_token')}` },
   }).then(r => r.data)
 
+export const exportOrdersCsv = (params) =>
+  client.get('/admin/orders/export.csv', {
+    params,
+    headers: { Authorization: `Bearer ${localStorage.getItem('admin_token')}` },
+    responseType: 'blob',
+  }).then(r => r.data)
+
 export const getOrderById = (id) =>
   client.get(`/admin/orders/${id}`, {
     headers: { Authorization: `Bearer ${localStorage.getItem('admin_token')}` },

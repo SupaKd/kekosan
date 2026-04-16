@@ -121,6 +121,58 @@ const refundOrder = async (req, res, next) => {
   }
 };
 
+// GET /api/admin/orders/export.csv?status=&search=&date_from=&date_to=
+const exportOrdersCsv = async (req, res, next) => {
+  try {
+    const { status, search, date_from, date_to } = req.query;
+    const orders = await adminRepository.findOrdersForExport({
+      status: status || null,
+      search: search || null,
+      date_from: date_from || null,
+      date_to: date_to || null,
+    });
+
+    const escape = (v) => {
+      if (v === null || v === undefined) return '';
+      const s = String(v);
+      if (s.includes(';') || s.includes('"') || s.includes('\n')) return `"${s.replace(/"/g, '""')}"`;
+      return s;
+    };
+
+    const headers = [
+      'ID', 'Date', 'Nom', 'Email', 'Téléphone',
+      'Adresse', 'Créneau', 'Statut', 'Paiement',
+      'Sous-total', 'Frais livraison', 'Remise', 'Total', 'Notes',
+    ];
+
+    const rows = orders.map(o => [
+      o.id,
+      new Date(o.created_at).toLocaleString('fr-FR', { timeZone: 'Europe/Paris' }),
+      o.customer_name,
+      o.customer_email,
+      o.customer_phone,
+      o.delivery_address,
+      o.delivery_time || '',
+      o.status,
+      o.payment_status,
+      Number(o.subtotal).toFixed(2),
+      Number(o.delivery_fee).toFixed(2),
+      Number(o.discount_amount || 0).toFixed(2),
+      Number(o.total).toFixed(2),
+      o.notes || '',
+    ].map(escape).join(';'));
+
+    const csv = [headers.join(';'), ...rows].join('\r\n');
+    const filename = `commandes_${new Date().toISOString().slice(0, 10)}.csv`;
+
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.send('\uFEFF' + csv); // BOM UTF-8 pour Excel
+  } catch (err) {
+    next(err);
+  }
+};
+
 // GET /api/admin/stats
 const getStats = async (req, res, next) => {
   try {
@@ -131,4 +183,4 @@ const getStats = async (req, res, next) => {
   }
 };
 
-module.exports = { login, refreshToken, getOrders, getOrderById, updateOrderStatus, refundOrder, getStats };
+module.exports = { login, refreshToken, getOrders, getOrderById, updateOrderStatus, refundOrder, getStats, exportOrdersCsv };

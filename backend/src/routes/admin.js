@@ -59,6 +59,7 @@ router.get('/stats', adminController.getStats);
 
 // ── Commandes ────────────────────────────────────────────────────────────────
 router.get('/orders', adminController.getOrders);
+router.get('/orders/export.csv', adminController.exportOrdersCsv);
 router.get('/orders/:id', adminController.getOrderById);
 router.patch('/orders/:id/status', adminController.updateOrderStatus);
 router.post('/orders/:id/refund', adminController.refundOrder);
