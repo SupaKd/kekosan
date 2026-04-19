@@ -2,11 +2,15 @@
 jest.mock('../repositories/productRepository');
 jest.mock('../repositories/formulaRepository');
 jest.mock('../repositories/orderRepository');
+jest.mock('../repositories/promoRepository');
+jest.mock('../repositories/settingsRepository');
 jest.mock('stripe');
 
 const productRepository = require('../repositories/productRepository');
 const formulaRepository = require('../repositories/formulaRepository');
 const orderRepository = require('../repositories/orderRepository');
+const promoRepository = require('../repositories/promoRepository');
+const settingsRepository = require('../repositories/settingsRepository');
 const Stripe = require('stripe');
 
 // Mock de l'instance Stripe
@@ -15,9 +19,7 @@ Stripe.mockImplementation(() => ({
   paymentIntents: { create: mockPaymentIntentsCreate },
 }));
 
-// Variables d'environnement nécessaires au service
 process.env.STRIPE_SECRET_KEY = 'sk_test_mock';
-process.env.MIN_ORDER_AMOUNT = '20';
 
 const { createOrder } = require('../services/orderService');
 
@@ -46,6 +48,17 @@ beforeEach(() => {
   formulaRepository.findById.mockResolvedValue(mockFormula);
   orderRepository.createOrder.mockResolvedValue(42);
   mockPaymentIntentsCreate.mockResolvedValue({ id: 'pi_mock', client_secret: 'secret_mock' });
+  promoRepository.findByCode.mockResolvedValue(null);
+  // Paramètres depuis settingsRepository : min 20€, livraison 5€, gratuit à 20€
+  settingsRepository.get.mockImplementation((key) => {
+    const map = {
+      delivery_fee: '5',
+      free_delivery_threshold: '20',
+      min_order_amount: '20',
+      max_orders_per_slot: '5',
+    };
+    return Promise.resolve(map[key] ?? null);
+  });
 });
 
 describe('orderService.createOrder — cas nominal', () => {
@@ -120,6 +133,11 @@ describe('orderService.createOrder — validation formule', () => {
     productRepository.findById.mockImplementation((id) =>
       id === 1 ? Promise.resolve(mockProduct) : Promise.resolve(mockDrink)
     );
+    productRepository.findByIdWithOptions = jest.fn().mockImplementation((id) =>
+      id === 1
+        ? Promise.resolve({ ...mockProduct, options: [] })
+        : Promise.resolve({ ...mockDrink, options: [] })
+    );
   });
 
   test('passe avec une formule valide', async () => {
@@ -141,8 +159,8 @@ describe('orderService.createOrder — validation formule', () => {
   });
 
   test('rejette si le produit du slot a une catégorie non autorisée', async () => {
-    // On met un produit de catégorie "banhmi" dans le slot "boisson"
-    productRepository.findById.mockResolvedValue(mockProduct); // toujours banhmi
+    // Les deux slots reçoivent un produit de catégorie "banhmi" → le slot "boisson" rejette
+    productRepository.findByIdWithOptions = jest.fn().mockResolvedValue({ ...mockProduct, options: [] });
     await expect(createOrder(bodyWithFormula)).rejects.toMatchObject({ status: 400 });
   });
 });
