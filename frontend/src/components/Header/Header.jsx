@@ -1,7 +1,23 @@
 import { MapPin, Clock } from "lucide-react";
 import styles from "./Header.module.css";
 
-function Header({ opening_hour = 11, closing_hour = 15 }) {
+const DAY_ABBR = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam']
+
+function formatOpenDays(open_days) {
+  if (!open_days || open_days.length === 0) return 'Fermé'
+  // Regroupement en plages consécutives ex: [1,2,3,5] → "Lun–Mer · Ven"
+  const sorted = [...open_days].sort((a, b) => a - b)
+  const ranges = []
+  let start = sorted[0], end = sorted[0]
+  for (let i = 1; i < sorted.length; i++) {
+    if (sorted[i] === end + 1) { end = sorted[i] }
+    else { ranges.push([start, end]); start = sorted[i]; end = sorted[i] }
+  }
+  ranges.push([start, end])
+  return ranges.map(([s, e]) => s === e ? DAY_ABBR[s] : `${DAY_ABBR[s]}–${DAY_ABBR[e]}`).join(' · ')
+}
+
+function Header({ opening_hour = 11, closing_hour = 15, open_days = [1, 2, 3, 4, 5] }) {
   return (
     <header className={styles.header}>
 
@@ -19,7 +35,7 @@ function Header({ opening_hour = 11, closing_hour = 15 }) {
           </div>
           <div className={styles.hoursBadge}>
             <Clock size={11} strokeWidth={2.5} />
-            Lun–Ven · {opening_hour}h–{closing_hour}h
+            {formatOpenDays(open_days)} · {opening_hour}h–{closing_hour}h
           </div>
         </div>
 

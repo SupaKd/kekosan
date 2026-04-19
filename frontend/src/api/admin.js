@@ -16,6 +16,14 @@ export const setServiceStatus = (open) =>
     headers: { Authorization: `Bearer ${localStorage.getItem('admin_token')}` },
   }).then(r => r.data)
 
+export const getOpenDays = () =>
+  client.get('/admin/open-days').then(r => r.data)
+
+export const setOpenDays = (open_days) =>
+  client.put('/admin/open-days', { open_days }, {
+    headers: { Authorization: `Bearer ${localStorage.getItem('admin_token')}` },
+  }).then(r => r.data)
+
 export const getSchedule = () =>
   client.get('/admin/schedule').then(r => r.data)
 

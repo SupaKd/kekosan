@@ -11,11 +11,13 @@ const isSlotValid = async (slot) => {
   const openingRaw  = await settingsRepository.get('opening_hour');
   const closingRaw  = await settingsRepository.get('closing_hour');
   const closedRaw   = await settingsRepository.get('closed_days');
+  const openDaysRaw = await settingsRepository.get('open_days');
   const intervalRaw = await settingsRepository.get('slot_interval');
   const delayRaw    = await settingsRepository.get('min_delivery_delay');
   const SERVICE_START   = parseInt(openingRaw  ?? '11');
   const SERVICE_END     = parseInt(closingRaw  ?? '15');
-  const closedDays      = closedRaw ? JSON.parse(closedRaw) : [];
+  const closedDays      = closedRaw   ? JSON.parse(closedRaw)   : [];
+  const openDays        = openDaysRaw ? JSON.parse(openDaysRaw) : [1, 2, 3, 4, 5];
   const SLOT_INTERVAL   = parseInt(intervalRaw ?? '30');
   const MIN_DELAY_MIN   = parseInt(delayRaw    ?? '30');
 
@@ -25,9 +27,9 @@ const isSlotValid = async (slot) => {
 
   const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'Europe/Paris' }));
 
-  // Pas de livraison le week-end
+  // Le jour actuel doit être dans les jours d'ouverture configurés
   const dow = now.getDay();
-  if (dow === 0 || dow === 6) return false;
+  if (!openDays.includes(dow)) return false;
 
   const slotDate = new Date(now);
   slotDate.setHours(h, m, 0, 0);

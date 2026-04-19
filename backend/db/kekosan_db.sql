@@ -430,6 +430,7 @@ CREATE TABLE `settings` (
 INSERT INTO `settings` (`key`, `value`) VALUES
 ('closed_days', '[]'),
 ('closing_hour', '14'),
+('open_days', '[1,2,3,4,5]'),
 ('delivery_fee', '5'),
 ('free_delivery_threshold', '20'),
 ('maintenance_message', 'Ouverture du service le 19 avril, à très vite!'),

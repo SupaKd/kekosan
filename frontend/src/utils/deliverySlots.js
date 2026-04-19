@@ -3,6 +3,7 @@
 // availability = objet { 'YYYY-MM-DD|HH:MM': placesRestantes } retourné par /slot-availability
 export function getAvailableSlots({
   opening_hour = 11, closing_hour = 15,
+  open_days = [1, 2, 3, 4, 5],
   closed_days = [], availability = {},
   slot_interval = 30, min_delivery_delay = 30,
 } = {}) {
@@ -13,13 +14,15 @@ export function getAvailableSlots({
 
   const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'Europe/Paris' }))
 
-  // Pas de livraison le week-end (0 = dimanche, 6 = samedi)
+  // Vérification des jours d'ouverture configurés
   const dow = now.getDay()
-  if (dow === 0 || dow === 6) {
+  if (!open_days.includes(dow)) {
+    const DAY_NAMES = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi']
+    const openLabels = open_days.map(d => DAY_NAMES[d]).join(', ')
     return {
       available: false,
       slots: [],
-      message: 'Nous ne livrons pas le week-end. Revenez nous voir du lundi au vendredi !',
+      message: `Nous ne livrons pas aujourd'hui. Nous livrons le : ${openLabels}.`,
     }
   }
 

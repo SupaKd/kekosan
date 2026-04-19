@@ -21,6 +21,7 @@ import {
   getSchedule,
   getSlotSettings,
   getDeliverySettings,
+  getOpenDays,
   getClosedDays,
   getMaintenanceMessage,
 } from "../../api/admin";
@@ -72,6 +73,7 @@ function MenuPage({ cart, onCheckout }) {
   const [schedule, setSchedule] = useState({
     opening_hour: 11,
     closing_hour: 15,
+    open_days: [1, 2, 3, 4, 5],
     closed_days: [],
     slot_interval: 30,
     min_delivery_delay: 30,
@@ -93,6 +95,9 @@ function MenuPage({ cart, onCheckout }) {
       .catch(() => {});
     getSlotSettings()
       .then((d) => setSchedule((s) => ({ ...s, ...d })))
+      .catch(() => {});
+    getOpenDays()
+      .then((d) => setSchedule((s) => ({ ...s, open_days: d.open_days })))
       .catch(() => {});
     getClosedDays()
       .then((d) => setSchedule((s) => ({ ...s, closed_days: d.closed_days })))
@@ -209,6 +214,7 @@ function MenuPage({ cart, onCheckout }) {
         <Header
           opening_hour={schedule.opening_hour}
           closing_hour={schedule.closing_hour}
+          open_days={schedule.open_days}
         />
 
         {/* Panneaux */}
@@ -444,7 +450,7 @@ function MenuPage({ cart, onCheckout }) {
       )}
 
       <InstagramSection />
-      <Footer opening_hour={schedule.opening_hour} closing_hour={schedule.closing_hour} />
+      <Footer opening_hour={schedule.opening_hour} closing_hour={schedule.closing_hour} open_days={schedule.open_days} />
 
       {/* Panier flottant */}
       <CartDrawer

@@ -10,7 +10,7 @@ import {
   useElements,
 } from "@stripe/react-stripe-js";
 import { createOrder, applyPromo, getActivePromos } from "../../api/orders";
-import { getServiceStatus, getSchedule, getSlotSettings, getDeliverySettings, getClosedDays, getSlotAvailability, getMaintenanceMessage } from "../../api/admin";
+import { getServiceStatus, getSchedule, getSlotSettings, getDeliverySettings, getOpenDays, getClosedDays, getSlotAvailability, getMaintenanceMessage } from "../../api/admin";
 import { getAvailableSlots } from "../../utils/deliverySlots";
 import styles from "./CheckoutModal.module.css";
 import { useModalHistory } from "../../hooks/useModalHistory";
@@ -188,7 +188,7 @@ function CheckoutModal({ cart, onClose }) {
   const [showLegal, setShowLegal] = useState(false);
 
   const [serviceOpen, setServiceOpen] = useState(true);
-  const [schedule, setSchedule] = useState({ opening_hour: 11, closing_hour: 15, closed_days: [], availability: {}, slot_interval: 30, min_delivery_delay: 30 });
+  const [schedule, setSchedule] = useState({ opening_hour: 11, closing_hour: 15, open_days: [1, 2, 3, 4, 5], closed_days: [], availability: {}, slot_interval: 30, min_delivery_delay: 30 });
   const [maintenanceMessage, setMaintenanceMsg] = useState('Le service est momentanément fermé. Revenez bientôt !');
   useEffect(() => {
     getServiceStatus()
@@ -199,6 +199,9 @@ function CheckoutModal({ cart, onClose }) {
       .catch(() => {});
     getSlotSettings()
       .then((d) => setSchedule(s => ({ ...s, ...d })))
+      .catch(() => {});
+    getOpenDays()
+      .then((d) => setSchedule(s => ({ ...s, open_days: d.open_days })))
       .catch(() => {});
     getClosedDays()
       .then((d) => setSchedule(s => ({ ...s, closed_days: d.closed_days })))

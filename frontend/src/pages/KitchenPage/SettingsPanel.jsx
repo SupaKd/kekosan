@@ -5,6 +5,7 @@ import {
   getMaintenanceMessage, setMaintenanceMessage,
   getDeliverySettings, setDeliverySettings,
   getMaxOrdersPerSlot, setMaxOrdersPerSlot,
+  getOpenDays, setOpenDays,
   getClosedDays, setClosedDays,
   getPromoCodes, createPromoCode, updatePromoCode, deletePromoCode,
 } from '../../api/admin'
@@ -156,6 +157,10 @@ function SettingsPanel() {
   const [slotForm, setSlotForm] = useState({ slot_interval: 30, min_delivery_delay: 30 })
   const [slotLoading, setSlotLoading] = useState(false)
 
+  // Jours d'ouverture
+  const [openDays, setOpenDaysState] = useState([1, 2, 3, 4, 5])
+  const [openDaysLoading, setOpenDaysLoading] = useState(false)
+
   // Jours de fermeture
   const [closedDays, setClosedDaysState] = useState([])
   const [newClosedDay, setNewClosedDay] = useState('')
@@ -175,12 +180,13 @@ function SettingsPanel() {
 
   const load = useCallback(async () => {
     try {
-      const [sched, slots, maint, delivery, maxSlot, closed, promos] = await Promise.all([getSchedule(), getSlotSettings(), getMaintenanceMessage(), getDeliverySettings(), getMaxOrdersPerSlot(), getClosedDays(), getPromoCodes()])
+      const [sched, slots, maint, delivery, maxSlot, openD, closed, promos] = await Promise.all([getSchedule(), getSlotSettings(), getMaintenanceMessage(), getDeliverySettings(), getMaxOrdersPerSlot(), getOpenDays(), getClosedDays(), getPromoCodes()])
       setScheduleForm({ opening_hour: sched.opening_hour, closing_hour: sched.closing_hour })
       setSlotForm({ slot_interval: slots.slot_interval, min_delivery_delay: slots.min_delivery_delay })
       setMaintMsg(maint.maintenance_message)
       setDeliveryForm({ delivery_fee: delivery.delivery_fee, free_delivery_threshold: delivery.free_delivery_threshold, min_order_amount: delivery.min_order_amount })
       setMaxPerSlot(maxSlot.max_orders_per_slot)
+      setOpenDaysState(openD.open_days || [1, 2, 3, 4, 5])
       setClosedDaysState(closed.closed_days || [])
       setPromoCodes(promos)
     } catch (err) {
@@ -199,6 +205,22 @@ function SettingsPanel() {
       showToast(false, '⚠️ Erreur lors de la sauvegarde')
     } finally {
       setScheduleLoading(false)
+    }
+  }
+
+  const handleToggleOpenDay = async (dow) => {
+    const updated = openDays.includes(dow)
+      ? openDays.filter(d => d !== dow)
+      : [...openDays, dow].sort((a, b) => a - b)
+    setOpenDaysLoading(true)
+    try {
+      await setOpenDays(updated)
+      setOpenDaysState(updated)
+      showToast(true, "✓ Jours d'ouverture sauvegardés")
+    } catch {
+      showToast(false, '⚠️ Erreur lors de la sauvegarde')
+    } finally {
+      setOpenDaysLoading(false)
     }
   }
 
@@ -392,6 +414,43 @@ function SettingsPanel() {
               {maintLoading ? 'Sauvegarde…' : 'Enregistrer'}
             </button>
           </div>
+        </div>
+      </div>
+
+      {/* ── Jours d'ouverture ────────────────────────────────────────────── */}
+      <div className={styles.section}>
+        <div className={styles.sectionHeader}>
+          <div className={styles.sectionTitle}>📆 Jours de livraison</div>
+        </div>
+        <div className={styles.scheduleBody}>
+          <div className={styles.openDaysGrid}>
+            {[
+              { dow: 1, label: 'Lun' },
+              { dow: 2, label: 'Mar' },
+              { dow: 3, label: 'Mer' },
+              { dow: 4, label: 'Jeu' },
+              { dow: 5, label: 'Ven' },
+              { dow: 6, label: 'Sam' },
+              { dow: 0, label: 'Dim' },
+            ].map(({ dow, label }) => {
+              const active = openDays.includes(dow)
+              return (
+                <button
+                  key={dow}
+                  className={`${styles.dayToggleBtn} ${active ? styles.dayToggleActive : ''}`}
+                  onClick={() => handleToggleOpenDay(dow)}
+                  disabled={openDaysLoading}
+                >
+                  {label}
+                </button>
+              )
+            })}
+          </div>
+          <p className={styles.scheduleHint}>
+            {openDays.length === 0
+              ? 'Aucun jour de livraison actif — le service sera fermé tous les jours.'
+              : `Livraison active ${openDays.length} jour${openDays.length > 1 ? 's' : ''} par semaine.`}
+          </p>
         </div>
       </div>
 

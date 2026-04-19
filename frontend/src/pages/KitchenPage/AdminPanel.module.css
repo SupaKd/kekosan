@@ -425,6 +425,40 @@
   text-transform: capitalize;
 }
 
+.openDaysGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.dayToggleBtn {
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.04);
+  color: var(--text-muted, #888899);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.dayToggleBtn:hover {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.dayToggleActive {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.dayToggleBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .modalActions {
   display: flex;
   gap: 10px;

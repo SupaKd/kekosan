@@ -370,6 +370,30 @@ const setMaxOrdersPerSlot = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
+// ── Jours d'ouverture (0=dim, 1=lun, ..., 6=sam) ────────────────────────────
+
+const getOpenDays = async (req, res, next) => {
+  try {
+    const raw = await settingsRepository.get('open_days');
+    const days = raw ? JSON.parse(raw) : [1, 2, 3, 4, 5];
+    res.json({ open_days: days });
+  } catch (err) { next(err); }
+};
+
+const setOpenDays = async (req, res, next) => {
+  try {
+    const { open_days } = req.body;
+    if (!Array.isArray(open_days)) return res.status(400).json({ error: 'open_days doit être un tableau' });
+    for (const d of open_days) {
+      if (!Number.isInteger(d) || d < 0 || d > 6)
+        return res.status(400).json({ error: `Jour invalide : ${d} (0=dim, 1=lun, ..., 6=sam)` });
+    }
+    const unique = [...new Set(open_days)].sort((a, b) => a - b);
+    await settingsRepository.set('open_days', JSON.stringify(unique));
+    res.json({ open_days: unique });
+  } catch (err) { next(err); }
+};
+
 // ── Jours de fermeture exceptionnelle ────────────────────────────────────────
 
 const getClosedDays = async (req, res, next) => {
@@ -434,6 +458,7 @@ module.exports = {
   getSlotSettings, setSlotSettings,
   getMaintenanceMessage, setMaintenanceMessage,
   getSlotAvailability, getMaxOrdersPerSlot, setMaxOrdersPerSlot,
+  getOpenDays, setOpenDays,
   getClosedDays, setClosedDays,
   getDeliverySettings, setDeliverySettings,
   getCategories, createCategory, updateCategory, deleteCategory,

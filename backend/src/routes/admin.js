@@ -33,6 +33,9 @@ router.get('/slot-settings', c.getSlotSettings);
 // GET /api/admin/delivery-settings — public (lu par le frontend pour frais livraison et min commande)
 router.get('/delivery-settings', c.getDeliverySettings);
 
+// GET /api/admin/open-days — public (jours de livraison actifs)
+router.get('/open-days', c.getOpenDays);
+
 // GET /api/admin/closed-days — public (lu par le frontend pour bloquer les créneaux)
 router.get('/closed-days', c.getClosedDays);
 
@@ -78,6 +81,9 @@ router.put('/slot-settings', c.setSlotSettings);
 
 // ── Paramètres livraison ────────────────────────────────────────────────────
 router.put('/delivery-settings', c.setDeliverySettings);
+
+// ── Jours d'ouverture ───────────────────────────────────────────────────────
+router.put('/open-days', c.setOpenDays);
 
 // ── Jours de fermeture ──────────────────────────────────────────────────────
 router.put('/closed-days', c.setClosedDays);

@@ -3,7 +3,22 @@ import { MapPin, Clock, Mail } from "lucide-react";
 import styles from "./Footer.module.css";
 import LegalModal from "../LegalModal/LegalModal";
 
-function Footer({ opening_hour = 11, closing_hour = 15 }) {
+const DAY_NAMES = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi']
+
+function formatOpenDaysLong(open_days) {
+  if (!open_days || open_days.length === 0) return 'Fermé'
+  const sorted = [...open_days].sort((a, b) => a - b)
+  const ranges = []
+  let start = sorted[0], end = sorted[0]
+  for (let i = 1; i < sorted.length; i++) {
+    if (sorted[i] === end + 1) { end = sorted[i] }
+    else { ranges.push([start, end]); start = sorted[i]; end = sorted[i] }
+  }
+  ranges.push([start, end])
+  return ranges.map(([s, e]) => s === e ? DAY_NAMES[s] : `${DAY_NAMES[s]} – ${DAY_NAMES[e]}`).join(', ')
+}
+
+function Footer({ opening_hour = 11, closing_hour = 15, open_days = [1, 2, 3, 4, 5] }) {
   const [showLegal, setShowLegal] = useState(false)
 
   return (
@@ -23,7 +38,7 @@ function Footer({ opening_hour = 11, closing_hour = 15 }) {
           </div>
           <div className={styles.infoItem}>
             <Clock size={15} className={styles.infoIcon} />
-            Lun – Ven : {opening_hour}h00 – {closing_hour}h00
+            {formatOpenDaysLong(open_days)} : {opening_hour}h00 – {closing_hour}h00
           </div>
           <div className={styles.infoItem}>
             <Mail size={15} className={styles.infoIcon} />
