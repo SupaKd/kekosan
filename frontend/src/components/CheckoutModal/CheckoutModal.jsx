@@ -893,13 +893,15 @@ function CheckoutModal({ cart, onClose }) {
             {/* Apple Pay / Google Pay affiché dès l'étape form si disponible */}
             {isOpen && (
               <div className={styles.body} style={{ paddingTop: 0 }}>
-                <ApplePayButton
-                  totalWithDelivery={totalWithDelivery}
-                  onCreateOrder={handleCreateOrder}
-                  onSuccess={handlePaymentSuccess}
-                  onError={setGlobalError}
-                  setLoading={setLoading}
-                />
+                <Elements stripe={stripePromise}>
+                  <ApplePayButton
+                    totalWithDelivery={totalWithDelivery}
+                    onCreateOrder={handleCreateOrder}
+                    onSuccess={handlePaymentSuccess}
+                    onError={setGlobalError}
+                    setLoading={setLoading}
+                  />
+                </Elements>
               </div>
             )}
 
