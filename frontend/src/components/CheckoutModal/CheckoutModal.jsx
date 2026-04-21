@@ -558,9 +558,8 @@ function CheckoutModal({ cart, onClose }) {
                     </div>
                   </div>
 
-                  {/* Code promo — affiché uniquement si des promos sont actives */}
-                  {activePromos.length > 0 && (
-                    <div className={styles.field}>
+                  {/* Code promo — toujours affiché (codes publics ET privés acceptés) */}
+                  <div className={styles.field}>
                       <label className={styles.label}>
                         Code promo{" "}
                         <span style={{ color: "var(--text-muted)" }}>(optionnel)</span>
@@ -593,7 +592,6 @@ function CheckoutModal({ cart, onClose }) {
                       )}
                       {promoError && <span className={styles.fieldError}>{promoError}</span>}
                     </div>
-                  )}
 
                   {/* D — Notes en dernier, visuellement déprioritisées */}
                   <div className={styles.field}>

@@ -32,7 +32,9 @@ const findOrders = async ({ status, search, date_from, date_to, page = 1, limit 
     params.push(date_to);
   }
 
-  const whereClause = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+  conditions.push("o.payment_status = 'paid'");
+
+  const whereClause = `WHERE ${conditions.join(' AND ')}`;
 
   const [orders] = await pool.query(
     `SELECT o.id, o.tracking_token, o.customer_name, o.customer_phone,
@@ -257,7 +259,9 @@ const findOrdersForExport = async ({ status, search, date_from, date_to }) => {
     params.push(date_to);
   }
 
-  const whereClause = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+  conditions.push("o.payment_status = 'paid'");
+
+  const whereClause = `WHERE ${conditions.join(' AND ')}`;
 
   const [orders] = await pool.query(
     `SELECT o.id, o.customer_name, o.customer_email, o.customer_phone,

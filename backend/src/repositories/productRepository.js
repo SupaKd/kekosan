@@ -1,11 +1,10 @@
 const pool = require('../config/db');
 
-// Récupère tous les produits disponibles, groupés avec leurs options
+// Récupère tous les produits (dispo ET rupture), groupés avec leurs options
 const findAllAvailable = async () => {
   const [products] = await pool.query(
-    `SELECT id, category, name, description, badge, allergens, image_url, price, sort_order, formula_quantity, price_supplement
+    `SELECT id, category, name, description, badge, allergens, image_url, price, sort_order, formula_quantity, price_supplement, available
      FROM products
-     WHERE available = 1
      ORDER BY category, sort_order, name`
   );
 
@@ -44,6 +43,7 @@ const findAllAvailable = async () => {
     sort_order: p.sort_order,
     formula_quantity: p.formula_quantity ?? null,
     price_supplement: parseFloat(p.price_supplement) || 0,
+    available: !!p.available,
     options: optionsByProduct[p.id] || [],
   }));
 };

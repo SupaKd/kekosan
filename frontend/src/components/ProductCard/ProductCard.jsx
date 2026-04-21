@@ -6,9 +6,13 @@ import { formatPrice } from '../../utils/formatting'
 
 function ProductCard({ product, onSelect }) {
   const [imgLoaded, setImgLoaded] = useState(false)
+  const unavailable = product.available === false
 
   return (
-    <div className={styles.card} onClick={() => onSelect(product)}>
+    <div
+      className={`${styles.card} ${unavailable ? styles.cardUnavailable : ''}`}
+      onClick={() => !unavailable && onSelect(product)}
+    >
       <div className={styles.info}>
         <div className={styles.nameRow}>
           <span className={styles.name}>{product.name}</span>
@@ -18,11 +22,15 @@ function ProductCard({ product, onSelect }) {
         )}
         <div className={styles.bottom}>
           <span className={styles.price}>{formatPrice(product.price)}</span>
-          <button
-            className={styles.addBtn}
-            onClick={e => { e.stopPropagation(); onSelect(product) }}
-            aria-label="Ajouter"
-          >+</button>
+          {unavailable ? (
+            <span className={styles.ruptureBadge}>Rupture</span>
+          ) : (
+            <button
+              className={styles.addBtn}
+              onClick={e => { e.stopPropagation(); onSelect(product) }}
+              aria-label="Ajouter"
+            >+</button>
+          )}
         </div>
       </div>
       <div className={styles.imageWrap}>
@@ -44,7 +52,7 @@ function ProductCard({ product, onSelect }) {
         ) : (
           <div className={styles.imagePlaceholder}>🥖</div>
         )}
-        {product.badge && <span className={styles.badge}>{product.badge}</span>}
+        {product.badge && !unavailable && <span className={styles.badge}>{product.badge}</span>}
       </div>
     </div>
   )

@@ -99,13 +99,21 @@
 }
 
 @keyframes slideIn {
-  from { transform: translateX(100%); }
-  to   { transform: translateX(0); }
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .overlay { animation: none; }
-  .drawer  { animation: none; }
+  .overlay {
+    animation: none;
+  }
+  .drawer {
+    animation: none;
+  }
 }
 
 /* ── Bottom sheet — mobile uniquement ── */
@@ -136,8 +144,12 @@
   }
 
   @keyframes slideUp {
-    from { transform: translateY(100%); }
-    to   { transform: translateY(0); }
+    from {
+      transform: translateY(100%);
+    }
+    to {
+      transform: translateY(0);
+    }
   }
 
   /* Drag handle — visible uniquement mobile */
@@ -297,8 +309,12 @@
 }
 
 @keyframes itemShimmer {
-  0%   { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 .itemImage {
@@ -515,8 +531,14 @@
 }
 
 @keyframes snackbarIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .snackbarText {

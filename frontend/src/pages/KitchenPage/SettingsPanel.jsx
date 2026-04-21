@@ -67,6 +67,9 @@ function PromoModal({ promo, onClose, onSaved }) {
               placeholder="KEKOSAN10"
               disabled={isEdit}
             />
+            <span style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4, display: 'block' }}>
+              Préfixer avec <strong>PRV_</strong> pour un code privé (ex&nbsp;: <strong>PRV_ACME2025</strong>) — il ne sera pas affiché dans la bannière.
+            </span>
           </div>
           <div className={styles.field}>
             <label className={styles.label}>Type</label>
@@ -608,7 +611,12 @@ function SettingsPanel() {
                 </span>
               </div>
               <div className={styles.rowInfo}>
-                <div className={styles.rowName}>{promo.code}</div>
+                <div className={styles.rowName}>
+                  {promo.code}
+                  {promo.code.startsWith('PRV_') && (
+                    <span style={{ marginLeft: 8, fontSize: 10, fontWeight: 700, letterSpacing: 1, color: '#888', background: 'rgba(255,255,255,0.08)', padding: '2px 6px', borderRadius: 4 }}>PRIVÉ</span>
+                  )}
+                </div>
                 <div className={styles.rowMeta}>
                   {promo.type === 'percent' ? `−${promo.value}%` : `−${promo.value} €`}
                   {promo.starts_at && ` · Dès le ${new Date(promo.starts_at).toLocaleDateString('fr-FR')}`}
