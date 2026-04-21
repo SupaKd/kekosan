@@ -50,66 +50,108 @@ function stripeErrorMessage(error) {
   return error.message;
 }
 
+// ── Bouton Apple Pay / Google Pay — initialisé tôt, hors <Elements> ─────────
+function ApplePayButton({ totalWithDelivery, onCreateOrder, onSuccess, onError, setLoading }) {
+  const [paymentRequest, setPaymentRequest] = useState(null);
+
+  const onCreateOrderRef = useRef(onCreateOrder);
+  const onSuccessRef = useRef(onSuccess);
+  const onErrorRef = useRef(onError);
+  const setLoadingRef = useRef(setLoading);
+  useEffect(() => { onCreateOrderRef.current = onCreateOrder; }, [onCreateOrder]);
+  useEffect(() => { onSuccessRef.current = onSuccess; }, [onSuccess]);
+  useEffect(() => { onErrorRef.current = onError; }, [onError]);
+  useEffect(() => { setLoadingRef.current = setLoading; }, [setLoading]);
+
+  useEffect(() => {
+    stripePromise.then((stripe) => {
+      if (!stripe) return;
+      const pr = stripe.paymentRequest({
+        country: "FR",
+        currency: "eur",
+        total: {
+          label: "Kekosan",
+          amount: Math.round(totalWithDelivery * 100),
+        },
+        requestPayerName: false,
+        requestPayerEmail: false,
+      });
+      pr.canMakePayment().then((result) => {
+        if (result) setPaymentRequest(pr);
+      });
+      pr.on("paymentmethod", async (ev) => {
+        setLoadingRef.current(true);
+        onErrorRef.current(null);
+        try {
+          const clientSecret = await onCreateOrderRef.current();
+          if (!clientSecret) {
+            ev.complete("fail");
+            setLoadingRef.current(false);
+            return;
+          }
+          const { paymentIntent, error: confirmError } =
+            await stripe.confirmCardPayment(
+              clientSecret,
+              { payment_method: ev.paymentMethod.id },
+              { handleActions: false }
+            );
+          if (confirmError) {
+            ev.complete("fail");
+            onErrorRef.current(stripeErrorMessage(confirmError));
+            setLoadingRef.current(false);
+          } else if (paymentIntent.status === "requires_action") {
+            const { error } = await stripe.confirmCardPayment(clientSecret);
+            if (error) {
+              ev.complete("fail");
+              onErrorRef.current(stripeErrorMessage(error));
+              setLoadingRef.current(false);
+            } else {
+              ev.complete("success");
+              onSuccessRef.current();
+            }
+          } else {
+            ev.complete("success");
+            onSuccessRef.current();
+          }
+        } catch (err) {
+          ev.complete("fail");
+          onErrorRef.current(err.response?.data?.error || "Une erreur est survenue.");
+          setLoadingRef.current(false);
+        }
+      });
+    });
+  }, [totalWithDelivery]);
+
+  if (!paymentRequest) return null;
+
+  return (
+    <>
+      <div className={styles.stripeBox}>
+        <PaymentRequestButtonElement
+          options={{
+            paymentRequest,
+            style: {
+              paymentRequestButton: {
+                type: "buy",
+                theme: "dark",
+                height: "48px",
+              },
+            },
+          }}
+        />
+      </div>
+      <div className={styles.orDivider}>
+        <span>ou</span>
+      </div>
+    </>
+  );
+}
+
 // ── Formulaire interne (doit être dans <Elements>) ──────────────────────────
-function PaymentForm({
-  clientSecret,
-  totalWithDelivery,
-  onSuccess,
-  onError,
-  loading,
-  setLoading,
-}) {
+function PaymentForm({ onSuccess, onError, loading, setLoading }) {
   const stripe = useStripe();
   const elements = useElements();
   const [submitted, setSubmitted] = useState(false);
-  const [paymentRequest, setPaymentRequest] = useState(null);
-
-  // Initialise Apple Pay / Google Pay dès que Stripe est prêt
-  useEffect(() => {
-    if (!stripe || !clientSecret) return;
-    const pr = stripe.paymentRequest({
-      country: "FR",
-      currency: "eur",
-      total: {
-        label: "Kekosan",
-        amount: Math.round(totalWithDelivery * 100),
-      },
-      requestPayerName: false,
-      requestPayerEmail: false,
-    });
-    pr.canMakePayment().then((result) => {
-      if (result) setPaymentRequest(pr);
-    });
-    pr.on("paymentmethod", async (ev) => {
-      setLoading(true);
-      onError(null);
-      const { paymentIntent, error: confirmError } =
-        await stripe.confirmCardPayment(
-          clientSecret,
-          { payment_method: ev.paymentMethod.id },
-          { handleActions: false }
-        );
-      if (confirmError) {
-        ev.complete("fail");
-        onError(stripeErrorMessage(confirmError));
-        setLoading(false);
-      } else if (paymentIntent.status === "requires_action") {
-        // 3DS requis — on laisse Stripe gérer
-        const { error } = await stripe.confirmCardPayment(clientSecret);
-        if (error) {
-          ev.complete("fail");
-          onError(stripeErrorMessage(error));
-          setLoading(false);
-        } else {
-          ev.complete("success");
-          onSuccess();
-        }
-      } else {
-        ev.complete("success");
-        onSuccess();
-      }
-    });
-  }, [stripe, clientSecret]);
 
   const handlePay = async () => {
     if (!stripe || !elements || submitted) return;
@@ -133,29 +175,6 @@ function PaymentForm({
 
   return (
     <div>
-      {/* Bouton Apple Pay / Google Pay — affiché uniquement si disponible */}
-      {paymentRequest && (
-        <>
-          <div className={styles.stripeBox}>
-            <PaymentRequestButtonElement
-              options={{
-                paymentRequest,
-                style: {
-                  paymentRequestButton: {
-                    type: "buy",
-                    theme: "dark",
-                    height: "48px",
-                  },
-                },
-              }}
-            />
-          </div>
-          <div className={styles.orDivider}>
-            <span>ou</span>
-          </div>
-        </>
-      )}
-
       {/* Formulaire carte classique */}
       <div className={styles.stripeBox}>
         <PaymentElement />
@@ -456,6 +475,51 @@ function CheckoutModal({ cart, onClose }) {
       sessionStorage.removeItem(FORM_KEY);
     } catch {}
     setStep("success");
+  };
+
+  // Crée la commande et retourne le clientSecret — utilisé par ApplePayButton
+  const handleCreateOrder = async () => {
+    const errors = validate();
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      return null;
+    }
+    try {
+      const statusNow = await getServiceStatus();
+      if (!statusNow.service_open) {
+        setServiceOpen(false);
+        setGlobalError("Le service vient de fermer. Votre commande n'a pas pu être passée.");
+        return null;
+      }
+    } catch {}
+    const orderBody = {
+      customer: { name: form.name, phone: form.phone, email: form.email },
+      delivery_address: `${form.street.trim()}, Saint-Genis-Pouilly 01630`,
+      delivery_time: form.delivery_time,
+      notes: form.notes || undefined,
+      promo_code: appliedPromo?.promo_code || null,
+      items: items
+        .filter((i) => i.type === "product")
+        .map((i) => ({
+          product_id: i.product_id,
+          quantity: i.quantity,
+          options: (i.options || []).map((o) => ({ product_option_id: o.id })),
+        })),
+      formula_items: items
+        .filter((i) => i.type === "formula")
+        .map((i) => ({
+          formula_id: i.formula_id,
+          quantity: i.quantity,
+          slots: i.slots.map((s) => ({
+            slot_name: s.slot_name,
+            product_id: s.product_id,
+            options: s.options || [],
+          })),
+        })),
+    };
+    const data = await createOrder(orderBody);
+    setTrackingToken(data.tracking_token);
+    return data.client_secret;
   };
 
   const stripeOptions = clientSecret
@@ -826,6 +890,19 @@ function CheckoutModal({ cart, onClose }) {
               )}
             </div>
 
+            {/* Apple Pay / Google Pay affiché dès l'étape form si disponible */}
+            {isOpen && (
+              <div className={styles.body} style={{ paddingTop: 0 }}>
+                <ApplePayButton
+                  totalWithDelivery={totalWithDelivery}
+                  onCreateOrder={handleCreateOrder}
+                  onSuccess={handlePaymentSuccess}
+                  onError={setGlobalError}
+                  setLoading={setLoading}
+                />
+              </div>
+            )}
+
             <div className={styles.footer}>
               <button
                 className={styles.payBtn}
@@ -869,10 +946,15 @@ function CheckoutModal({ cart, onClose }) {
         {step === "payment" && stripeOptions && (
           <>
             <div className={styles.body}>
+              <ApplePayButton
+                totalWithDelivery={totalWithDelivery}
+                onCreateOrder={handleCreateOrder}
+                onSuccess={handlePaymentSuccess}
+                onError={setGlobalError}
+                setLoading={setLoading}
+              />
               <Elements stripe={stripePromise} options={stripeOptions}>
                 <PaymentForm
-                  clientSecret={clientSecret}
-                  totalWithDelivery={totalWithDelivery}
                   onSuccess={handlePaymentSuccess}
                   onError={setGlobalError}
                   loading={loading}
