@@ -10,7 +10,16 @@ import {
   useElements,
 } from "@stripe/react-stripe-js";
 import { createOrder, applyPromo, getActivePromos } from "../../api/orders";
-import { getServiceStatus, getSchedule, getSlotSettings, getDeliverySettings, getOpenDays, getClosedDays, getSlotAvailability, getMaintenanceMessage } from "../../api/admin";
+import {
+  getServiceStatus,
+  getSchedule,
+  getSlotSettings,
+  getDeliverySettings,
+  getOpenDays,
+  getClosedDays,
+  getSlotAvailability,
+  getMaintenanceMessage,
+} from "../../api/admin";
 import { getAvailableSlots } from "../../utils/deliverySlots";
 import styles from "./CheckoutModal.module.css";
 import { useModalHistory } from "../../hooks/useModalHistory";
@@ -23,15 +32,21 @@ import { formatPrice } from "../../utils/formatting";
 
 // ── Traduit une erreur Stripe en message lisible ────────────────────────────
 function stripeErrorMessage(error) {
-  if (error.type === 'card_error') {
-    if (error.code === 'card_declined')   return "Carte refusée. Vérifiez vos informations ou essayez une autre carte.";
-    if (error.code === 'insufficient_funds') return "Fonds insuffisants sur cette carte.";
-    if (error.code === 'expired_card')    return "Cette carte est expirée.";
-    if (error.code === 'incorrect_cvc')   return "Le code de sécurité (CVV) est incorrect.";
+  if (error.type === "card_error") {
+    if (error.code === "card_declined")
+      return "Carte refusée. Vérifiez vos informations ou essayez une autre carte.";
+    if (error.code === "insufficient_funds")
+      return "Fonds insuffisants sur cette carte.";
+    if (error.code === "expired_card") return "Cette carte est expirée.";
+    if (error.code === "incorrect_cvc")
+      return "Le code de sécurité (CVV) est incorrect.";
   }
-  if (error.type === 'validation_error') return "Informations de paiement incomplètes. Vérifiez les champs.";
-  if (error.type === 'api_connection_error' || error.type === 'api_error') return "Erreur de connexion. Vérifiez votre réseau et réessayez.";
-  if (error.code === 'payment_intent_authentication_failure') return "Authentification 3D Secure échouée. Réessayez et validez dans votre application bancaire.";
+  if (error.type === "validation_error")
+    return "Informations de paiement incomplètes. Vérifiez les champs.";
+  if (error.type === "api_connection_error" || error.type === "api_error")
+    return "Erreur de connexion. Vérifiez votre réseau et réessayez.";
+  if (error.code === "payment_intent_authentication_failure")
+    return "Authentification 3D Secure échouée. Réessayez et validez dans votre application bancaire.";
   return error.message;
 }
 
@@ -53,10 +68,10 @@ function PaymentForm({
   useEffect(() => {
     if (!stripe || !clientSecret) return;
     const pr = stripe.paymentRequest({
-      country: 'FR',
-      currency: 'eur',
+      country: "FR",
+      currency: "eur",
       total: {
-        label: 'Kekosan',
+        label: "Kekosan",
         amount: Math.round(totalWithDelivery * 100),
       },
       requestPayerName: false,
@@ -65,7 +80,7 @@ function PaymentForm({
     pr.canMakePayment().then((result) => {
       if (result) setPaymentRequest(pr);
     });
-    pr.on('paymentmethod', async (ev) => {
+    pr.on("paymentmethod", async (ev) => {
       setLoading(true);
       onError(null);
       const { error: confirmError } = await stripe.confirmCardPayment(
@@ -74,11 +89,11 @@ function PaymentForm({
         { handleActions: false }
       );
       if (confirmError) {
-        ev.complete('fail');
+        ev.complete("fail");
         onError(stripeErrorMessage(confirmError));
         setLoading(false);
       } else {
-        ev.complete('success');
+        ev.complete("success");
         onSuccess();
       }
     });
@@ -115,9 +130,9 @@ function PaymentForm({
                 paymentRequest,
                 style: {
                   paymentRequestButton: {
-                    type: 'buy',
-                    theme: 'dark',
-                    height: '48px',
+                    type: "buy",
+                    theme: "dark",
+                    height: "48px",
                   },
                 },
               }}
@@ -150,9 +165,9 @@ function PaymentForm({
 // Sur iOS le clavier pousse le viewport — on scrolle le champ dans la vue
 const scrollToField = (e) => {
   setTimeout(() => {
-    e.target.scrollIntoView({ behavior: 'smooth', block: 'center' })
-  }, 300)
-}
+    e.target.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, 300);
+};
 
 function CheckoutModal({ cart, onClose }) {
   const navigate = useNavigate();
@@ -169,12 +184,19 @@ function CheckoutModal({ cart, onClose }) {
   const [promoFlash, setPromoFlash] = useState(false);
   const [activePromos, setActivePromos] = useState([]);
 
-  const [deliveryConfig, setDeliveryConfig] = useState({ delivery_fee: 5, free_delivery_threshold: 20, min_order_amount: 20 });
+  const [deliveryConfig, setDeliveryConfig] = useState({
+    delivery_fee: 5,
+    free_delivery_threshold: 20,
+    min_order_amount: 20,
+  });
 
   const discountAmount = appliedPromo?.discount_amount || 0;
   const subtotalAfterDiscount = Math.max(0, total - discountAmount);
   // La livraison gratuite se base sur le panier brut — la promo ne la retire pas
-  const deliveryFee = total >= deliveryConfig.free_delivery_threshold ? 0 : deliveryConfig.delivery_fee;
+  const deliveryFee =
+    total >= deliveryConfig.free_delivery_threshold
+      ? 0
+      : deliveryConfig.delivery_fee;
   const totalWithDelivery = subtotalAfterDiscount + deliveryFee;
 
   // Étapes : 'form' → 'payment' → 'success'
@@ -188,26 +210,36 @@ function CheckoutModal({ cart, onClose }) {
   const [showLegal, setShowLegal] = useState(false);
 
   const [serviceOpen, setServiceOpen] = useState(true);
-  const [schedule, setSchedule] = useState({ opening_hour: 11, closing_hour: 15, open_days: [1, 2, 3, 4, 5], closed_days: [], availability: {}, slot_interval: 30, min_delivery_delay: 30 });
-  const [maintenanceMessage, setMaintenanceMsg] = useState('Le service est momentanément fermé. Revenez bientôt !');
+  const [schedule, setSchedule] = useState({
+    opening_hour: 11,
+    closing_hour: 15,
+    open_days: [1, 2, 3, 4, 5],
+    closed_days: [],
+    availability: {},
+    slot_interval: 30,
+    min_delivery_delay: 30,
+  });
+  const [maintenanceMessage, setMaintenanceMsg] = useState(
+    "Le service est momentanément fermé. Revenez bientôt !"
+  );
   useEffect(() => {
     getServiceStatus()
       .then((d) => setServiceOpen(d.service_open))
       .catch(() => {});
     getSchedule()
-      .then((d) => setSchedule(s => ({ ...s, ...d })))
+      .then((d) => setSchedule((s) => ({ ...s, ...d })))
       .catch(() => {});
     getSlotSettings()
-      .then((d) => setSchedule(s => ({ ...s, ...d })))
+      .then((d) => setSchedule((s) => ({ ...s, ...d })))
       .catch(() => {});
     getOpenDays()
-      .then((d) => setSchedule(s => ({ ...s, open_days: d.open_days })))
+      .then((d) => setSchedule((s) => ({ ...s, open_days: d.open_days })))
       .catch(() => {});
     getClosedDays()
-      .then((d) => setSchedule(s => ({ ...s, closed_days: d.closed_days })))
+      .then((d) => setSchedule((s) => ({ ...s, closed_days: d.closed_days })))
       .catch(() => {});
     getSlotAvailability()
-      .then((d) => setSchedule(s => ({ ...s, availability: d.availability })))
+      .then((d) => setSchedule((s) => ({ ...s, availability: d.availability })))
       .catch(() => {});
     getDeliverySettings()
       .then((d) => setDeliveryConfig(d))
@@ -220,7 +252,11 @@ function CheckoutModal({ cart, onClose }) {
       .catch(() => {});
   }, []);
 
-  const { available, slots, message: closedMessage } = getAvailableSlots(schedule);
+  const {
+    available,
+    slots,
+    message: closedMessage,
+  } = getAvailableSlots(schedule);
   const isOpen = serviceOpen && available;
 
   // C — Auto-sélection du premier créneau + invalidation si plus disponible
@@ -228,10 +264,10 @@ function CheckoutModal({ cart, onClose }) {
     if (slots.length === 0) return;
     if (!form.delivery_time) {
       // Pré-sélectionne le premier créneau dispo si rien n'est encore choisi
-      setForm(f => ({ ...f, delivery_time: slots[0] }));
+      setForm((f) => ({ ...f, delivery_time: slots[0] }));
     } else if (!slots.includes(form.delivery_time)) {
       // Invalide le créneau sauvegardé s'il n'est plus disponible
-      setForm(f => ({ ...f, delivery_time: slots[0] || "" }));
+      setForm((f) => ({ ...f, delivery_time: slots[0] || "" }));
     }
   }, [slots.join(",")]);
 
@@ -240,9 +276,27 @@ function CheckoutModal({ cart, onClose }) {
   const [form, setForm] = useState(() => {
     try {
       const saved = sessionStorage.getItem(FORM_KEY);
-      if (saved) return { ...{ name: "", phone: "", email: "", street: "", delivery_time: "", notes: "" }, ...JSON.parse(saved) };
+      if (saved)
+        return {
+          ...{
+            name: "",
+            phone: "",
+            email: "",
+            street: "",
+            delivery_time: "",
+            notes: "",
+          },
+          ...JSON.parse(saved),
+        };
     } catch {}
-    return { name: "", phone: "", email: "", street: "", delivery_time: "", notes: "" };
+    return {
+      name: "",
+      phone: "",
+      email: "",
+      street: "",
+      delivery_time: "",
+      notes: "",
+    };
   });
   const [fieldErrors, setFieldErrors] = useState({});
 
@@ -282,24 +336,34 @@ function CheckoutModal({ cart, onClose }) {
   // Valide un champ individuel — utilisé au blur et au submit
   const validateField = (name, value) => {
     switch (name) {
-      case "name":    return (!value.trim() || value.trim().length < 2) ? "Nom requis" : null;
-      case "phone":   return (!value.trim() || value.trim().length < 8) ? "Téléphone invalide" : null;
-      case "email":   return (!value.trim() || !value.includes("@")) ? "Email invalide" : null;
-      case "street":  return (!value.trim() || value.trim().length < 3) ? "Numéro et rue requis" : null;
-      case "delivery_time": return !value ? "Choisissez un créneau" : null;
-      default: return null;
+      case "name":
+        return !value.trim() || value.trim().length < 2 ? "Nom requis" : null;
+      case "phone":
+        return !value.trim() || value.trim().length < 8
+          ? "Téléphone invalide"
+          : null;
+      case "email":
+        return !value.trim() || !value.includes("@") ? "Email invalide" : null;
+      case "street":
+        return !value.trim() || value.trim().length < 3
+          ? "Numéro et rue requis"
+          : null;
+      case "delivery_time":
+        return !value ? "Choisissez un créneau" : null;
+      default:
+        return null;
     }
   };
 
   const handleBlur = (e) => {
     const { name, value } = e.target;
     const error = validateField(name, value);
-    setFieldErrors(prev => ({ ...prev, [name]: error || undefined }));
+    setFieldErrors((prev) => ({ ...prev, [name]: error || undefined }));
   };
 
   const validate = () => {
     const errors = {};
-    ["name", "phone", "email", "street", "delivery_time"].forEach(field => {
+    ["name", "phone", "email", "street", "delivery_time"].forEach((field) => {
       const error = validateField(field, form[field]);
       if (error) errors[field] = error;
     });
@@ -324,7 +388,9 @@ function CheckoutModal({ cart, onClose }) {
       const statusNow = await getServiceStatus();
       if (!statusNow.service_open) {
         setServiceOpen(false);
-        setGlobalError("Le service vient de fermer. Votre commande n'a pas pu être passée.");
+        setGlobalError(
+          "Le service vient de fermer. Votre commande n'a pas pu être passée."
+        );
         setLoading(false);
         return;
       }
@@ -374,7 +440,9 @@ function CheckoutModal({ cart, onClose }) {
 
   const handlePaymentSuccess = () => {
     clearCart();
-    try { sessionStorage.removeItem(FORM_KEY); } catch {}
+    try {
+      sessionStorage.removeItem(FORM_KEY);
+    } catch {}
     setStep("success");
   };
 
@@ -397,10 +465,18 @@ function CheckoutModal({ cart, onClose }) {
 
   return (
     <div
-      className={`${styles.overlay} ${closing ? styles.overlayClosing : ''}`}
-      onClick={(e) => e.target === e.currentTarget && !loading && triggerClose()}
+      className={`${styles.overlay} ${closing ? styles.overlayClosing : ""}`}
+      onClick={(e) =>
+        e.target === e.currentTarget && !loading && triggerClose()
+      }
     >
-      <div className={`${styles.modal} ${closing ? styles.modalClosing : ''}`} role="dialog" aria-modal="true" aria-label="Commander" ref={modalRef}>
+      <div
+        className={`${styles.modal} ${closing ? styles.modalClosing : ""}`}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Commander"
+        ref={modalRef}
+      >
         {/* Header — zone de swipe-down pour fermer sur mobile */}
         <div className={styles.modalHeader} ref={swipeHandleRef}>
           <div className={styles.title}>
@@ -449,22 +525,35 @@ function CheckoutModal({ cart, onClose }) {
               <div>
                 <div className={styles.sectionTitle}>Créneau de livraison</div>
                 {!isOpen ? (
-                  <div className={styles.closedMessage}>{maintenanceMessage}</div>
+                  <div className={styles.closedMessage}>
+                    {maintenanceMessage}
+                  </div>
                 ) : (
                   <div className={styles.field}>
                     <select
                       name="delivery_time"
-                      className={`${styles.select} ${fieldErrors.delivery_time ? styles.error : ""}`}
+                      className={`${styles.select} ${
+                        fieldErrors.delivery_time ? styles.error : ""
+                      }`}
                       value={form.delivery_time}
-                      onChange={(e) => setForm((f) => ({ ...f, delivery_time: e.target.value }))}
+                      onChange={(e) =>
+                        setForm((f) => ({
+                          ...f,
+                          delivery_time: e.target.value,
+                        }))
+                      }
                       onBlur={handleBlur}
                     >
                       {slots.map((slot) => (
-                        <option key={slot} value={slot}>{slot}</option>
+                        <option key={slot} value={slot}>
+                          {slot}
+                        </option>
                       ))}
                     </select>
                     {fieldErrors.delivery_time && (
-                      <span className={styles.fieldError}>{fieldErrors.delivery_time}</span>
+                      <span className={styles.fieldError}>
+                        {fieldErrors.delivery_time}
+                      </span>
                     )}
                   </div>
                 )}
@@ -479,27 +568,37 @@ function CheckoutModal({ cart, onClose }) {
                       <label className={styles.label}>Prénom et nom</label>
                       <input
                         name="name"
-                        className={`${styles.input} ${fieldErrors.name ? styles.error : ""}`}
+                        className={`${styles.input} ${
+                          fieldErrors.name ? styles.error : ""
+                        }`}
                         placeholder="Jean Dupont"
                         value={form.name}
-                        onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+                        onChange={(e) =>
+                          setForm((f) => ({ ...f, name: e.target.value }))
+                        }
                         onBlur={handleBlur}
                         onFocus={scrollToField}
                         autoComplete="name"
                         inputMode="text"
                       />
                       {fieldErrors.name && (
-                        <span className={styles.fieldError}>{fieldErrors.name}</span>
+                        <span className={styles.fieldError}>
+                          {fieldErrors.name}
+                        </span>
                       )}
                     </div>
                     <div className={styles.field}>
                       <label className={styles.label}>Téléphone</label>
                       <input
                         name="phone"
-                        className={`${styles.input} ${fieldErrors.phone ? styles.error : ""}`}
+                        className={`${styles.input} ${
+                          fieldErrors.phone ? styles.error : ""
+                        }`}
                         placeholder="06 12 34 56 78"
                         value={form.phone}
-                        onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
+                        onChange={(e) =>
+                          setForm((f) => ({ ...f, phone: e.target.value }))
+                        }
                         onBlur={handleBlur}
                         onFocus={scrollToField}
                         type="tel"
@@ -507,7 +606,9 @@ function CheckoutModal({ cart, onClose }) {
                         inputMode="tel"
                       />
                       {fieldErrors.phone && (
-                        <span className={styles.fieldError}>{fieldErrors.phone}</span>
+                        <span className={styles.fieldError}>
+                          {fieldErrors.phone}
+                        </span>
                       )}
                     </div>
                   </div>
@@ -515,18 +616,24 @@ function CheckoutModal({ cart, onClose }) {
                     <label className={styles.label}>Email</label>
                     <input
                       name="email"
-                      className={`${styles.input} ${fieldErrors.email ? styles.error : ""}`}
+                      className={`${styles.input} ${
+                        fieldErrors.email ? styles.error : ""
+                      }`}
                       type="email"
                       placeholder="jean@exemple.fr"
                       value={form.email}
-                      onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+                      onChange={(e) =>
+                        setForm((f) => ({ ...f, email: e.target.value }))
+                      }
                       onBlur={handleBlur}
                       onFocus={scrollToField}
                       autoComplete="email"
                       inputMode="email"
                     />
                     {fieldErrors.email && (
-                      <span className={styles.fieldError}>{fieldErrors.email}</span>
+                      <span className={styles.fieldError}>
+                        {fieldErrors.email}
+                      </span>
                     )}
                   </div>
                   <div className={styles.fieldRow}>
@@ -534,17 +641,23 @@ function CheckoutModal({ cart, onClose }) {
                       <label className={styles.label}>Numéro et rue</label>
                       <input
                         name="street"
-                        className={`${styles.input} ${fieldErrors.street ? styles.error : ""}`}
+                        className={`${styles.input} ${
+                          fieldErrors.street ? styles.error : ""
+                        }`}
                         placeholder="12 rue des Fleurs"
                         value={form.street}
-                        onChange={(e) => setForm((f) => ({ ...f, street: e.target.value }))}
+                        onChange={(e) =>
+                          setForm((f) => ({ ...f, street: e.target.value }))
+                        }
                         onBlur={handleBlur}
                         onFocus={scrollToField}
                         autoComplete="street-address"
                         inputMode="text"
                       />
                       {fieldErrors.street && (
-                        <span className={styles.fieldError}>{fieldErrors.street}</span>
+                        <span className={styles.fieldError}>
+                          {fieldErrors.street}
+                        </span>
                       )}
                     </div>
                     <div className={styles.field}>
@@ -560,50 +673,73 @@ function CheckoutModal({ cart, onClose }) {
 
                   {/* Code promo — toujours affiché (codes publics ET privés acceptés) */}
                   <div className={styles.field}>
-                      <label className={styles.label}>
-                        Code promo{" "}
-                        <span style={{ color: "var(--text-muted)" }}>(optionnel)</span>
-                      </label>
-                      {!appliedPromo ? (
-                        <div className={styles.promoRow}>
-                          <input
-                            className={styles.input}
-                            placeholder="BIENVENUE10"
-                            value={promoInput}
-                            onChange={(e) => { setPromoInput(e.target.value.toUpperCase()); setPromoError(null); }}
-                            onKeyDown={(e) => e.key === "Enter" && handleApplyPromo()}
-                            disabled={promoLoading}
-                          />
-                          <button
-                            className={styles.promoBtn}
-                            onClick={handleApplyPromo}
-                            disabled={promoLoading || !promoInput.trim()}
-                          >
-                            {promoLoading ? "…" : "Appliquer"}
-                          </button>
-                        </div>
-                      ) : (
-                        <div className={`${styles.promoApplied}${promoFlash ? ` ${styles.promoFlash}` : ''}`}>
-                          <span className={styles.promoAppliedLabel}>
-                            ✓ <strong>{appliedPromo.promo_code}</strong> — − {formatPrice(discountAmount)}
-                          </span>
-                          <button className={styles.promoRemoveBtn} onClick={handleRemovePromo}>✕</button>
-                        </div>
-                      )}
-                      {promoError && <span className={styles.fieldError}>{promoError}</span>}
-                    </div>
+                    <label className={styles.label}>
+                      Code promo{" "}
+                      <span style={{ color: "var(--text-muted)" }}>
+                        (optionnel)
+                      </span>
+                    </label>
+                    {!appliedPromo ? (
+                      <div className={styles.promoRow}>
+                        <input
+                          className={styles.input}
+                          placeholder="BIENVENUE10"
+                          value={promoInput}
+                          onChange={(e) => {
+                            setPromoInput(e.target.value.toUpperCase());
+                            setPromoError(null);
+                          }}
+                          onKeyDown={(e) =>
+                            e.key === "Enter" && handleApplyPromo()
+                          }
+                          disabled={promoLoading}
+                        />
+                        <button
+                          className={styles.promoBtn}
+                          onClick={handleApplyPromo}
+                          disabled={promoLoading || !promoInput.trim()}
+                        >
+                          {promoLoading ? "…" : "Appliquer"}
+                        </button>
+                      </div>
+                    ) : (
+                      <div
+                        className={`${styles.promoApplied}${
+                          promoFlash ? ` ${styles.promoFlash}` : ""
+                        }`}
+                      >
+                        <span className={styles.promoAppliedLabel}>
+                          ✓ <strong>{appliedPromo.promo_code}</strong> — −{" "}
+                          {formatPrice(discountAmount)}
+                        </span>
+                        <button
+                          className={styles.promoRemoveBtn}
+                          onClick={handleRemovePromo}
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    )}
+                    {promoError && (
+                      <span className={styles.fieldError}>{promoError}</span>
+                    )}
+                  </div>
 
                   {/* D — Notes en dernier, visuellement déprioritisées */}
                   <div className={styles.field}>
                     <label className={styles.label} style={{ color: "#aaa" }}>
                       Note pour la cuisine{" "}
-                      <span style={{ color: "var(--text-muted)" }}>(optionnel)</span>
+                      <span style={{ color: "var(--text-muted)" }}>
+                        (optionnel)
+                      </span>
                     </label>
                     <input
                       className={styles.input}
                       placeholder="Allergie, instruction particulière…"
                       value={form.notes}
-                      onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
+                      onChange={(e) =>
+                        setForm((f) => ({ ...f, notes: e.target.value }))
+                      }
                       onFocus={scrollToField}
                       autoComplete="off"
                       inputMode="text"
@@ -619,18 +755,29 @@ function CheckoutModal({ cart, onClose }) {
                   const unitPrice =
                     item.type === "formula"
                       ? item.price
-                      : item.price + (item.options || []).reduce((s, o) => s + o.price_delta, 0);
+                      : item.price +
+                        (item.options || []).reduce(
+                          (s, o) => s + o.price_delta,
+                          0
+                        );
                   return (
                     <div key={item._key} className={styles.recapItem}>
                       <span className={styles.recapItemName}>{item.name}</span>
-                      <span className={styles.recapItemQty}>×{item.quantity}</span>
-                      <span className={styles.recapItemPrice}>{formatPrice(unitPrice * item.quantity)}</span>
+                      <span className={styles.recapItemQty}>
+                        ×{item.quantity}
+                      </span>
+                      <span className={styles.recapItemPrice}>
+                        {formatPrice(unitPrice * item.quantity)}
+                      </span>
                     </div>
                   );
                 })}
                 <hr className={styles.recapDivider} />
                 {appliedPromo && (
-                  <div className={styles.recapRow} style={{ color: "var(--success, #30d158)" }}>
+                  <div
+                    className={styles.recapRow}
+                    style={{ color: "var(--success, #30d158)" }}
+                  >
                     <span>Code promo ({appliedPromo.promo_code})</span>
                     <span>− {formatPrice(discountAmount)}</span>
                   </div>
@@ -641,13 +788,24 @@ function CheckoutModal({ cart, onClose }) {
                 </div>
                 <div className={styles.recapRow}>
                   <span>Livraison</span>
-                  <span style={{ color: deliveryFee === 0 ? "var(--success, #30d158)" : undefined }}>
-                    {deliveryFee === 0 ? "Gratuite 🎉" : formatPrice(deliveryFee)}
+                  <span
+                    style={{
+                      color:
+                        deliveryFee === 0
+                          ? "var(--success, #30d158)"
+                          : undefined,
+                    }}
+                  >
+                    {deliveryFee === 0
+                      ? "Gratuite 🎉"
+                      : formatPrice(deliveryFee)}
                   </span>
                 </div>
                 <div className={styles.recapTotal}>
                   <span>Total</span>
-                  <span className={styles.recapTotalAmount}>{formatPrice(totalWithDelivery)}</span>
+                  <span className={styles.recapTotalAmount}>
+                    {formatPrice(totalWithDelivery)}
+                  </span>
                 </div>
               </div>
 
@@ -672,8 +830,11 @@ function CheckoutModal({ cart, onClose }) {
                 🔒 Paiement sécurisé par Stripe
               </p>
               <p className={styles.legalNote}>
-                En passant commande, vous acceptez nos{' '}
-                <button className={styles.legalLink} onClick={() => setShowLegal(true)}>
+                En passant commande, vous acceptez nos{" "}
+                <button
+                  className={styles.legalLink}
+                  onClick={() => setShowLegal(true)}
+                >
                   CGV et politique de confidentialité
                 </button>
               </p>
@@ -715,8 +876,11 @@ function CheckoutModal({ cart, onClose }) {
                 🔒 Paiement sécurisé par Stripe
               </p>
               <p className={styles.legalNote}>
-                En passant commande, vous acceptez nos{' '}
-                <button className={styles.legalLink} onClick={() => setShowLegal(true)}>
+                En passant commande, vous acceptez nos{" "}
+                <button
+                  className={styles.legalLink}
+                  onClick={() => setShowLegal(true)}
+                >
                   CGV et politique de confidentialité
                 </button>
               </p>

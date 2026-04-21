@@ -43,8 +43,8 @@ export const setMaintenanceMessage = (maintenance_message) =>
     headers: { Authorization: `Bearer ${localStorage.getItem('admin_token')}` },
   }).then(r => r.data)
 
-export const setSchedule = (opening_hour, closing_hour) =>
-  client.put('/admin/schedule', { opening_hour, closing_hour }, {
+export const setSchedule = (opening_time, closing_time) =>
+  client.put('/admin/schedule', { opening_time, closing_time }, {
     headers: { Authorization: `Bearer ${localStorage.getItem('admin_token')}` },
   }).then(r => r.data)
 

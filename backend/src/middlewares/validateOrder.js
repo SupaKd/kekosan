@@ -8,22 +8,27 @@ const isSlotValid = async (slot) => {
   const [h, m] = slot.split(':').map(Number);
 
   // Lecture des horaires et jours fermés depuis la DB (fallback sur les valeurs par défaut)
-  const openingRaw  = await settingsRepository.get('opening_hour');
-  const closingRaw  = await settingsRepository.get('closing_hour');
+  const openingRaw  = await settingsRepository.get('opening_time');
+  const closingRaw  = await settingsRepository.get('closing_time');
   const closedRaw   = await settingsRepository.get('closed_days');
   const openDaysRaw = await settingsRepository.get('open_days');
   const intervalRaw = await settingsRepository.get('slot_interval');
   const delayRaw    = await settingsRepository.get('min_delivery_delay');
-  const SERVICE_START   = parseInt(openingRaw  ?? '11');
-  const SERVICE_END     = parseInt(closingRaw  ?? '15');
+
+  const [openH, openM]   = (openingRaw  ?? '11:00').split(':').map(Number);
+  const [closeH, closeM] = (closingRaw  ?? '15:00').split(':').map(Number);
   const closedDays      = closedRaw   ? JSON.parse(closedRaw)   : [];
   const openDays        = openDaysRaw ? JSON.parse(openDaysRaw) : [1, 2, 3, 4, 5];
   const SLOT_INTERVAL   = parseInt(intervalRaw ?? '30');
   const MIN_DELAY_MIN   = parseInt(delayRaw    ?? '30');
 
+  const slotTotalMin  = h * 60 + m;
+  const openTotalMin  = openH * 60 + openM;
+  const closeTotalMin = closeH * 60 + closeM;
+
   // Le créneau doit être dans la plage horaire et sur une tranche valide
-  if (h < SERVICE_START || h >= SERVICE_END) return false;
-  if (m % SLOT_INTERVAL !== 0) return false;
+  if (slotTotalMin < openTotalMin || slotTotalMin >= closeTotalMin) return false;
+  if ((slotTotalMin - openTotalMin) % SLOT_INTERVAL !== 0) return false;
 
   const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'Europe/Paris' }));
 

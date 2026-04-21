@@ -17,7 +17,7 @@ function formatOpenDays(open_days) {
   return ranges.map(([s, e]) => s === e ? DAY_ABBR[s] : `${DAY_ABBR[s]}–${DAY_ABBR[e]}`).join(' · ')
 }
 
-function Header({ opening_hour = 11, closing_hour = 15, open_days = [1, 2, 3, 4, 5] }) {
+function Header({ opening_time = '11:00', closing_time = '15:00', opening_hour = 11, closing_hour = 15, open_days = [1, 2, 3, 4, 5] }) {
   return (
     <header className={styles.header}>
 
@@ -35,7 +35,7 @@ function Header({ opening_hour = 11, closing_hour = 15, open_days = [1, 2, 3, 4,
           </div>
           <div className={styles.hoursBadge}>
             <Clock size={11} strokeWidth={2.5} />
-            {formatOpenDays(open_days)} · {opening_hour}h–{closing_hour}h
+            {formatOpenDays(open_days)} · {opening_time}–{closing_time}
           </div>
         </div>
 

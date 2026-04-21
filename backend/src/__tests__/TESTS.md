@@ -5,11 +5,11 @@
 | Fichier | Tests | Ce qui est testé |
 |---|---|---|
 | `orderService.test.js` | 13 | Création de commande (service métier) |
-| `validateOrder.test.js` | 21 | Middleware de validation HTTP |
+| `validateOrder.test.js` | 23 | Middleware de validation HTTP |
 | `validatePromo.test.js` | 16 | Codes promo publics/privés + frais de livraison |
 | `adminController.test.js` | 17 | Endpoints admin (auth, statuts, remboursements) |
 | `webhookController.test.js` | 9 | Événements Stripe (paiement, échec) |
-| **Total** | **76** | |
+| **Total** | **78** | |
 
 ---
 
@@ -70,6 +70,8 @@ Teste le middleware `validateOrder` (async) qui valide le body de `POST /api/ord
 - Rejette si le créneau est après la fermeture (ex : `16:00`)
 - Rejette si le créneau est dans moins de 30 min (délai minimum)
 - Rejette si le jour est dans la liste des jours de fermeture exceptionnelle
+- Accepte un créneau valide avec une ouverture à la demi-heure (ex : `opening_time = 11:30`, créneau `12:00` → valide)
+- Rejette un créneau qui ne correspond pas à un multiple de l'intervalle depuis l'heure d'ouverture (ex : `11:00` si ouverture à `11:30`)
 
 **Panier**
 - Rejette si `items` et `formula_items` sont tous les deux vides
@@ -186,6 +188,7 @@ Teste le handler Stripe (`POST /api/webhook`). Stripe, `orderRepository`, `mailS
 
 | Fonctionnalité | Fichier(s) de test |
 |---|---|
+| Horaires à la minute (`opening_time` / `closing_time` en `HH:MM`) | `validateOrder.test.js` |
 | Codes promo publics (affichés dans la bannière) | `validatePromo.test.js` |
 | Codes promo privés (`VIP_` — jamais dans la bannière) | `validatePromo.test.js` |
 | Produits en rupture (grisés, non commandables) | `orderService.test.js` |

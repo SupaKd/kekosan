@@ -83,29 +83,36 @@ const setServiceStatus = async (req, res, next) => {
 
 // ── Horaires d'ouverture ────────────────────────────────────────────────────
 
+const TIME_RE = /^([01]\d|2[0-3]):([0-5]\d)$/;
+
 const getSchedule = async (req, res, next) => {
   try {
-    const opening = await settingsRepository.get('opening_hour');
-    const closing = await settingsRepository.get('closing_hour');
+    const opening = await settingsRepository.get('opening_time');
+    const closing = await settingsRepository.get('closing_time');
+    const opening_time = opening ?? '11:00';
+    const closing_time = closing ?? '15:00';
+    // opening_hour / closing_hour conservés pour Header et Footer
     res.json({
-      opening_hour: parseInt(opening ?? '11'),
-      closing_hour: parseInt(closing ?? '15'),
+      opening_time,
+      closing_time,
+      opening_hour: parseInt(opening_time.split(':')[0]),
+      closing_hour: parseInt(closing_time.split(':')[0]),
     });
   } catch (err) { next(err); }
 };
 
 const setSchedule = async (req, res, next) => {
   try {
-    const { opening_hour, closing_hour } = req.body;
-    if (!Number.isInteger(opening_hour) || opening_hour < 0 || opening_hour > 23)
-      return res.status(400).json({ error: 'opening_hour invalide (0-23)' });
-    if (!Number.isInteger(closing_hour) || closing_hour < 0 || closing_hour > 24)
-      return res.status(400).json({ error: 'closing_hour invalide (0-24)' });
-    if (closing_hour <= opening_hour)
-      return res.status(400).json({ error: 'closing_hour doit être après opening_hour' });
-    await settingsRepository.set('opening_hour', String(opening_hour));
-    await settingsRepository.set('closing_hour', String(closing_hour));
-    res.json({ opening_hour, closing_hour });
+    const { opening_time, closing_time } = req.body;
+    if (!TIME_RE.test(opening_time))
+      return res.status(400).json({ error: 'opening_time invalide (format HH:MM)' });
+    if (!TIME_RE.test(closing_time))
+      return res.status(400).json({ error: 'closing_time invalide (format HH:MM)' });
+    if (closing_time <= opening_time)
+      return res.status(400).json({ error: 'closing_time doit être après opening_time' });
+    await settingsRepository.set('opening_time', opening_time);
+    await settingsRepository.set('closing_time', closing_time);
+    res.json({ opening_time, closing_time });
   } catch (err) { next(err); }
 };
 

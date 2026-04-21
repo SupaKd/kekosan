@@ -71,6 +71,8 @@ function MenuPage({ cart, onCheckout }) {
   // État service ouvert/fermé + horaires + jours fermés + config livraison
   const [serviceOpen, setServiceOpen] = useState(true);
   const [schedule, setSchedule] = useState({
+    opening_time: '11:00',
+    closing_time: '15:00',
     opening_hour: 11,
     closing_hour: 15,
     open_days: [1, 2, 3, 4, 5],
@@ -212,8 +214,8 @@ function MenuPage({ cart, onCheckout }) {
         onTouchEnd={handleTouchEnd}
       >
         <Header
-          opening_hour={schedule.opening_hour}
-          closing_hour={schedule.closing_hour}
+          opening_time={schedule.opening_time}
+          closing_time={schedule.closing_time}
           open_days={schedule.open_days}
         />
 
@@ -450,7 +452,7 @@ function MenuPage({ cart, onCheckout }) {
       )}
 
       <InstagramSection />
-      <Footer opening_hour={schedule.opening_hour} closing_hour={schedule.closing_hour} open_days={schedule.open_days} />
+      <Footer opening_time={schedule.opening_time} closing_time={schedule.closing_time} open_days={schedule.open_days} />
 
       {/* Panier flottant */}
       <CartDrawer

@@ -153,7 +153,7 @@ function SettingsPanel() {
   const [maintLoading, setMaintLoading] = useState(false)
 
   // Horaires
-  const [scheduleForm, setScheduleForm] = useState({ opening_hour: 11, closing_hour: 15 })
+  const [scheduleForm, setScheduleForm] = useState({ opening_time: '11:00', closing_time: '15:00' })
   const [scheduleLoading, setScheduleLoading] = useState(false)
 
   // Créneaux
@@ -184,7 +184,7 @@ function SettingsPanel() {
   const load = useCallback(async () => {
     try {
       const [sched, slots, maint, delivery, maxSlot, openD, closed, promos] = await Promise.all([getSchedule(), getSlotSettings(), getMaintenanceMessage(), getDeliverySettings(), getMaxOrdersPerSlot(), getOpenDays(), getClosedDays(), getPromoCodes()])
-      setScheduleForm({ opening_hour: sched.opening_hour, closing_hour: sched.closing_hour })
+      setScheduleForm({ opening_time: sched.opening_time ?? '11:00', closing_time: sched.closing_time ?? '15:00' })
       setSlotForm({ slot_interval: slots.slot_interval, min_delivery_delay: slots.min_delivery_delay })
       setMaintMsg(maint.maintenance_message)
       setDeliveryForm({ delivery_fee: delivery.delivery_fee, free_delivery_threshold: delivery.free_delivery_threshold, min_order_amount: delivery.min_order_amount })
@@ -202,7 +202,7 @@ function SettingsPanel() {
   const handleSaveSchedule = async () => {
     setScheduleLoading(true)
     try {
-      await setSchedule(scheduleForm.opening_hour, scheduleForm.closing_hour)
+      await setSchedule(scheduleForm.opening_time, scheduleForm.closing_time)
       showToast(true, '✓ Horaires sauvegardés')
     } catch {
       showToast(false, '⚠️ Erreur lors de la sauvegarde')
@@ -317,25 +317,21 @@ function SettingsPanel() {
         <div className={styles.scheduleBody}>
           <div className={styles.scheduleRow}>
             <div className={styles.field}>
-              <label className={styles.label}>Ouverture (h)</label>
+              <label className={styles.label}>Ouverture</label>
               <input
                 className={styles.input}
-                type="number"
-                min="0"
-                max="23"
-                value={scheduleForm.opening_hour}
-                onChange={e => setScheduleForm(f => ({ ...f, opening_hour: parseInt(e.target.value) || 0 }))}
+                type="time"
+                value={scheduleForm.opening_time}
+                onChange={e => setScheduleForm(f => ({ ...f, opening_time: e.target.value }))}
               />
             </div>
             <div className={styles.field}>
-              <label className={styles.label}>Fermeture (h)</label>
+              <label className={styles.label}>Fermeture</label>
               <input
                 className={styles.input}
-                type="number"
-                min="1"
-                max="24"
-                value={scheduleForm.closing_hour}
-                onChange={e => setScheduleForm(f => ({ ...f, closing_hour: parseInt(e.target.value) || 0 }))}
+                type="time"
+                value={scheduleForm.closing_time}
+                onChange={e => setScheduleForm(f => ({ ...f, closing_time: e.target.value }))}
               />
             </div>
             <button
@@ -348,7 +344,7 @@ function SettingsPanel() {
             </button>
           </div>
           <p className={styles.scheduleHint}>
-            Dernier créneau disponible : {scheduleForm.closing_hour - 1}h{String(60 - slotForm.slot_interval).padStart(2, '0')}. Les clients ne pourront commander que dans cette plage.
+            Les clients ne pourront commander que dans cette plage. Les créneaux sont générés toutes les {slotForm.slot_interval} min.
           </p>
 
           {/* Paramètres créneaux */}

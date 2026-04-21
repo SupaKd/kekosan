@@ -18,7 +18,7 @@ function formatOpenDaysLong(open_days) {
   return ranges.map(([s, e]) => s === e ? DAY_NAMES[s] : `${DAY_NAMES[s]} – ${DAY_NAMES[e]}`).join(', ')
 }
 
-function Footer({ opening_hour = 11, closing_hour = 15, open_days = [1, 2, 3, 4, 5] }) {
+function Footer({ opening_time = '11:00', closing_time = '15:00', opening_hour = 11, closing_hour = 15, open_days = [1, 2, 3, 4, 5] }) {
   const [showLegal, setShowLegal] = useState(false)
 
   return (
@@ -38,7 +38,7 @@ function Footer({ opening_hour = 11, closing_hour = 15, open_days = [1, 2, 3, 4,
           </div>
           <div className={styles.infoItem}>
             <Clock size={15} className={styles.infoIcon} />
-            {formatOpenDaysLong(open_days)} : {opening_hour}h00 – {closing_hour}h00
+            {formatOpenDaysLong(open_days)} : {opening_time} – {closing_time}
           </div>
           <div className={styles.infoItem}>
             <Mail size={15} className={styles.infoIcon} />

@@ -31,8 +31,8 @@ beforeEach(() => {
   // Valeurs par défaut des settings
   settingsRepository.get.mockImplementation((key) => {
     const defaults = {
-      opening_hour: '11',
-      closing_hour: '15',
+      opening_time: '11:00',
+      closing_time: '15:00',
       closed_days: '[]',
       slot_interval: '30',
       min_delivery_delay: '30',
@@ -136,8 +136,8 @@ describe('validateOrder — créneau de livraison', () => {
   test('rejette si créneau sur un jour fermé', async () => {
     settingsRepository.get.mockImplementation((key) => {
       const defaults = {
-        opening_hour: '11',
-        closing_hour: '15',
+        opening_time: '11:00',
+        closing_time: '15:00',
         closed_days: JSON.stringify(['2026-04-21']), // aujourd'hui fermé
         slot_interval: '30',
         min_delivery_delay: '30',
@@ -146,6 +146,41 @@ describe('validateOrder — créneau de livraison', () => {
     });
     const res = makeRes();
     await validateOrder(makeReq(validBody), res, next);
+    expect(res.status).toHaveBeenCalledWith(400);
+  });
+
+  test('accepte un créneau valide avec ouverture à la demi-heure (ex: 11h30)', async () => {
+    // Ouverture 11:30 → fermeture 15:00, intervalle 30 min
+    // Heure simulée : 11h00 Paris → créneau 12:00 est dans 60 min, valide
+    settingsRepository.get.mockImplementation((key) => {
+      const map = {
+        opening_time: '11:30',
+        closing_time: '15:00',
+        closed_days: '[]',
+        slot_interval: '30',
+        min_delivery_delay: '30',
+      };
+      return Promise.resolve(map[key] ?? null);
+    });
+    await validateOrder(makeReq({ ...validBody, delivery_time: '12:00' }), makeRes(), next);
+    expect(next).toHaveBeenCalledTimes(1);
+  });
+
+  test('rejette un créneau qui ne tombe pas sur un multiple de l\'intervalle depuis l\'ouverture', async () => {
+    // Ouverture 11:30, intervalle 30 min → créneaux valides : 11:30, 12:00, 12:30…
+    // 11:00 n'est pas un créneau valide (avant ouverture)
+    settingsRepository.get.mockImplementation((key) => {
+      const map = {
+        opening_time: '11:30',
+        closing_time: '15:00',
+        closed_days: '[]',
+        slot_interval: '30',
+        min_delivery_delay: '30',
+      };
+      return Promise.resolve(map[key] ?? null);
+    });
+    const res = makeRes();
+    await validateOrder(makeReq({ ...validBody, delivery_time: '11:00' }), res, next);
     expect(res.status).toHaveBeenCalledWith(400);
   });
 });
