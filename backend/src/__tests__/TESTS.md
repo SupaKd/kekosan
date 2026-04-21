@@ -108,10 +108,10 @@ Teste la fonction `validatePromo()` exportée depuis `orderService`, et valide l
 - Rejette si `expires_at` est dans le passé (expiré)
 - Accepte si `expires_at` est dans le futur
 
-**Codes privés (préfixe `PRV_`)**
-- Un code `PRV_` est validé normalement par `validatePromo` — il fonctionne au checkout
-- Un code `PRV_` désactivé est rejeté comme tout autre code
-- Les codes `PRV_` ne sont jamais retournés par `GET /api/orders/active-promos` (filtrés côté contrôleur)
+**Codes privés (préfixe `VIP_`)**
+- Un code `VIP_` est validé normalement par `validatePromo` — il fonctionne au checkout
+- Un code `VIP_` désactivé est rejeté comme tout autre code
+- Les codes `VIP_` ne sont jamais retournés par `GET /api/orders/active-promos` (filtrés côté contrôleur)
 
 **Frais de livraison dans `createOrder`**
 - Applique les frais de livraison si le subtotal est sous le seuil (ex : 24 € < 30 € → +5 €)
@@ -187,7 +187,7 @@ Teste le handler Stripe (`POST /api/webhook`). Stripe, `orderRepository`, `mailS
 | Fonctionnalité | Fichier(s) de test |
 |---|---|
 | Codes promo publics (affichés dans la bannière) | `validatePromo.test.js` |
-| Codes promo privés (`PRV_` — jamais dans la bannière) | `validatePromo.test.js` |
+| Codes promo privés (`VIP_` — jamais dans la bannière) | `validatePromo.test.js` |
 | Produits en rupture (grisés, non commandables) | `orderService.test.js` |
 | Dashboard admin : uniquement commandes payées | `adminController.test.js` |
 | Export CSV : uniquement commandes payées | `adminController.test.js` |

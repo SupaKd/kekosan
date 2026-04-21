@@ -13,6 +13,7 @@ function ProductModal({ product, onClose, onAdd }) {
   const [added, setAdded] = useState(false)
   const { closing, triggerClose } = useCloseAnimation(onClose)
   const dragRef = useSwipeDown(triggerClose)
+  const imageDragRef = useSwipeDown(triggerClose)
   useLockBodyScroll()
   useModalHistory(triggerClose)
 
@@ -58,7 +59,7 @@ function ProductModal({ product, onClose, onAdd }) {
         <button className={styles.closeBtn} onClick={triggerClose} aria-label="Fermer">✕</button>
 
         {product.image_url && (
-          <div className={styles.imageWrap}>
+          <div className={styles.imageWrap} ref={imageDragRef}>
             <img src={`${API_BASE}${product.image_url}`} alt={product.name} className={styles.productImage} loading="lazy" decoding="async" />
           </div>
         )}

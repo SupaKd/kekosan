@@ -441,7 +441,7 @@
 
 .suggestionsList {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 8px;
 }
 
@@ -454,7 +454,8 @@
   border-radius: 8px;
   padding: 8px 10px;
   cursor: pointer;
-  width: 100%;
+  flex: 1;
+  min-width: 0;
   text-align: left;
   transition: border-color 0.15s, background 0.15s;
 }

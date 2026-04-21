@@ -47,14 +47,14 @@ const applyPromo = async (req, res, next) => {
 };
 
 // GET /api/orders/active-promos — codes promo publics actifs pour la bannière (code + type + valeur uniquement)
-// Les codes préfixés par "PRV_" sont privés et ne sont jamais exposés ici
+// Les codes préfixés par "VIP_" sont privés et ne sont jamais exposés ici
 const getActivePromos = async (req, res, next) => {
   try {
     const all = await promoRepository.findAll();
     const now = new Date();
     const active = all.filter(p =>
       p.active &&
-      !p.code.startsWith('PRV_') &&
+      !p.code.startsWith('VIP_') &&
       (!p.starts_at || new Date(p.starts_at) <= now) &&
       (!p.expires_at || new Date(p.expires_at) >= now)
     ).map(p => ({ code: p.code, type: p.type, value: p.value }));

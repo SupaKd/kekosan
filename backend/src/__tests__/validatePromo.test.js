@@ -99,17 +99,17 @@ describe('validatePromo — codes invalides', () => {
   });
 });
 
-describe('validatePromo — codes privés (préfixe PRV_)', () => {
-  test('un code PRV_ est validé normalement par validatePromo', async () => {
-    promoRepository.findByCode.mockResolvedValue(makePromo({ code: 'PRV_ACME2025', type: 'percent', value: '15' }));
-    const result = await validatePromo('PRV_ACME2025', 50);
+describe('validatePromo — codes privés (préfixe VIP_)', () => {
+  test('un code VIP_ est validé normalement par validatePromo', async () => {
+    promoRepository.findByCode.mockResolvedValue(makePromo({ code: 'VIP_ACME2025', type: 'percent', value: '15' }));
+    const result = await validatePromo('VIP_ACME2025', 50);
     expect(result.discount_amount).toBe(7.5); // 15% de 50
-    expect(result.promo_code).toBe('PRV_ACME2025');
+    expect(result.promo_code).toBe('VIP_ACME2025');
   });
 
-  test('un code PRV_ désactivé est rejeté comme tout autre code', async () => {
-    promoRepository.findByCode.mockResolvedValue(makePromo({ code: 'PRV_ACME2025', active: 0 }));
-    await expect(validatePromo('PRV_ACME2025', 50)).rejects.toMatchObject({ status: 400 });
+  test('un code VIP_ désactivé est rejeté comme tout autre code', async () => {
+    promoRepository.findByCode.mockResolvedValue(makePromo({ code: 'VIP_ACME2025', active: 0 }));
+    await expect(validatePromo('VIP_ACME2025', 50)).rejects.toMatchObject({ status: 400 });
   });
 });
 

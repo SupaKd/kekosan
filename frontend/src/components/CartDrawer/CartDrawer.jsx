@@ -11,7 +11,7 @@ function getSuggestions(catalog, cartItems, max = 2) {
   const cartProductIds = new Set(
     cartItems.filter((i) => i.type === "product").map((i) => i.product_id)
   );
-  const PRIORITY = ["entree", "dessert"];
+  const PRIORITY = ["entree", "dessert", "boisson"];
   const suggestions = [];
   for (const cat of PRIORITY) {
     if (!catalog[cat]) continue;
@@ -56,7 +56,7 @@ function CartItem({ item, onUpdateQty, onRemove }) {
   const onTouchStart = (e) => {
     startXRef.current = e.touches[0].clientX;
     if (swipeRef.current) {
-      swipeRef.current.style.transition = 'none';
+      swipeRef.current.style.transition = "none";
     }
   };
 
@@ -74,7 +74,8 @@ function CartItem({ item, onUpdateQty, onRemove }) {
   const onTouchEnd = () => {
     const dx = currentXRef.current;
     if (swipeRef.current) {
-      swipeRef.current.style.transition = 'transform 0.25s cubic-bezier(0.32, 0.72, 0, 1)';
+      swipeRef.current.style.transition =
+        "transform 0.25s cubic-bezier(0.32, 0.72, 0, 1)";
     }
     if (dx < -DELETE_THRESHOLD) {
       // Suppression directe
@@ -101,7 +102,8 @@ function CartItem({ item, onUpdateQty, onRemove }) {
 
   const resetSwipe = () => {
     if (swipeRef.current) {
-      swipeRef.current.style.transition = 'transform 0.25s cubic-bezier(0.32, 0.72, 0, 1)';
+      swipeRef.current.style.transition =
+        "transform 0.25s cubic-bezier(0.32, 0.72, 0, 1)";
       swipeRef.current.style.transform = `translateX(0)`;
     }
   };
@@ -129,7 +131,9 @@ function CartItem({ item, onUpdateQty, onRemove }) {
               loading="lazy"
               decoding="async"
               className={styles.itemImage}
-              onLoad={e => e.currentTarget.previousSibling.style.display = 'none'}
+              onLoad={(e) =>
+                (e.currentTarget.previousSibling.style.display = "none")
+              }
             />
           </div>
         )}
@@ -147,21 +151,32 @@ function CartItem({ item, onUpdateQty, onRemove }) {
             <div className={styles.qtyControl}>
               <button
                 className={styles.qtyBtn}
-                onClick={() => { haptic(10); resetSwipe(); onUpdateQty(item._key, item.quantity - 1); }}
+                onClick={() => {
+                  haptic(10);
+                  resetSwipe();
+                  onUpdateQty(item._key, item.quantity - 1);
+                }}
               >
                 −
               </button>
               <span className={styles.qty}>{item.quantity}</span>
               <button
                 className={styles.qtyBtn}
-                onClick={() => { haptic(10); resetSwipe(); onUpdateQty(item._key, item.quantity + 1); }}
+                onClick={() => {
+                  haptic(10);
+                  resetSwipe();
+                  onUpdateQty(item._key, item.quantity + 1);
+                }}
               >
                 +
               </button>
             </div>
             <button
               className={styles.deleteBtn}
-              onClick={() => { haptic(30); onRemove(); }}
+              onClick={() => {
+                haptic(30);
+                onRemove();
+              }}
               aria-label="Supprimer"
             >
               ✕
@@ -174,22 +189,24 @@ function CartItem({ item, onUpdateQty, onRemove }) {
 }
 
 function SuggestionButton({ p, onAdd }) {
-  const [added, setAdded] = useState(false)
-  const timerRef = useRef(null)
+  const [added, setAdded] = useState(false);
+  const timerRef = useRef(null);
 
   const handleClick = () => {
-    if (added) return
-    onAdd()
-    setAdded(true)
-    if (navigator.vibrate) navigator.vibrate(30)
-    timerRef.current = setTimeout(() => setAdded(false), 1500)
-  }
+    if (added) return;
+    onAdd();
+    setAdded(true);
+    if (navigator.vibrate) navigator.vibrate(30);
+    timerRef.current = setTimeout(() => setAdded(false), 1500);
+  };
 
-  useEffect(() => () => clearTimeout(timerRef.current), [])
+  useEffect(() => () => clearTimeout(timerRef.current), []);
 
   return (
     <button
-      className={`${styles.suggestionItem} ${added ? styles.suggestionAdded : ''}`}
+      className={`${styles.suggestionItem} ${
+        added ? styles.suggestionAdded : ""
+      }`}
       onClick={handleClick}
     >
       {p.image_url && (
@@ -205,15 +222,17 @@ function SuggestionButton({ p, onAdd }) {
       )}
       <div className={styles.suggestionBody}>
         <span className={styles.suggestionName}>{p.name}</span>
-        <span className={styles.suggestionPrice}>
-          {formatPrice(p.price)}
-        </span>
+        <span className={styles.suggestionPrice}>{formatPrice(p.price)}</span>
       </div>
-      <span className={`${styles.suggestionAdd} ${added ? styles.suggestionAddDone : ''}`}>
-        {added ? '✓' : '+'}
+      <span
+        className={`${styles.suggestionAdd} ${
+          added ? styles.suggestionAddDone : ""
+        }`}
+      >
+        {added ? "✓" : "+"}
       </span>
     </button>
-  )
+  );
 }
 
 function CartDrawer({
@@ -288,7 +307,7 @@ function CartDrawer({
     dragVelocity.current = 0;
     lastDragTime.current = Date.now();
     if (drawerRef.current) {
-      drawerRef.current.style.transition = 'none';
+      drawerRef.current.style.transition = "none";
     }
   };
 
@@ -312,25 +331,26 @@ function CartDrawer({
     const dy = dragCurrentY.current;
     const velocity = dragVelocity.current;
     if (drawerRef.current) {
-      drawerRef.current.style.transition = 'transform 0.3s cubic-bezier(0.32, 0.72, 0, 1)';
+      drawerRef.current.style.transition =
+        "transform 0.3s cubic-bezier(0.32, 0.72, 0, 1)";
     }
     // Ferme si tiré > 120px ou lancé rapidement vers le bas
     if (dy > 120 || velocity > 0.5) {
       haptic(10);
       if (drawerRef.current) {
-        drawerRef.current.style.transform = 'translateY(100%)';
+        drawerRef.current.style.transform = "translateY(100%)";
       }
       setTimeout(() => {
         setOpen(false);
         if (drawerRef.current) {
-          drawerRef.current.style.transform = '';
-          drawerRef.current.style.transition = '';
+          drawerRef.current.style.transform = "";
+          drawerRef.current.style.transition = "";
         }
       }, 280);
     } else {
       // Rebondit en position initiale
       if (drawerRef.current) {
-        drawerRef.current.style.transform = 'translateY(0)';
+        drawerRef.current.style.transform = "translateY(0)";
       }
     }
     dragStartY.current = null;
@@ -351,7 +371,7 @@ function CartDrawer({
     <>
       {/* Bouton flottant — masqué quand le sheet est ouvert */}
       <button
-        className={`${styles.fab} ${open ? styles.fabHidden : ''}`}
+        className={`${styles.fab} ${open ? styles.fabHidden : ""}`}
         onClick={() => setOpen(true)}
       >
         <span className={styles.fabLeft}>
@@ -400,22 +420,28 @@ function CartDrawer({
             </div>
 
             <div className={styles.items} ref={itemsRef}>
-              {items.filter((item) => !pendingDelete || item._key !== pendingDelete.item._key).length === 0 && !pendingDelete ? (
+              {items.filter(
+                (item) =>
+                  !pendingDelete || item._key !== pendingDelete.item._key
+              ).length === 0 && !pendingDelete ? (
                 <div className={styles.emptyState}>
                   <div className={styles.emptyIcon}>🥡</div>
                   <p>Votre panier est vide</p>
                 </div>
               ) : (
                 items
-                  .filter((item) => !pendingDelete || item._key !== pendingDelete.item._key)
+                  .filter(
+                    (item) =>
+                      !pendingDelete || item._key !== pendingDelete.item._key
+                  )
                   .map((item) => (
-                  <CartItem
-                    key={item._key}
-                    item={item}
-                    onUpdateQty={updateQuantity}
-                    onRemove={() => handleRemoveWithUndo(item)}
-                  />
-                ))
+                    <CartItem
+                      key={item._key}
+                      item={item}
+                      onUpdateQty={updateQuantity}
+                      onRemove={() => handleRemoveWithUndo(item)}
+                    />
+                  ))
               )}
 
               {/* Suggestions intégrées dans le scroll, après les items */}
@@ -452,7 +478,10 @@ function CartDrawer({
                 <span className={styles.snackbarText}>
                   « {pendingDelete.item.name} » supprimé
                 </span>
-                <button className={styles.snackbarUndo} onClick={handleUndoDelete}>
+                <button
+                  className={styles.snackbarUndo}
+                  onClick={handleUndoDelete}
+                >
                   Annuler
                 </button>
               </div>
@@ -466,19 +495,36 @@ function CartDrawer({
                 </div>
                 <div className={styles.totalRow}>
                   <span className={styles.totalLabel}>Livraison</span>
-                  <span style={{ color: deliveryFee === 0 ? "var(--success, #30d158)" : undefined }}>
+                  <span
+                    style={{
+                      color:
+                        deliveryFee === 0
+                          ? "var(--success, #30d158)"
+                          : undefined,
+                    }}
+                  >
                     {deliveryFee === 0 ? "Gratuite" : formatPrice(deliveryFee)}
                   </span>
                 </div>
                 {belowMinimum && (
                   <div className={styles.progressBar}>
-                    <div className={styles.progressLabel} style={{ color: "var(--danger, #ff453a)" }}>
-                      Minimum {formatPrice(min_order_amount)} — encore {formatPrice(min_order_amount - total)}
+                    <div
+                      className={styles.progressLabel}
+                      style={{ color: "var(--danger, #ff453a)" }}
+                    >
+                      Minimum {formatPrice(min_order_amount)} — encore{" "}
+                      {formatPrice(min_order_amount - total)}
                     </div>
                     <div className={styles.progressTrack}>
                       <div
                         className={styles.progressFill}
-                        style={{ width: `${Math.min(100, (total / min_order_amount) * 100)}%`, background: '#ff453a' }}
+                        style={{
+                          width: `${Math.min(
+                            100,
+                            (total / min_order_amount) * 100
+                          )}%`,
+                          background: "#ff453a",
+                        }}
                       />
                     </div>
                   </div>
@@ -486,23 +532,35 @@ function CartDrawer({
                 {!belowMinimum && deliveryFee > 0 && (
                   <div className={styles.progressBar}>
                     <div className={styles.progressLabel}>
-                      Encore {formatPrice(free_delivery_threshold - total)} pour la livraison gratuite 🛵
+                      Encore {formatPrice(free_delivery_threshold - total)} pour
+                      la livraison gratuite 🛵
                     </div>
                     <div className={styles.progressTrack}>
                       <div
                         className={styles.progressFill}
-                        style={{ width: `${Math.min(100, (total / free_delivery_threshold) * 100)}%` }}
+                        style={{
+                          width: `${Math.min(
+                            100,
+                            (total / free_delivery_threshold) * 100
+                          )}%`,
+                        }}
                       />
                     </div>
                   </div>
                 )}
                 {!belowMinimum && deliveryFee === 0 && (
                   <div className={styles.progressBar}>
-                    <div className={styles.progressLabel} style={{ color: '#30d158' }}>
+                    <div
+                      className={styles.progressLabel}
+                      style={{ color: "#30d158" }}
+                    >
                       🎉 Livraison gratuite débloquée !
                     </div>
                     <div className={styles.progressTrack}>
-                      <div className={`${styles.progressFill} ${styles.reached}`} style={{ width: '100%' }} />
+                      <div
+                        className={`${styles.progressFill} ${styles.reached}`}
+                        style={{ width: "100%" }}
+                      />
                     </div>
                   </div>
                 )}
