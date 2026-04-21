@@ -4,12 +4,12 @@
 
 | Fichier | Tests | Ce qui est testé |
 |---|---|---|
-| `orderService.test.js` | 12 | Création de commande (service métier) |
+| `orderService.test.js` | 13 | Création de commande (service métier) |
 | `validateOrder.test.js` | 21 | Middleware de validation HTTP |
-| `validatePromo.test.js` | 14 | Codes promo + frais de livraison |
+| `validatePromo.test.js` | 16 | Codes promo publics/privés + frais de livraison |
 | `adminController.test.js` | 17 | Endpoints admin (auth, statuts, remboursements) |
 | `webhookController.test.js` | 9 | Événements Stripe (paiement, échec) |
-| **Total** | **73** | |
+| **Total** | **76** | |
 
 ---
 
@@ -32,7 +32,8 @@ Toutes les dépendances externes sont mockées : `productRepository`, `formulaRe
 
 **Validation produit**
 - Rejette si le produit n'existe pas en DB
-- Rejette si le produit est marqué `available = 0`
+- Rejette si le produit est marqué `available = 0` (rupture — la commande est bloquée même si la carte l'affiche grisée)
+- Le catalogue retourne les produits non disponibles avec `available = false` (ils s'affichent grisés côté client)
 
 **Validation formule**
 - Accepte une formule valide avec tous les slots remplis
@@ -107,6 +108,11 @@ Teste la fonction `validatePromo()` exportée depuis `orderService`, et valide l
 - Rejette si `expires_at` est dans le passé (expiré)
 - Accepte si `expires_at` est dans le futur
 
+**Codes privés (préfixe `PRV_`)**
+- Un code `PRV_` est validé normalement par `validatePromo` — il fonctionne au checkout
+- Un code `PRV_` désactivé est rejeté comme tout autre code
+- Les codes `PRV_` ne sont jamais retournés par `GET /api/orders/active-promos` (filtrés côté contrôleur)
+
 **Frais de livraison dans `createOrder`**
 - Applique les frais de livraison si le subtotal est sous le seuil (ex : 24 € < 30 € → +5 €)
 - Livraison gratuite si le subtotal est au-dessus du seuil (ex : 32 € > 30 € → +0 €)
@@ -144,8 +150,9 @@ Teste les actions du contrôleur admin. `bcryptjs`, `jsonwebtoken`, `adminReposi
 
 **Export CSV (`GET /api/admin/orders/export.csv`)**
 - Définit le header `Content-Type: text/csv; charset=utf-8`
-- Inclut le BOM UTF-8 (`\uFEFF`) pour la compatibilité Excel
+- Inclut le BOM UTF-8 (`﻿`) pour la compatibilité Excel
 - Échappe correctement les champs contenant un point-virgule (entourés de guillemets)
+- N'exporte que les commandes avec `payment_status = 'paid'` (les commandes en attente de paiement sont exclues)
 
 ---
 
@@ -172,6 +179,19 @@ Teste le handler Stripe (`POST /api/webhook`). Stripe, `orderRepository`, `mailS
 
 **Événement inconnu**
 - Répond 200 sans effectuer aucune action en DB
+
+---
+
+## Comportements métier couverts par les tests
+
+| Fonctionnalité | Fichier(s) de test |
+|---|---|
+| Codes promo publics (affichés dans la bannière) | `validatePromo.test.js` |
+| Codes promo privés (`PRV_` — jamais dans la bannière) | `validatePromo.test.js` |
+| Produits en rupture (grisés, non commandables) | `orderService.test.js` |
+| Dashboard admin : uniquement commandes payées | `adminController.test.js` |
+| Export CSV : uniquement commandes payées | `adminController.test.js` |
+| Livraison gratuite basée sur subtotal brut (avant promo) | `validatePromo.test.js` |
 
 ---
 

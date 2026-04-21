@@ -108,9 +108,16 @@ describe('orderService.createOrder — validation produit', () => {
     await expect(createOrder(validBody)).rejects.toMatchObject({ status: 400 });
   });
 
-  test('rejette si le produit est indisponible', async () => {
+  test('rejette si le produit est indisponible (available = 0)', async () => {
     productRepository.findById.mockResolvedValue({ ...mockProduct, available: 0 });
     await expect(createOrder(validBody)).rejects.toMatchObject({ status: 400 });
+  });
+
+  test('le catalogue retourne les produits non dispo avec available = false', async () => {
+    const unavailableProduct = { ...mockProduct, available: false };
+    productRepository.findAllAvailable.mockResolvedValue([unavailableProduct]);
+    const catalog = await productRepository.findAllAvailable();
+    expect(catalog[0].available).toBe(false);
   });
 });
 
