@@ -83,15 +83,27 @@ function PaymentForm({
     pr.on("paymentmethod", async (ev) => {
       setLoading(true);
       onError(null);
-      const { error: confirmError } = await stripe.confirmCardPayment(
-        clientSecret,
-        { payment_method: ev.paymentMethod.id },
-        { handleActions: false }
-      );
+      const { paymentIntent, error: confirmError } =
+        await stripe.confirmCardPayment(
+          clientSecret,
+          { payment_method: ev.paymentMethod.id },
+          { handleActions: false }
+        );
       if (confirmError) {
         ev.complete("fail");
         onError(stripeErrorMessage(confirmError));
         setLoading(false);
+      } else if (paymentIntent.status === "requires_action") {
+        // 3DS requis — on laisse Stripe gérer
+        const { error } = await stripe.confirmCardPayment(clientSecret);
+        if (error) {
+          ev.complete("fail");
+          onError(stripeErrorMessage(error));
+          setLoading(false);
+        } else {
+          ev.complete("success");
+          onSuccess();
+        }
       } else {
         ev.complete("success");
         onSuccess();
