@@ -49,89 +49,15 @@ function stripeErrorMessage(error) {
   return error.message;
 }
 
-// ── Bouton Apple Pay / Google Pay — pure API, sans Elements ─────────────────
-function ApplePayButton({ totalWithDelivery, onCreateOrder, onSuccess, onError, setLoading }) {
-  const [available, setAvailable] = useState(false);
-  const prRef = useRef(null);
-
-  const onCreateOrderRef = useRef(onCreateOrder);
-  const onSuccessRef = useRef(onSuccess);
-  const onErrorRef = useRef(onError);
-  const setLoadingRef = useRef(setLoading);
-  useEffect(() => { onCreateOrderRef.current = onCreateOrder; }, [onCreateOrder]);
-  useEffect(() => { onSuccessRef.current = onSuccess; }, [onSuccess]);
-  useEffect(() => { onErrorRef.current = onError; }, [onError]);
-  useEffect(() => { setLoadingRef.current = setLoading; }, [setLoading]);
-
-  useEffect(() => {
-    stripePromise.then((stripe) => {
-      if (!stripe) return;
-      const pr = stripe.paymentRequest({
-        country: "FR",
-        currency: "eur",
-        total: { label: "Kekosan", amount: Math.round(totalWithDelivery * 100) },
-        requestPayerName: false,
-        requestPayerEmail: false,
-      });
-      pr.canMakePayment().then((result) => {
-        if (result) {
-          prRef.current = pr;
-          setAvailable(true);
-        }
-      });
-      pr.on("paymentmethod", async (ev) => {
-        setLoadingRef.current(true);
-        onErrorRef.current(null);
-        try {
-          const clientSecret = await onCreateOrderRef.current();
-          if (!clientSecret) { ev.complete("fail"); setLoadingRef.current(false); return; }
-          const { paymentIntent, error: confirmError } = await stripe.confirmCardPayment(
-            clientSecret,
-            { payment_method: ev.paymentMethod.id },
-            { handleActions: false }
-          );
-          if (confirmError) {
-            ev.complete("fail");
-            onErrorRef.current(stripeErrorMessage(confirmError));
-            setLoadingRef.current(false);
-          } else if (paymentIntent.status === "requires_action") {
-            const { error } = await stripe.confirmCardPayment(clientSecret);
-            if (error) {
-              ev.complete("fail");
-              onErrorRef.current(stripeErrorMessage(error));
-              setLoadingRef.current(false);
-            } else { ev.complete("success"); onSuccessRef.current(); }
-          } else { ev.complete("success"); onSuccessRef.current(); }
-        } catch (err) {
-          ev.complete("fail");
-          onErrorRef.current(err.response?.data?.error || "Une erreur est survenue.");
-          setLoadingRef.current(false);
-        }
-      });
-    });
-  }, [totalWithDelivery]);
-
-  if (!available) return null;
-
-  return (
-    <>
-      <button
-        className={styles.applePayBtn}
-        onClick={() => prRef.current?.show()}
-      >
-        <svg viewBox="0 0 165.521 105.965" xmlns="http://www.w3.org/2000/svg" width="50" height="22">
-          <path d="M150.698 0H14.823c-.566 0-1.133 0-1.698.003-.477.004-.953.009-1.43.022C10.448.044 9.197.08 7.974.214 6.749.351 5.634.591 4.566 1.09c-1.065.497-2.03 1.156-2.871 1.944-.841.79-1.538 1.703-2.079 2.701C.075 6.73-.135 7.794.073 8.873c.21 1.08.635 2.056 1.248 2.896.613.84 1.413 1.536 2.343 2.027.93.491 1.97.786 3.04.911.803.098 1.621.137 2.439.152.463.008.925.013 1.388.013h131.044c.463 0 .925-.005 1.388-.013.818-.015 1.636-.054 2.439-.152 1.07-.125 2.11-.42 3.04-.911.93-.491 1.73-1.187 2.343-2.027.613-.84 1.038-1.816 1.248-2.896.208-1.079-.002-2.143-.443-3.138-.54-.998-1.238-1.91-2.079-2.701-.841-.788-1.806-1.447-2.871-1.944-1.068-.499-2.183-.739-3.408-.876-1.223-.134-2.474-.17-3.721-.189-.477-.013-.953-.018-1.43-.022C151.831 0 151.264 0 150.698 0z" fill="#fff"/>
-          <path d="M150.698 3.532l1.672.003c.452.003.904.008 1.358.02 1.093.016 2.187.047 3.237.166.96.112 1.81.315 2.595.692.784.376 1.497.88 2.107 1.464.61.585 1.11 1.263 1.479 1.999.165.341.288.698.352 1.06.064.361.055.722-.032 1.072-.088.35-.249.685-.464.987-.215.303-.48.572-.778.8-.298.228-.629.413-.976.544-.347.131-.713.208-1.086.252-.668.082-1.358.114-2.052.128-.447.008-.895.012-1.342.012H14.823c-.001 0-.003 0-.004 0-.447 0-.895-.004-1.342-.012-.694-.014-1.384-.046-2.052-.128-.373-.044-.739-.121-1.086-.252a4.47 4.47 0 0 1-.976-.544 4.388 4.388 0 0 1-.778-.8 3.634 3.634 0 0 1-.464-.987 3.56 3.56 0 0 1-.032-1.072c.064-.362.187-.719.352-1.06a6.02 6.02 0 0 1 1.479-1.999c.61-.584 1.323-1.088 2.107-1.464.785-.377 1.635-.58 2.595-.692 1.05-.119 2.144-.15 3.237-.166.454-.012.906-.017 1.358-.02L14.823 3.532H150.698z" fill="#fff"/>
-          <text y="76" x="12" font-size="55" font-weight="600" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" fill="#000">Pay</text>
-        </svg>
-      </button>
-      <div className={styles.orDivider}><span>ou</span></div>
-    </>
-  );
-}
-
 // ── Formulaire interne (doit être dans <Elements>) ──────────────────────────
-function PaymentForm({ onSuccess, onError, loading, setLoading }) {
+function PaymentForm({
+  clientSecret,
+  totalWithDelivery,
+  onSuccess,
+  onError,
+  loading,
+  setLoading,
+}) {
   const stripe = useStripe();
   const elements = useElements();
   const [submitted, setSubmitted] = useState(false);
@@ -158,7 +84,6 @@ function PaymentForm({ onSuccess, onError, loading, setLoading }) {
 
   return (
     <div>
-      {/* Formulaire carte classique */}
       <div className={styles.stripeBox}>
         <PaymentElement />
         <div style={{ marginTop: 20 }}>
@@ -167,7 +92,7 @@ function PaymentForm({ onSuccess, onError, loading, setLoading }) {
             onClick={handlePay}
             disabled={!stripe || loading || submitted}
           >
-            {loading ? "Traitement…" : "Payer par carte"}
+            {loading ? "Traitement…" : "Payer"}
           </button>
         </div>
       </div>
@@ -192,7 +117,7 @@ function CheckoutModal({ cart, onClose }) {
 
   // État code promo
   const [promoInput, setPromoInput] = useState("");
-  const [appliedPromo, setAppliedPromo] = useState(null); // { promo_code, discount_amount }
+  const [appliedPromo, setAppliedPromo] = useState(null);
   const [promoError, setPromoError] = useState(null);
   const [promoLoading, setPromoLoading] = useState(false);
   const [promoFlash, setPromoFlash] = useState(false);
@@ -216,7 +141,7 @@ function CheckoutModal({ cart, onClose }) {
   // Étapes : 'form' → 'payment' → 'success'
   const [step, setStep] = useState("form");
 
-  const swipeHandleRef = useRef(null); // swipe-down désactivé sur le checkout
+  const swipeHandleRef = useRef(null);
   const [clientSecret, setClientSecret] = useState(null);
   const [trackingToken, setTrackingToken] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -273,14 +198,11 @@ function CheckoutModal({ cart, onClose }) {
   } = getAvailableSlots(schedule);
   const isOpen = serviceOpen && available;
 
-  // C — Auto-sélection du premier créneau + invalidation si plus disponible
   useEffect(() => {
     if (slots.length === 0) return;
     if (!form.delivery_time) {
-      // Pré-sélectionne le premier créneau dispo si rien n'est encore choisi
       setForm((f) => ({ ...f, delivery_time: slots[0] }));
     } else if (!slots.includes(form.delivery_time)) {
-      // Invalide le créneau sauvegardé s'il n'est plus disponible
       setForm((f) => ({ ...f, delivery_time: slots[0] || "" }));
     }
   }, [slots.join(",")]);
@@ -314,7 +236,6 @@ function CheckoutModal({ cart, onClose }) {
   });
   const [fieldErrors, setFieldErrors] = useState({});
 
-  // Persiste le formulaire dans sessionStorage à chaque changement
   useEffect(() => {
     try {
       sessionStorage.setItem(FORM_KEY, JSON.stringify(form));
@@ -331,7 +252,6 @@ function CheckoutModal({ cart, onClose }) {
       const result = await applyPromo(promoInput.trim().toUpperCase(), total);
       setAppliedPromo(result);
       setPromoInput("");
-      // Flash d'animation pour confirmer visuellement l'application
       setPromoFlash(true);
       setTimeout(() => setPromoFlash(false), 500);
     } catch (err) {
@@ -347,7 +267,6 @@ function CheckoutModal({ cart, onClose }) {
     setPromoInput("");
   };
 
-  // Valide un champ individuel — utilisé au blur et au submit
   const validateField = (name, value) => {
     switch (name) {
       case "name":
@@ -385,7 +304,6 @@ function CheckoutModal({ cart, onClose }) {
   };
 
   const handleSubmitForm = async () => {
-    // Ferme le clavier virtuel iOS avant de soumettre
     if (document.activeElement) document.activeElement.blur();
 
     const errors = validate();
@@ -397,7 +315,6 @@ function CheckoutModal({ cart, onClose }) {
     setLoading(true);
     setGlobalError(null);
 
-    // Re-vérification en temps réel : le service a pu fermer pendant la saisie
     try {
       const statusNow = await getServiceStatus();
       if (!statusNow.service_open) {
@@ -460,51 +377,6 @@ function CheckoutModal({ cart, onClose }) {
     setStep("success");
   };
 
-  // Crée la commande et retourne le clientSecret — utilisé par ApplePayButton
-  const handleCreateOrder = async () => {
-    const errors = validate();
-    if (Object.keys(errors).length > 0) {
-      setFieldErrors(errors);
-      return null;
-    }
-    try {
-      const statusNow = await getServiceStatus();
-      if (!statusNow.service_open) {
-        setServiceOpen(false);
-        setGlobalError("Le service vient de fermer. Votre commande n'a pas pu être passée.");
-        return null;
-      }
-    } catch {}
-    const orderBody = {
-      customer: { name: form.name, phone: form.phone, email: form.email },
-      delivery_address: `${form.street.trim()}, Saint-Genis-Pouilly 01630`,
-      delivery_time: form.delivery_time,
-      notes: form.notes || undefined,
-      promo_code: appliedPromo?.promo_code || null,
-      items: items
-        .filter((i) => i.type === "product")
-        .map((i) => ({
-          product_id: i.product_id,
-          quantity: i.quantity,
-          options: (i.options || []).map((o) => ({ product_option_id: o.id })),
-        })),
-      formula_items: items
-        .filter((i) => i.type === "formula")
-        .map((i) => ({
-          formula_id: i.formula_id,
-          quantity: i.quantity,
-          slots: i.slots.map((s) => ({
-            slot_name: s.slot_name,
-            product_id: s.product_id,
-            options: s.options || [],
-          })),
-        })),
-    };
-    const data = await createOrder(orderBody);
-    setTrackingToken(data.tracking_token);
-    return data.client_secret;
-  };
-
   const stripeOptions = clientSecret
     ? {
         clientSecret,
@@ -536,7 +408,7 @@ function CheckoutModal({ cart, onClose }) {
         aria-label="Commander"
         ref={modalRef}
       >
-        {/* Header — zone de swipe-down pour fermer sur mobile */}
+        {/* Header */}
         <div className={styles.modalHeader} ref={swipeHandleRef}>
           <div className={styles.title}>
             {step === "success" ? "Commande confirmée" : "Commander"}
@@ -580,7 +452,6 @@ function CheckoutModal({ cart, onClose }) {
         {step === "form" && !loading && (
           <>
             <div className={styles.body}>
-              {/* A — Créneau en premier : le client voit immédiatement si c'est possible */}
               <div>
                 <div className={styles.sectionTitle}>Créneau de livraison</div>
                 {!isOpen ? (
@@ -618,7 +489,6 @@ function CheckoutModal({ cart, onClose }) {
                 )}
               </div>
 
-              {/* Infos client */}
               <div>
                 <div className={styles.sectionTitle}>Vos informations</div>
                 <div className={styles.fields}>
@@ -730,7 +600,6 @@ function CheckoutModal({ cart, onClose }) {
                     </div>
                   </div>
 
-                  {/* Code promo — toujours affiché (codes publics ET privés acceptés) */}
                   <div className={styles.field}>
                     <label className={styles.label}>
                       Code promo{" "}
@@ -784,7 +653,6 @@ function CheckoutModal({ cart, onClose }) {
                     )}
                   </div>
 
-                  {/* D — Notes en dernier, visuellement déprioritisées */}
                   <div className={styles.field}>
                     <label className={styles.label} style={{ color: "#aaa" }}>
                       Note pour la cuisine{" "}
@@ -808,7 +676,6 @@ function CheckoutModal({ cart, onClose }) {
                 </div>
               </div>
 
-              {/* B — Récap en bas, juste avant le bouton */}
               <div className={styles.recap}>
                 {items.map((item) => {
                   const unitPrice =
@@ -873,19 +740,6 @@ function CheckoutModal({ cart, onClose }) {
               )}
             </div>
 
-            {/* Apple Pay / Google Pay affiché dès l'étape form si disponible */}
-            {isOpen && (
-              <div className={styles.body} style={{ paddingTop: 0 }}>
-                <ApplePayButton
-                  totalWithDelivery={totalWithDelivery}
-                  onCreateOrder={handleCreateOrder}
-                  onSuccess={handlePaymentSuccess}
-                  onError={setGlobalError}
-                  setLoading={setLoading}
-                />
-              </div>
-            )}
-
             <div className={styles.footer}>
               <button
                 className={styles.payBtn}
@@ -931,6 +785,8 @@ function CheckoutModal({ cart, onClose }) {
             <div className={styles.body}>
               <Elements stripe={stripePromise} options={stripeOptions}>
                 <PaymentForm
+                  clientSecret={clientSecret}
+                  totalWithDelivery={totalWithDelivery}
                   onSuccess={handlePaymentSuccess}
                   onError={setGlobalError}
                   loading={loading}

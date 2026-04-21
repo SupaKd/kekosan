@@ -155,18 +155,24 @@ function FormulaModal({ formula, catalog, onClose, onAdd }) {
                       </div>
                     )}
                     <div className={styles.productOptions}>
-                      {group.products.map(product => (
+                      {group.products.map(product => {
+                        const outOfStock = product.available === false
+                        return (
                         <div key={product.id}>
                           <button
-                            className={`${styles.productCard} ${chosen?.id === product.id ? styles.selected : ''}`}
-                            onClick={() => selectSlotProduct(slot.slot_name, product)}
+                            className={`${styles.productCard} ${chosen?.id === product.id ? styles.selected : ''} ${outOfStock ? styles.productCardUnavailable : ''}`}
+                            onClick={() => !outOfStock && selectSlotProduct(slot.slot_name, product)}
+                            disabled={outOfStock}
                           >
                             <div className={styles.productCardImage}>
                               {product.image_url
                                 ? <img src={`${API_BASE}${product.image_url}`} alt={product.name} loading="lazy" decoding="async" />
                                 : <span>🥖</span>
                               }
-                              {chosen?.id === product.id && (
+                              {outOfStock && (
+                                <div className={styles.productCardOutOfStock}>Rupture</div>
+                              )}
+                              {!outOfStock && chosen?.id === product.id && (
                                 <div className={styles.productCardCheck}>✓</div>
                               )}
                             </div>
@@ -183,7 +189,7 @@ function FormulaModal({ formula, catalog, onClose, onAdd }) {
                               )}
                             </div>
                             <div className={styles.productCardRadio}>
-                              {chosen?.id === product.id && <div className={styles.productCardRadioDot} />}
+                              {!outOfStock && chosen?.id === product.id && <div className={styles.productCardRadioDot} />}
                             </div>
                           </button>
 
@@ -213,7 +219,7 @@ function FormulaModal({ formula, catalog, onClose, onAdd }) {
                             </div>
                           )}
                         </div>
-                      ))}
+                      )})}
                     </div>
                   </div>
                 ))}

@@ -294,9 +294,15 @@
   text-align: left;
 }
 
-.productCard:hover {
+.productCard:hover:not(.productCardUnavailable) {
   border-color: rgba(255, 214, 10, 0.4);
   background: var(--bg-elevated);
+}
+
+.productCardUnavailable {
+  opacity: 0.45;
+  cursor: not-allowed;
+  filter: grayscale(0.6);
 }
 
 .productCard.selected {
@@ -336,6 +342,20 @@
   font-size: 18px;
   color: #000;
   font-weight: 900;
+}
+
+.productCardOutOfStock {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .productCardName {
