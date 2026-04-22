@@ -183,7 +183,7 @@
   white-space: nowrap;
 }
 .tdClient {
-  min-width: 140px;
+  min-width: 100px;
   font-weight: 600;
   color: #f0f0f8;
 }
@@ -551,6 +551,11 @@
   padding-bottom: 4px;
 }
 
+.optionPrice {
+  color: #a0c4ff;
+  font-size: 11px;
+}
+
 /* ── Notes ── */
 .notesBlock {
   display: flex;
@@ -630,9 +635,9 @@
     touch-action: manipulation;
   }
 
-  /* Modal plus large — profite de la largeur iPad */
+  /* Modal — taille raisonnable même sur iPad 768px */
   .modal {
-    max-width: 720px;
+    max-width: 600px;
   }
 
   /* infoGrid 3 colonnes en paysage */

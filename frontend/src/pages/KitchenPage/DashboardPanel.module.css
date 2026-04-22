@@ -351,11 +351,19 @@
   .orderDate { display: table-cell }
 }
 
+/* ── Tablette portrait (640px – 900px) ── */
+@media (max-width: 900px) {
+  .statsGrid { grid-template-columns: repeat(2, 1fr); gap: 10px }
+
+  .statsDetail { grid-template-columns: 1fr 1fr }
+  .statDetailCard:last-child { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.08) }
+
+  .chart { height: 60px }
+}
+
 /* ── Tablette (640px – 1024px) ── */
 @media (max-width: 1024px) {
   .panel { padding: 16px; gap: 20px }
-
-  .statsGrid { grid-template-columns: repeat(3, 1fr); gap: 10px }
 
   .statCard { padding: 18px 16px }
   .statRevenue { font-size: 24px }
@@ -368,6 +376,8 @@
   .panel { padding: 12px; gap: 16px }
 
   .statsGrid { grid-template-columns: 1fr }
+  .statsDetail { grid-template-columns: 1fr }
+  .chart { height: 56px }
 
   .statRevenue { font-size: 26px }
 

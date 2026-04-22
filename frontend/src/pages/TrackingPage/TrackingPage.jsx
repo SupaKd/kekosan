@@ -177,9 +177,9 @@ function TrackingPage() {
                 <div key={item.id} className={styles.itemRow}>
                   <div className={styles.itemName}>
                     {item.product_name_snapshot}
-                    {item.options_label && (
-                      <div className={styles.itemOptions}>{item.options_label}</div>
-                    )}
+                    {(item.options || []).map((opt) => (
+                      <div key={opt.name} className={styles.itemOptions}>+ {opt.name}</div>
+                    ))}
                   </div>
                   <div className={styles.itemQtyPrice}>
                     x{item.quantity} · {formatPrice(item.unit_price_snapshot * item.quantity)}
@@ -193,6 +193,7 @@ function TrackingPage() {
                     {fi.slots?.map((s) => (
                       <div key={s.slot_name} className={styles.itemOptions}>
                         {s.slot_name} : {s.product_name_snapshot}
+                        {parseFloat(s.price_supplement_snapshot) > 0 && ` (+${parseFloat(s.price_supplement_snapshot).toFixed(2)}€)`}
                       </div>
                     ))}
                   </div>

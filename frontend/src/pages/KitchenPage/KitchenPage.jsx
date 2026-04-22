@@ -109,9 +109,11 @@ function OrderCard({ order, onStatusChange, isNew }) {
                 {item.product_name_snapshot}
               </span>
             </div>
-            {item.options_label && (
-              <div className={styles.itemMeta}>{item.options_label}</div>
-            )}
+            {(item.options || []).map((opt) => (
+              <div key={opt.name} className={styles.itemMeta}>
+                + {opt.name}
+              </div>
+            ))}
           </div>
         ))}
         {(order.formula_items || []).map((fi) => (
@@ -125,6 +127,7 @@ function OrderCard({ order, onStatusChange, isNew }) {
             {(fi.slots || []).map((s) => (
               <div key={s.slot_name} className={styles.itemMeta}>
                 {s.slot_name} → {s.product_name_snapshot}
+                {parseFloat(s.price_supplement_snapshot) > 0 && ` (+${parseFloat(s.price_supplement_snapshot).toFixed(2)}€)`}
               </div>
             ))}
           </div>

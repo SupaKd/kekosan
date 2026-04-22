@@ -16,7 +16,7 @@ function getSuggestions(catalog, cartItems, max = 2) {
   for (const cat of PRIORITY) {
     if (!catalog[cat]) continue;
     for (const p of catalog[cat]) {
-      if (!cartProductIds.has(p.id)) {
+      if (!cartProductIds.has(p.id) && p.available !== false) {
         suggestions.push(p);
         if (suggestions.length >= max) return suggestions;
       }

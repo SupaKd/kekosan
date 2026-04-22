@@ -854,6 +854,11 @@
   .availToggleTrack.on  .availToggleThumb { left: 28px }
 }
 
+/* ── Tablette portrait (640px – 900px) ── */
+@media (max-width: 900px) {
+  .fieldRow { grid-template-columns: 1fr }
+}
+
 /* ── Tablette (640px – 1024px) ── */
 @media (max-width: 1024px) {
   .panel { padding: 16px; gap: 24px }

@@ -1,5 +1,0 @@
-- generic [ref=e4]:
-  - generic [ref=e5]: "404"
-  - generic [ref=e6]: Page introuvable
-  - generic [ref=e7]: Cette page n'existe pas ou a été déplacée.
-  - button "← Retour au menu" [ref=e8] [cursor=pointer]

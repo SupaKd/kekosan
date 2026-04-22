@@ -4,7 +4,12 @@ const STORAGE_KEY = 'kekosan_cart'
 
 // Génère une clé unique pour identifier un item dans le panier
 const itemKey = (item) => {
-  if (item.type === 'formula') return `formula-${item.formula_id}-${item.slots.map(s => s.product_id).join('-')}`
+  if (item.type === 'formula') {
+    const slotsKey = item.slots.map(s =>
+      `${s.product_id}:${(s.options || []).map(o => o.product_option_id).sort().join('_')}`
+    ).join('-')
+    return `formula-${item.formula_id}-${slotsKey}`
+  }
   const optsKey = (item.options || []).map(o => o.id).sort().join('-')
   return `product-${item.product_id}-${optsKey}`
 }

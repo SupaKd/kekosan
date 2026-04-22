@@ -24,7 +24,13 @@ process.env.STRIPE_SECRET_KEY = 'sk_test_mock';
 const { createOrder } = require('../services/orderService');
 
 // Produit et formule de référence pour les tests
-const mockProduct = { id: 1, name: 'Banh Mi Poulet', price: 9.5, category: 'banhmi', available: 1 };
+const mockProduct = {
+  id: 1, name: 'Banh Mi Poulet', price: 9.5, category: 'banhmi', available: 1,
+  options: [
+    { id: 10, name: 'Extra coriandre', price_delta: 0 },
+    { id: 11, name: 'Double portion', price_delta: 2.5 },
+  ],
+};
 const mockFormula = {
   id: 1, name: 'Formule Midi', price: 21.0, available: 1,
   slots: [
@@ -32,7 +38,7 @@ const mockFormula = {
     { slot_name: 'boisson', allowed_categories: ['boisson'] },
   ],
 };
-const mockDrink = { id: 2, name: 'Eau', price: 0, category: 'boisson', available: 1 };
+const mockDrink = { id: 2, name: 'Eau', price: 0, category: 'boisson', available: 1, price_supplement: 0, options: [] };
 
 // Body de commande valide de référence
 const validBody = {
@@ -83,6 +89,27 @@ describe('orderService.createOrder — cas nominal', () => {
     expect(call.items[0].product_name_snapshot).toBe('Banh Mi Poulet');
     expect(call.items[0].unit_price_snapshot).toBe(9.5);
     expect(call.customer_email).toBe('jean@test.fr');
+  });
+
+  test('inclut les options dans le snapshot et ajuste le prix unitaire', async () => {
+    productRepository.findAllAvailable.mockResolvedValue([{ ...mockProduct }]);
+    const body = {
+      ...validBody,
+      items: [{ product_id: 1, quantity: 1, options: [{ product_option_id: 11 }] }],
+    };
+    // total = 9.5 + 2.5 (Double portion) + 5 (livraison) = 17€ < min 20€ — on ajuste le prix
+    productRepository.findById.mockResolvedValue({ ...mockProduct, price: 20.0 });
+    productRepository.findAllAvailable.mockResolvedValue([{ ...mockProduct, price: 20.0 }]);
+    const body2 = {
+      ...validBody,
+      items: [{ product_id: 1, quantity: 1, options: [{ product_option_id: 11 }] }],
+    };
+    const result = await createOrder(body2);
+    const call = orderRepository.createOrder.mock.calls[0][0];
+    // unit_price_snapshot = prix produit + price_delta option
+    expect(call.items[0].unit_price_snapshot).toBe(22.5); // 20 + 2.5
+    expect(call.items[0].options[0].option_name_snapshot).toBe('Double portion');
+    expect(call.items[0].options[0].price_delta_snapshot).toBe(2.5);
   });
 });
 
@@ -142,8 +169,8 @@ describe('orderService.createOrder — validation formule', () => {
     );
     productRepository.findByIdWithOptions = jest.fn().mockImplementation((id) =>
       id === 1
-        ? Promise.resolve({ ...mockProduct, options: [] })
-        : Promise.resolve({ ...mockDrink, options: [] })
+        ? Promise.resolve({ ...mockProduct, price_supplement: 0 })
+        : Promise.resolve({ ...mockDrink })
     );
   });
 
@@ -167,7 +194,71 @@ describe('orderService.createOrder — validation formule', () => {
 
   test('rejette si le produit du slot a une catégorie non autorisée', async () => {
     // Les deux slots reçoivent un produit de catégorie "banhmi" → le slot "boisson" rejette
-    productRepository.findByIdWithOptions = jest.fn().mockResolvedValue({ ...mockProduct, options: [] });
+    productRepository.findByIdWithOptions = jest.fn().mockResolvedValue({ ...mockProduct, price_supplement: 0 });
     await expect(createOrder(bodyWithFormula)).rejects.toMatchObject({ status: 400 });
+  });
+
+  test('encode les options du slot dans product_name_snapshot', async () => {
+    productRepository.findByIdWithOptions = jest.fn().mockImplementation((id) =>
+      id === 1
+        ? Promise.resolve({ ...mockProduct, price_supplement: 0 })
+        : Promise.resolve({ ...mockDrink })
+    );
+    const bodyWithSlotOptions = {
+      ...bodyWithFormula,
+      formula_items: [{
+        ...bodyWithFormula.formula_items[0],
+        slots: [
+          { slot_name: 'plat', product_id: 1, options: [{ product_option_id: 10 }] }, // Extra coriandre
+          { slot_name: 'boisson', product_id: 2, options: [] },
+        ],
+      }],
+    };
+    await createOrder(bodyWithSlotOptions);
+    const call = orderRepository.createOrder.mock.calls[0][0];
+    const platSlot = call.formula_items[0].slots.find(s => s.slot_name === 'plat');
+    expect(platSlot.product_name_snapshot).toBe('Banh Mi Poulet (Extra coriandre)');
+  });
+
+  test('ajoute le price_delta de l\'option au price_supplement_snapshot du slot', async () => {
+    productRepository.findByIdWithOptions = jest.fn().mockImplementation((id) =>
+      id === 1
+        ? Promise.resolve({ ...mockProduct, price_supplement: 0 })
+        : Promise.resolve({ ...mockDrink })
+    );
+    const bodyWithPaidOption = {
+      ...bodyWithFormula,
+      formula_items: [{
+        ...bodyWithFormula.formula_items[0],
+        slots: [
+          { slot_name: 'plat', product_id: 1, options: [{ product_option_id: 11 }] }, // Double portion +2.5€
+          { slot_name: 'boisson', product_id: 2, options: [] },
+        ],
+      }],
+    };
+    await createOrder(bodyWithPaidOption);
+    const call = orderRepository.createOrder.mock.calls[0][0];
+    const platSlot = call.formula_items[0].slots.find(s => s.slot_name === 'plat');
+    expect(platSlot.price_supplement_snapshot).toBe(2.5);
+    expect(platSlot.product_name_snapshot).toBe('Banh Mi Poulet (Double portion)');
+  });
+
+  test('rejette si une option du slot est introuvable sur le produit', async () => {
+    productRepository.findByIdWithOptions = jest.fn().mockImplementation((id) =>
+      id === 1
+        ? Promise.resolve({ ...mockProduct, price_supplement: 0 })
+        : Promise.resolve({ ...mockDrink })
+    );
+    const bodyWithBadOption = {
+      ...bodyWithFormula,
+      formula_items: [{
+        ...bodyWithFormula.formula_items[0],
+        slots: [
+          { slot_name: 'plat', product_id: 1, options: [{ product_option_id: 999 }] }, // option inexistante
+          { slot_name: 'boisson', product_id: 2, options: [] },
+        ],
+      }],
+    };
+    await expect(createOrder(bodyWithBadOption)).rejects.toMatchObject({ status: 400 });
   });
 });

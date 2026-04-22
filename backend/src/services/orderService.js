@@ -121,10 +121,13 @@ const resolveFormulaItems = async (rawFormulaItems) => {
       }
       const slotOptionsDelta = resolvedSlotOptions.reduce((sum, o) => sum + o.price_delta_snapshot, 0);
 
+      const optionsLabel = resolvedSlotOptions.length > 0
+        ? ` (${resolvedSlotOptions.map(o => o.option_name_snapshot).join(', ')})`
+        : '';
       resolvedSlots.push({
         slot_name: rawSlot.slot_name,
         product_id: product.id,
-        product_name_snapshot: product.name,
+        product_name_snapshot: product.name + optionsLabel,
         price_supplement_snapshot: (parseFloat(product.price_supplement) || 0) + slotOptionsDelta,
         options: resolvedSlotOptions,
       });
@@ -234,7 +237,9 @@ const createOrder = async (body) => {
   });
 
   // Insertion en DB avec le PI déjà connu + vérification atomique du créneau dans la transaction
-  const orderId = await orderRepository.createOrder({
+  let orderId;
+  try {
+    orderId = await orderRepository.createOrder({
     tracking_token,
     customer_name: customer.name.trim(),
     customer_phone: customer.phone.trim(),
@@ -249,9 +254,13 @@ const createOrder = async (body) => {
     notes: notes || null,
     stripe_payment_intent_id: paymentIntent.id,
     max_orders_per_slot,
-    items: resolvedItems,
-    formula_items: resolvedFormulaItems,
-  });
+      items: resolvedItems,
+      formula_items: resolvedFormulaItems,
+    });
+  } catch (err) {
+    await stripe.paymentIntents.cancel(paymentIntent.id).catch(() => {});
+    throw err;
+  }
 
   return {
     order_id: orderId,

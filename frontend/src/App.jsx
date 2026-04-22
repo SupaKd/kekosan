@@ -5,6 +5,7 @@ import MenuPage from './pages/MenuPage/MenuPage'
 import TrackingPage from './pages/TrackingPage/TrackingPage'
 import NotFoundPage from './pages/NotFoundPage/NotFoundPage'
 import CheckoutModal from './components/CheckoutModal/CheckoutModal'
+import IabBanner from './components/IabBanner/IabBanner'
 
 // KitchenPage chargée en lazy — socket.io-client (~25KB) n'est pas inclus dans le bundle principal
 const KitchenPage = lazy(() => import('./pages/KitchenPage/KitchenPage'))
@@ -15,6 +16,7 @@ function App() {
 
   return (
     <>
+      <IabBanner />
       <Routes>
         <Route path="/" element={
           <MenuPage cart={cart} onCheckout={() => setCheckoutOpen(true)} />

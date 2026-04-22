@@ -159,6 +159,15 @@ const findFullOrderById = async (orderId) => {
     [orderId]
   );
 
+  for (const item of items) {
+    const [opts] = await pool.query(
+      `SELECT option_name_snapshot, price_delta_snapshot
+       FROM order_item_options WHERE order_item_id = ?`,
+      [item.id]
+    );
+    item.options = opts.map((o) => ({ name: o.option_name_snapshot, price_delta: parseFloat(o.price_delta_snapshot) }));
+  }
+
   const [formulaItems] = await pool.query(
     `SELECT ofi.id, ofi.formula_name_snapshot, ofi.formula_price_snapshot, ofi.quantity
      FROM order_formula_items ofi
@@ -168,7 +177,7 @@ const findFullOrderById = async (orderId) => {
 
   for (const fi of formulaItems) {
     const [slots] = await pool.query(
-      `SELECT slot_name, product_name_snapshot
+      `SELECT slot_name, product_name_snapshot, price_supplement_snapshot
        FROM order_formula_slots WHERE order_formula_item_id = ?`,
       [fi.id]
     );

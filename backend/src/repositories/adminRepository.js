@@ -52,19 +52,25 @@ const findOrders = async ({ status, search, date_from, date_to, page = 1, limit 
     params
   );
 
-  // Charge les items et formules en 3 queries groupées (évite le N+1)
+  // Charge les items et formules en 4 queries groupées (évite le N+1)
   if (orders.length > 0) {
     const orderIds = orders.map((o) => o.id);
 
     const [allItems] = await pool.query(
-      `SELECT oi.id, oi.order_id, oi.product_name_snapshot, oi.quantity, oi.unit_price_snapshot,
-              GROUP_CONCAT(oio.option_name_snapshot ORDER BY oio.id SEPARATOR ', ') AS options_label
+      `SELECT oi.id, oi.order_id, oi.product_name_snapshot, oi.quantity, oi.unit_price_snapshot
        FROM order_items oi
-       LEFT JOIN order_item_options oio ON oio.order_item_id = oi.id
-       WHERE oi.order_id IN (?)
-       GROUP BY oi.id`,
+       WHERE oi.order_id IN (?)`,
       [orderIds]
     );
+
+    const itemIds = allItems.map((i) => i.id);
+    const allOptions = itemIds.length > 0
+      ? (await pool.query(
+          `SELECT order_item_id, option_name_snapshot, price_delta_snapshot
+           FROM order_item_options WHERE order_item_id IN (?)`,
+          [itemIds]
+        ))[0]
+      : [];
 
     const [allFormulaItems] = await pool.query(
       `SELECT ofi.id, ofi.order_id, ofi.formula_name_snapshot, ofi.formula_price_snapshot, ofi.quantity
@@ -75,13 +81,19 @@ const findOrders = async ({ status, search, date_from, date_to, page = 1, limit 
     const formulaItemIds = allFormulaItems.map((fi) => fi.id);
     const allSlots = formulaItemIds.length > 0
       ? (await pool.query(
-          `SELECT order_formula_item_id, slot_name, product_name_snapshot
+          `SELECT order_formula_item_id, slot_name, product_name_snapshot, price_supplement_snapshot
            FROM order_formula_slots WHERE order_formula_item_id IN (?)`,
           [formulaItemIds]
         ))[0]
       : [];
 
     // Regroupement en mémoire
+    const optionsByItem = {};
+    for (const opt of allOptions) {
+      if (!optionsByItem[opt.order_item_id]) optionsByItem[opt.order_item_id] = [];
+      optionsByItem[opt.order_item_id].push({ name: opt.option_name_snapshot, price_delta: parseFloat(opt.price_delta_snapshot) });
+    }
+
     const slotsByFi = {};
     for (const slot of allSlots) {
       if (!slotsByFi[slot.order_formula_item_id]) slotsByFi[slot.order_formula_item_id] = [];
@@ -90,6 +102,7 @@ const findOrders = async ({ status, search, date_from, date_to, page = 1, limit 
 
     const itemsByOrder = {};
     for (const item of allItems) {
+      item.options = optionsByItem[item.id] || [];
       if (!itemsByOrder[item.order_id]) itemsByOrder[item.order_id] = [];
       itemsByOrder[item.order_id].push(item);
     }
@@ -128,14 +141,20 @@ const findOrderById = async (id) => {
   const order = rows[0];
 
   const [items] = await pool.query(
-    `SELECT oi.id, oi.product_name_snapshot, oi.quantity, oi.unit_price_snapshot,
-            GROUP_CONCAT(oio.option_name_snapshot ORDER BY oio.id SEPARATOR ', ') AS options_label
+    `SELECT oi.id, oi.product_name_snapshot, oi.quantity, oi.unit_price_snapshot
      FROM order_items oi
-     LEFT JOIN order_item_options oio ON oio.order_item_id = oi.id
-     WHERE oi.order_id = ?
-     GROUP BY oi.id`,
+     WHERE oi.order_id = ?`,
     [id]
   );
+
+  for (const item of items) {
+    const [opts] = await pool.query(
+      `SELECT option_name_snapshot, price_delta_snapshot
+       FROM order_item_options WHERE order_item_id = ?`,
+      [item.id]
+    );
+    item.options = opts.map((o) => ({ name: o.option_name_snapshot, price_delta: parseFloat(o.price_delta_snapshot) }));
+  }
 
   const [formulaItems] = await pool.query(
     `SELECT ofi.id, ofi.formula_name_snapshot, ofi.formula_price_snapshot, ofi.quantity
@@ -145,7 +164,7 @@ const findOrderById = async (id) => {
 
   for (const fi of formulaItems) {
     const [slots] = await pool.query(
-      `SELECT slot_name, product_name_snapshot FROM order_formula_slots
+      `SELECT slot_name, product_name_snapshot, price_supplement_snapshot FROM order_formula_slots
        WHERE order_formula_item_id = ?`,
       [fi.id]
     );

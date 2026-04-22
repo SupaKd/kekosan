@@ -32,10 +32,11 @@ function FormulaModal({ formula, catalog, onClose, onAdd }) {
     .filter(s => s.required !== false)
     .every(s => slotChoices[s.slot_name])
 
-  const supplementTotal = Object.values(slotChoices).reduce(
-    (sum, p) => sum + (parseFloat(p.price_supplement) || 0),
-    0
-  )
+  const supplementTotal = Object.entries(slotChoices).reduce((sum, [slotName, p]) => {
+    const productSupplement = parseFloat(p.price_supplement) || 0
+    const optionsDelta = (slotOptions[slotName] || []).reduce((s, o) => s + (parseFloat(o.price_delta) || 0), 0)
+    return sum + productSupplement + optionsDelta
+  }, 0)
   const totalPrice = (parseFloat(formula.price) + supplementTotal) * quantity
 
   const selectSlotProduct = (slotName, product) => {
@@ -66,17 +67,17 @@ function FormulaModal({ formula, catalog, onClose, onAdd }) {
       name: formula.name,
       price: parseFloat(formula.price) + supplementTotal,
       image_url: formula.image_url || null,
-      slots: formula.slots.map(s => {
+      slots: formula.slots.flatMap(s => {
         const product = slotChoices[s.slot_name]
-        if (!product) return { slot_name: s.slot_name, product_id: null, product_name: null, options: [] }
+        if (!product) return []
         const opts = slotOptions[s.slot_name] || []
         const optLabel = opts.length > 0 ? ` (${opts.map(o => o.name).join(', ')})` : ''
-        return {
+        return [{
           slot_name: s.slot_name,
           product_id: product.id,
           product_name: product.name + optLabel,
           options: opts.map(o => ({ product_option_id: o.id })),
-        }
+        }]
       }),
       quantity,
     })

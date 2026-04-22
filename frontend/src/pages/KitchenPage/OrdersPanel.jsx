@@ -228,19 +228,24 @@ export function OrderDetailModal({ orderId, onClose, onStatusChanged }) {
             <div className={styles.itemsSection}>
               <div className={styles.infoLabel}>Articles</div>
               {(order.items || []).map((item) => (
-                <div key={item.id} className={styles.itemRow}>
-                  <span className={styles.itemQty}>×{item.quantity}</span>
-                  <span className={styles.itemName}>
-                    {item.product_name_snapshot}
-                  </span>
-                  {item.options_label && (
-                    <span className={styles.itemOptions}>
-                      {item.options_label}
+                <div key={item.id}>
+                  <div className={styles.itemRow}>
+                    <span className={styles.itemQty}>×{item.quantity}</span>
+                    <span className={styles.itemName}>
+                      {item.product_name_snapshot}
                     </span>
-                  )}
-                  <span className={styles.itemPrice}>
-                    {fmt(item.unit_price_snapshot * item.quantity)}
-                  </span>
+                    <span className={styles.itemPrice}>
+                      {fmt(item.unit_price_snapshot * item.quantity)}
+                    </span>
+                  </div>
+                  {(item.options || []).map((opt) => (
+                    <div key={opt.name} className={styles.slotRow}>
+                      + {opt.name}
+                      {opt.price_delta > 0 && (
+                        <span className={styles.optionPrice}> (+{fmt(opt.price_delta)})</span>
+                      )}
+                    </div>
+                  ))}
                 </div>
               ))}
               {(order.formula_items || []).map((fi) => (
@@ -257,6 +262,9 @@ export function OrderDetailModal({ orderId, onClose, onStatusChanged }) {
                   {(fi.slots || []).map((s) => (
                     <div key={s.slot_name} className={styles.slotRow}>
                       {s.slot_name} → {s.product_name_snapshot}
+                      {parseFloat(s.price_supplement_snapshot) > 0 && (
+                        <span className={styles.optionPrice}> (+{fmt(parseFloat(s.price_supplement_snapshot))})</span>
+                      )}
                     </div>
                   ))}
                 </div>

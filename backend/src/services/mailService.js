@@ -4,6 +4,9 @@ const transporter = require('../config/mailer');
 // Formate un montant en euros
 const formatPrice = (amount) => `${parseFloat(amount).toFixed(2)} €`;
 
+// Échappe les caractères HTML pour éviter les injections dans les templates email
+const escHtml = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
 // Génère les lignes items à la carte
 const renderItems = (items) => {
   if (!items || items.length === 0) return '';
@@ -78,7 +81,7 @@ const sendOrderConfirmation = async (order) => {
 
               <!-- Salutation -->
               <div style="padding:28px 28px 0">
-                <p style="margin:0;font-size:16px;color:#2d2410;font-weight:600">Bonjour ${order.customer_name} 👋</p>
+                <p style="margin:0;font-size:16px;color:#2d2410;font-weight:600">Bonjour ${escHtml(order.customer_name)} 👋</p>
                 <p style="margin:10px 0 0;font-size:14px;color:#7a6a4a;line-height:1.6">
                   Votre paiement a bien été reçu. Notre équipe prépare votre commande avec soin.
                 </p>
@@ -111,7 +114,7 @@ const sendOrderConfirmation = async (order) => {
                   </tr>
                   ${discountAmount > 0 ? `
                   <tr>
-                    <td style="padding:4px 0;font-size:13px;color:#2d7a47">Code promo (${order.promo_code})</td>
+                    <td style="padding:4px 0;font-size:13px;color:#2d7a47">Code promo (${escHtml(order.promo_code)})</td>
                     <td style="padding:4px 0;font-size:13px;color:#2d7a47;text-align:right;font-weight:600">− ${formatPrice(discountAmount)}</td>
                   </tr>` : ''}
                   <tr>
@@ -131,9 +134,9 @@ const sendOrderConfirmation = async (order) => {
               <div style="padding:0 28px 28px">
                 <div style="font-size:11px;letter-spacing:2px;color:#9a8c72;text-transform:uppercase;margin-bottom:12px;font-weight:600">Livraison</div>
                 <div style="background:#f5eedb;border:1px solid #e0d5b8;border-radius:10px;padding:14px 16px">
-                  <div style="font-size:13px;color:#2d2410;line-height:1.6;font-weight:500">${order.delivery_address}</div>
-                  ${order.delivery_time ? `<div style="font-size:12px;color:#7a6a4a;margin-top:6px">🕐 Créneau : <strong>${order.delivery_time}</strong></div>` : ''}
-                  ${order.notes ? `<div style="font-size:12px;color:#7a6a4a;margin-top:6px;font-style:italic">📝 ${order.notes}</div>` : ''}
+                  <div style="font-size:13px;color:#2d2410;line-height:1.6;font-weight:500">${escHtml(order.delivery_address)}</div>
+                  ${order.delivery_time ? `<div style="font-size:12px;color:#7a6a4a;margin-top:6px">🕐 Créneau : <strong>${escHtml(order.delivery_time)}</strong></div>` : ''}
+                  ${order.notes ? `<div style="font-size:12px;color:#7a6a4a;margin-top:6px;font-style:italic">📝 ${escHtml(order.notes)}</div>` : ''}
                 </div>
               </div>
 
