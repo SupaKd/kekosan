@@ -40,14 +40,16 @@ const HERO_SLIDES = [
     label: "Formules",
     accroche: "Entrée, Bánh Mì & Boisson.",
     cta: "Voir les formules",
-    image: "/formule.png",
+    image: "/heroform.png",
+    imageWebp: "/heroform.webp",
   },
   {
     id: "banhmi",
     label: "Bánh Mì",
     accroche: "Fait maison, préparé avec coeur.",
     cta: "Commander",
-    image: "/banhh.png",
+    image: "/herobanh.png",
+    imageWebp: "/herobanh.webp",
   },
   {
     id: null,
@@ -55,6 +57,7 @@ const HERO_SLIDES = [
     accroche: "Née à Saint-Genis-Pouilly, avec goût et passion.",
     cta: "En savoir plus",
     image: "/about.png",
+    imageWebp: "/about.webp",
   },
 ];
 
@@ -71,8 +74,8 @@ function MenuPage({ cart, onCheckout }) {
   // État service ouvert/fermé + horaires + jours fermés + config livraison
   const [serviceOpen, setServiceOpen] = useState(true);
   const [schedule, setSchedule] = useState({
-    opening_time: '11:00',
-    closing_time: '15:00',
+    opening_time: "11:00",
+    closing_time: "15:00",
     opening_hour: 11,
     closing_hour: 15,
     open_days: [1, 2, 3, 4, 5],
@@ -204,9 +207,7 @@ function MenuPage({ cart, onCheckout }) {
       <PromoBanner />
 
       {/* Modal service fermé */}
-      {isClosed && (
-        <ClosedModal message={maintenanceMessage} />
-      )}
+      {isClosed && <ClosedModal message={maintenanceMessage} />}
 
       <div
         className={styles.hero}
@@ -227,10 +228,9 @@ function MenuPage({ cart, onCheckout }) {
           {HERO_SLIDES.map((slide) => (
             <div key={slide.id} className={styles.heroSlide}>
               <picture>
-                <source
-                  srcSet={slide.image.replace(".png", ".webp")}
-                  type="image/webp"
-                />
+                {slide.imageWebp && (
+                  <source srcSet={slide.imageWebp} type="image/webp" />
+                )}
                 <img
                   src={slide.image}
                   alt={slide.label}
@@ -452,7 +452,11 @@ function MenuPage({ cart, onCheckout }) {
       )}
 
       <InstagramSection />
-      <Footer opening_time={schedule.opening_time} closing_time={schedule.closing_time} open_days={schedule.open_days} />
+      <Footer
+        opening_time={schedule.opening_time}
+        closing_time={schedule.closing_time}
+        open_days={schedule.open_days}
+      />
 
       {/* Panier flottant */}
       <CartDrawer

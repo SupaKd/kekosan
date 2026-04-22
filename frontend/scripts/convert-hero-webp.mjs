@@ -7,7 +7,7 @@ import { fileURLToPath } from 'url';
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 const publicDir = join(__dirname, '../public');
 
-const SOURCE_IMAGES = ['formule.png', 'banhh.png', 'about.png'];
+const SOURCE_IMAGES = ['formule.png', 'banhh.png', 'about.png', 'herobanh.png', 'heroform.png'];
 
 async function convertToWebp() {
   for (const filename of SOURCE_IMAGES) {
