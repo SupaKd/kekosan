@@ -19,6 +19,7 @@ function FormulaModal({ formula, catalog, onClose, onAdd }) {
   // slotOptions : { [slot_name]: [option, ...] } — options cochées pour le produit choisi dans ce slot
   const [slotChoices, setSlotChoices] = useState({})
   const [slotOptions, setSlotOptions] = useState({})
+  const [expandedDescriptions, setExpandedDescriptions] = useState({})
   const [quantity, setQuantity] = useState(1)
   const [added, setAdded] = useState(false)
   const { closing, triggerClose } = useCloseAnimation(onClose)
@@ -187,6 +188,36 @@ function FormulaModal({ formula, catalog, onClose, onAdd }) {
                               )}
                               {product.badge && (
                                 <span className={styles.productCardBadge}>{product.badge}</span>
+                              )}
+                              {product.description && (() => {
+                                const isExpanded = !!expandedDescriptions[product.id]
+                                const isLong = product.description.length > 60
+                                return (
+                                  <>
+                                    <p className={styles.productCardDescription}>
+                                      {isLong && !isExpanded
+                                        ? product.description.slice(0, 60) + '…'
+                                        : product.description}
+                                    </p>
+                                    {isLong && (
+                                      <span
+                                        className={styles.productCardDescriptionToggle}
+                                        onClick={e => {
+                                          e.stopPropagation()
+                                          setExpandedDescriptions(prev => ({ ...prev, [product.id]: !prev[product.id] }))
+                                        }}
+                                      >
+                                        {isExpanded ? 'Voir moins' : 'Voir plus'}
+                                      </span>
+                                    )}
+                                  </>
+                                )
+                              })()}
+                              {product.allergens && product.allergens.length > 0 && (
+                                <p className={styles.productCardAllergens}>
+                                  <span className={styles.productCardAllergensLabel}>Allergènes :</span>
+                                  {product.allergens.join(', ')}
+                                </p>
                               )}
                             </div>
                             <div className={styles.productCardRadio}>

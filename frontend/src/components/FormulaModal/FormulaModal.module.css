@@ -370,6 +370,39 @@
   color: var(--neon-cyan);
 }
 
+.productCardDescription {
+  margin: 3px 0 0;
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.productCardDescriptionToggle {
+  display: inline-block;
+  margin-top: 2px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--neon-cyan);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.productCardAllergens {
+  margin: 3px 0 0;
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--text-muted);
+  opacity: 0.7;
+  line-height: 1.4;
+}
+
+.productCardAllergensLabel {
+  font-weight: 700;
+  margin-right: 3px;
+}
+
 .productCardBadge {
   display: inline-block;
   margin-left: 4px;
