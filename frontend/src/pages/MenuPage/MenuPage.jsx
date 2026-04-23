@@ -7,6 +7,7 @@ import CartDrawer from "../../components/CartDrawer/CartDrawer";
 import Header from "../../components/Header/Header";
 import Footer from "../../components/Footer/Footer";
 import InstagramSection from "../../components/InstagramSection/InstagramSection";
+import ContactSection from "../../components/ContactSection/ContactSection";
 import Marquee from "../../components/Marquee/Marquee";
 import PromoBanner from "../../components/PromoBanner/PromoBanner";
 import IngredientsStrip from "../../components/IngredientsStrip/IngredientsStrip";
@@ -452,6 +453,7 @@ function MenuPage({ cart, onCheckout }) {
       )}
 
       <InstagramSection />
+      <ContactSection />
       <Footer
         opening_time={schedule.opening_time}
         closing_time={schedule.closing_time}

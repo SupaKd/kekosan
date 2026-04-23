@@ -64,6 +64,7 @@ app.use('/api/products', require('./src/routes/products'));
 app.use('/api/formulas', require('./src/routes/formulas'));
 app.use('/api/orders', require('./src/routes/orders'));
 app.use('/api/admin', require('./src/routes/admin'));
+app.use('/api/contact', require('./src/routes/contact'));
 
 // Route de santé
 app.get('/api/health', (_req, res) => {

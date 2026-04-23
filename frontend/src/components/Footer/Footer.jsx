@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MapPin, Clock, Mail } from "lucide-react";
+import { MapPin, Clock } from "lucide-react";
 import styles from "./Footer.module.css";
 import LegalModal from "../LegalModal/LegalModal";
 
@@ -39,10 +39,6 @@ function Footer({ opening_time = '11:00', closing_time = '15:00', opening_hour =
           <div className={styles.infoItem}>
             <Clock size={15} className={styles.infoIcon} />
             {formatOpenDaysLong(open_days)} : {opening_time} – {closing_time}
-          </div>
-          <div className={styles.infoItem}>
-            <Mail size={15} className={styles.infoIcon} />
-            kekosan01630@gmail.com
           </div>
         </div>
 
